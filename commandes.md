@@ -7,29 +7,40 @@
 # --------------------------
 
 # Créer et activer l'environnement
-python3 -m venv env                   # Création
-source env/bin/activate               # Activation (Linux/Mac)
-# .\env\Scripts\activate              # Activation (Windows)
+# Création
+# Activation (Linux/Mac)
+# Activation (Windows)
+python3 -m venv env                   
+source env/bin/activate               
+.\env\Scripts\activate              
 
 # Gestion des dépendances
-pip3 install --upgrade pip            # Mettre à jour pip
-pip3 install django                   # Installer Django
-pip3 freeze > requirements.txt        # Exporter les dépendances
-pip3 install -r requirements.txt      # Importer les dépendances
-
-deactivate                            # Désactiver l'environnement
+# Mettre à jour pip
+# Installer Django
+# Exporter les dépendances
+# Importer les dépendances
+# Désactiver l'environnement
+pip3 install --upgrade pip            
+pip3 install django                   
+pip3 freeze > requirements.txt        
+pip3 install -r requirements.txt      
+deactivate                           
 
 # --------------------------
 # 2. GESTION DE PROJET
 # --------------------------
 
 # Démarrer un nouveau projet
-django-admin startproject nom_projet   # Création projet
-cd nom_projet                         # Se placer dans le projet
+# Création projet
+# Se placer dans le projet
+django-admin startproject nom_projet   
+cd nom_projet                         
 
 # Lancer le serveur de développement
-python3 manage.py runserver           # Port par défaut (8000)
-python3 manage.py runserver 8080      # Spécifier un port
+# Port par défaut (8000)
+# Spécifier un port
+python3 manage.py runserver           
+python3 manage.py runserver 8080      
 
 # --------------------------
 # 3. APPLICATIONS & MODÈLES
@@ -39,12 +50,16 @@ python3 manage.py runserver 8080      # Spécifier un port
 python3 manage.py startapp mon_app
 
 # Gestion des migrations
-python3 manage.py makemigrations      # Créer les migrations
-python3 manage.py migrate             # Appliquer les migrations
-python3 manage.py showmigrations      # Voir les migrations
+# Créer les migrations
+# Appliquer les migrations
+# Voir les migrations
+python3 manage.py makemigrations      
+python3 manage.py migrate             
+python3 manage.py showmigrations      
 
 # Administration
-python3 manage.py createsuperuser     # Créer un superuser
+# Créer un superuser
+python3 manage.py createsuperuser     
 
 # --------------------------
 # 4. GESTION GIT
@@ -59,36 +74,46 @@ git remote add origin URL_DU_DEPOT.git
 git push -u origin main
 
 # Workflow quotidien
-git status                           # Vérifier les modifications
-git add .                            # Ajouter tous les fichiers
-git commit -m "Description claire"   # Créer un commit
-git push origin main                 # Pousser les modifications
+# Vérifier les modifications
+# Ajouter tous les fichiers
+# Créer un commit
+# Pousser les modifications
+git status                           
+git add .                            
+git commit -m "Ajout des permissions aux viewsets/ajout user à partenaires, et evenements"   
+git push origin main                 
 
 # --------------------------
 # 5. PRODUCTION
 # --------------------------
 
 # Fichiers statiques
-python3 manage.py collectstatic --noinput  # Collecter les statics
-rm -rf staticfiles/                       # Nettoyer (si nécessaire)
+# Collecter les statics
+# Nettoyer (si nécessaire)
+python3 manage.py collectstatic --noinput  
+rm -rf staticfiles/                       
 
-# Vérifications
-python3 manage.py check --deploy          # Vérifier la configuration prod
+# Vérifier la configuration
+python3 manage.py check --deploy           
 
 # --------------------------
 # 6. COMMANDES UTILES
 # --------------------------
 
 # Shell Django (avec extensions)
-python3 manage.py shell_plus              # Nécessite django-extensions
+python3 manage.py shell_plus              
 
 # Nettoyage
-find . -name "*.pyc" -exec rm -f {} \;    # Supprimer les .pyc
+# Nécessite django-extensions
+# Supprimer les .pyc
+find . -name "*.pyc" -exec rm -f {} \;    
 find . -type d -name "__pycache__" -exec rm -rf {} \;  # Nettoyer les caches
 
 # Backup base de données
-python3 manage.py dumpdata > backup.json  # Exporter
-python3 manage.py loaddata backup.json    # Importer
+# Exporter
+# Importer
+python3 manage.py dumpdata > backup.json  
+python3 manage.py loaddata backup.json    
 
 # --------------------------
 # 7. DÉMARRAGE RAPIDE
@@ -98,3 +123,13 @@ python3 manage.py loaddata backup.json    # Importer
 git init && python3 -m venv env && source env/bin/activate && \
 pip3 install django && django-admin startproject mon_projet && \
 cd mon_projet && python3 manage.py runserver
+
+# --------------------------
+# 8. TESTS
+# --------------------------
+Lancer les tests
+python3 manage.py test
+python3 manage.py test nom_de_lapp
+python3 manage.py test nom_de_lapp.tests.NomDeLaClasseDeTest
+python3 manage.py test nom_de_lapp.tests.NomDeLaClasseDeTest.nom_methode
+exemple : python3 manage.py test accounts.tests.UserSerializerTest -v 2

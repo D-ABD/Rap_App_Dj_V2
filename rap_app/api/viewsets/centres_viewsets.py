@@ -1,7 +1,26 @@
-from rest_framework import viewsets, permissions
+# ReadWriteAdminReadStaff
+
+from rest_framework import viewsets
+from rest_framework.permissions import IsAuthenticated
+from drf_spectacular.utils import extend_schema
 
 from ..serializers.centres_serializers import CentreSerializer
 from ...models.centres import Centre
+from ..permissions import ReadWriteAdminReadStaff
+
+
+@extend_schema(
+    tags=["Centres"],
+    summary="Gérer les centres de formation",
+    description="""
+        Ce ViewSet permet de consulter, créer, modifier ou supprimer des centres de formation.
+
+        - **Lecture (GET)** : accessible aux rôles `staff`, `admin`, `superadmin`
+        - **Écriture (POST/PUT/PATCH/DELETE)** : réservée aux rôles `admin` et `superadmin`
+
+        Nécessite une authentification.
+    """
+)
 class CentreViewSet(viewsets.ModelViewSet):
     """
     API ViewSet pour les centres de formation.
@@ -15,9 +34,10 @@ class CentreViewSet(viewsets.ModelViewSet):
     - DELETE /centres/{id}/: suppression
 
     Permissions :
-    - Accessible aux utilisateurs authentifiés par défaut
+    - Lecture : staff, admin, superadmin
+    - Écriture : admin, superadmin uniquement
     """
 
     queryset = Centre.objects.all().order_by("nom")
     serializer_class = CentreSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsAuthenticated, ReadWriteAdminReadStaff]

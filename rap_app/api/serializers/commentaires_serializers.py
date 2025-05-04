@@ -30,3 +30,6 @@ class CommentaireSerializer(serializers.ModelSerializer):
             'date_creation',
         ]
         read_only_fields = ['id', 'date_creation']
+        
+    def perform_create(self, serializer):
+        serializer.save(utilisateur=self.request.user)

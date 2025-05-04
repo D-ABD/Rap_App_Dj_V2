@@ -1,44 +1,46 @@
-# viewsets/vae_viewsets.py
+# IsStaffOrAbove
 
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
 from drf_spectacular.utils import extend_schema
 
-from ..serializers.vae_jury_serializers import HistoriqueStatutVAESerializer, SuiviJurySerializer, VAESerializer
-from ...models.vae_jury import VAE, HistoriqueStatutVAE, SuiviJury
+from ..serializers.vae_jury_serializers import (
+    VAESerializer,
+    SuiviJurySerializer,
+    HistoriqueStatutVAESerializer
+)
+from ...models.vae_jury import VAE, SuiviJury, HistoriqueStatutVAE
+from ..permissions import IsStaffOrAbove
 
-@extend_schema(tags=["Suivi Jury"])
+
+@extend_schema(
+    tags=["📅 Suivi Jury"],
+    summary="Suivi mensuel des jurys par centre",
+    description="Consultation et mise à jour du suivi des jurys par mois, centre et année."
+)
 class SuiviJuryViewSet(viewsets.ModelViewSet):
-    """
-    API permettant de consulter et mettre à jour le suivi des jurys
-    par centre, mois et année.
-    """
     queryset = SuiviJury.objects.all()
     serializer_class = SuiviJurySerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsStaffOrAbove]
 
 
-@extend_schema(tags=["VAE"])
+@extend_schema(
+    tags=["📘 VAE"],
+    summary="Gérer les dossiers VAE",
+    description="CRUD complet pour les parcours VAE : création, lecture, mise à jour et suppression."
+)
 class VAEViewSet(viewsets.ModelViewSet):
-    """
-    API CRUD pour les VAE individuelles.
-
-    Permet de créer, lire, modifier et supprimer les dossiers de VAE
-    ainsi que de suivre leur statut dans le temps.
-    """
     queryset = VAE.objects.all().select_related('centre')
     serializer_class = VAESerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsStaffOrAbove]
 
 
-@extend_schema(tags=["Historique VAE"])
+@extend_schema(
+    tags=["🕘 Historique VAE"],
+    summary="Historique des changements de statut VAE",
+    description="Chaque changement de statut d’un dossier VAE est enregistré avec date et commentaire."
+)
 class HistoriqueStatutVAEViewSet(viewsets.ModelViewSet):
-    """
-    API pour consulter l'historique des statuts des VAE.
-
-    Chaque changement de statut d'une VAE est enregistré avec une date
-    et un commentaire pour suivi.
-    """
     queryset = HistoriqueStatutVAE.objects.all().select_related('vae')
     serializer_class = HistoriqueStatutVAESerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsStaffOrAbove]

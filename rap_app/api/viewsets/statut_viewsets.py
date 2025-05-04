@@ -1,33 +1,44 @@
-# viewsets/statut_viewset.py
+# IsAdmin
+
 import logging
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
-from drf_spectacular.utils import extend_schema, OpenApiParameter
+from drf_spectacular.utils import extend_schema
 
 from ...models.statut import Statut
 from ..serializers.statut_serializers import StatutSerializer
+from ..permissions import IsAdmin  # Permission personnalisée : staff+ ou admin+
 
 logger = logging.getLogger(__name__)
 
 
 @extend_schema(
-    tags=["Statuts"],
-    description="Endpoints pour la gestion des statuts de formation (recrutement, annulée, pleine...)."
+    tags=["📌 Statuts"],
+    summary="Gérer les statuts de formation",
+    description="""
+        API complète pour créer, mettre à jour ou supprimer les statuts d'une formation
+        (Exemples : "Recrutement", "Annulée", "Pleine", etc.).
+
+        🔒 Accès réservé aux **admins ou superadmins**.
+    """
 )
 class StatutViewSet(viewsets.ModelViewSet):
     """
-    API CRUD complète pour les statuts d'une formation.
+    ViewSet CRUD pour les statuts des formations.
 
-    - `GET /api/statuts/` : liste paginée des statuts
-    - `POST /api/statuts/` : créer un nouveau statut
-    - `GET /api/statuts/{id}/` : détail d’un statut
-    - `PUT /api/statuts/{id}/` : mise à jour complète
-    - `PATCH /api/statuts/{id}/` : mise à jour partielle
-    - `DELETE /api/statuts/{id}/` : suppression
+    Routes :
+    - GET /api/statuts/ : liste des statuts
+    - POST /api/statuts/ : création
+    - GET /api/statuts/{id}/ : détail
+    - PUT/PATCH : modification
+    - DELETE : suppression
+
+    ✅ Journalise les créations et suppressions.
     """
+
     queryset = Statut.objects.all()
     serializer_class = StatutSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsAdmin]
 
     def perform_create(self, serializer):
         instance = serializer.save()
@@ -35,4 +46,4 @@ class StatutViewSet(viewsets.ModelViewSet):
 
     def perform_destroy(self, instance):
         logger.warning(f"❌ Statut supprimé via API : {instance.nom}")
-        return super().perform_destroy(instance)
+        super().perform_destroy(instance)

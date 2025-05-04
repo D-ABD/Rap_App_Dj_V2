@@ -1,8 +1,13 @@
+# IsSuperAdminOnly
+
 from rest_framework import viewsets, filters
+from rest_framework.permissions import IsAuthenticated
+from drf_spectacular.utils import extend_schema
 from django_filters.rest_framework import DjangoFilterBackend, FilterSet, DateTimeFilter
+
 from ..serializers.logs_serializers import LogUtilisateurSerializer
 from ...models.logs import LogUtilisateur
-from rest_framework.permissions import IsAuthenticated
+from ..permissions import IsSuperAdminOnly
 
 
 class LogUtilisateurFilter(FilterSet):
@@ -20,22 +25,31 @@ class LogUtilisateurFilter(FilterSet):
         fields = ['utilisateur', 'modele', 'action']
 
 
+@extend_schema(
+    tags=["Logs"],
+    summary="Historique des actions utilisateur",
+    description="""
+        Affiche les logs détaillés des actions effectuées par les utilisateurs.
+
+        🔐 Accessible uniquement aux `superadmins`.
+
+        Fonctionnalités :
+        - Recherche : action, modèle, utilisateur
+        - Filtres : utilisateur, modèle, action, date_min, date_max
+        - Tri : par date ou modèle
+    """
+)
 class LogUtilisateurViewSet(viewsets.ReadOnlyModelViewSet):
     """
     API ReadOnly pour consulter les logs utilisateurs.
 
-    ✅ Recherche plein texte : action, modèle, utilisateur
-    ✅ Filtres :
-      - utilisateur
-      - modèle
-      - action
-      - date_min (>=)
-      - date_max (<=)
+    🔒 Permission : superadmin uniquement
+    ✅ Filtres et recherche avancés
     """
 
     queryset = LogUtilisateur.objects.select_related('utilisateur').all()
     serializer_class = LogUtilisateurSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsSuperAdminOnly]
 
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_class = LogUtilisateurFilter

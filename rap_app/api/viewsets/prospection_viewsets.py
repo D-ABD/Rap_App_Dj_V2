@@ -1,35 +1,53 @@
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
 from drf_spectacular.utils import extend_schema
+
 from ...models.prospection import Prospection, HistoriqueProspection
 from ..serializers.prospection_serializers import ProspectionSerializer, HistoriqueProspectionSerializer
+from ..permissions import IsOwnerOrStaffOrAbove
 
+
+@extend_schema(
+    tags=["📞 Prospection"],
+    summary="Gérer les prospections",
+    description="""
+        - Un utilisateur voit ses propres prospections (où il est `responsable`)
+        - Le staff/admin/superadmin voit tout
+    """
+)
 class ProspectionViewSet(viewsets.ModelViewSet):
-    """
-    API endpoint permettant de créer, modifier et consulter les prospections.
-
-    🔹 GET /api/prospections/ → Liste toutes les prospections
-    🔹 POST /api/prospections/ → Crée une nouvelle prospection
-    🔹 GET /api/prospections/{id}/ → Détail d'une prospection
-    🔹 PUT /api/prospections/{id}/ → Modifier une prospection
-    🔹 DELETE /api/prospections/{id}/ → Supprimer une prospection
-    """
-    queryset = Prospection.objects.all().select_related('company', 'formation', 'responsable')
     serializer_class = ProspectionSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsOwnerOrStaffOrAbove]
 
-    @extend_schema(summary="Lister les prospections", tags=["📞 Prospection"])
-    def list(self, request, *args, **kwargs):
-        return super().list(request, *args, **kwargs)
+    def get_queryset(self):
+        user = self.request.user
+        role = getattr(user.profile, "role", "")
+        if role in ["staff", "admin", "superadmin"]:
+            return Prospection.objects.select_related('company', 'formation', 'responsable')
+        return Prospection.objects.filter(responsable=user).select_related('company', 'formation', 'responsable')
+
+    def perform_create(self, serializer):
+        serializer.save(responsable=self.request.user)
 
 
+@extend_schema(
+    tags=["📞 Historique prospection"],
+    summary="Historique des prospections",
+    description="""
+        - Un utilisateur voit l’historique de ses propres prospections (`modifie_par`)
+        - Le staff/admin/superadmin voit tout
+    """
+)
 class HistoriqueProspectionViewSet(viewsets.ModelViewSet):
-    """
-    API endpoint permettant de consulter l'historique des prospections.
-
-    🔹 GET /api/historique-prospections/ → Liste des modifications
-    🔹 POST /api/historique-prospections/ → Ajout manuel (rare)
-    """
-    queryset = HistoriqueProspection.objects.all().select_related('prospection', 'modifie_par')
     serializer_class = HistoriqueProspectionSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsOwnerOrStaffOrAbove]
+
+    def get_queryset(self):
+        user = self.request.user
+        role = getattr(user.profile, "role", "")
+        if role in ["staff", "admin", "superadmin"]:
+            return HistoriqueProspection.objects.select_related('prospection', 'modifie_par')
+        return HistoriqueProspection.objects.filter(modifie_par=user).select_related('prospection', 'modifie_par')
+
+    def perform_create(self, serializer):
+        serializer.save(modifie_par=self.request.user)

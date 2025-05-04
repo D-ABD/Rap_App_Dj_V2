@@ -1,4 +1,5 @@
 import logging
+from django.conf import settings
 from django.db import models
 from django.core.exceptions import ValidationError
 from django.utils.text import slugify
@@ -137,6 +138,15 @@ class Partenaire(BaseModel):
         help_text="Informations sur le partenariat et l'historique de la relation"
     )
 
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='partenaires_crees',
+        verbose_name="Créé par",
+        help_text="Utilisateur ayant créé ce partenaire"
+    )
     # Ajout d'un slug pour des URLs plus propres et SEO-friendly
     slug = models.SlugField(
         max_length=255, 

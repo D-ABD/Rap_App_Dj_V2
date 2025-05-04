@@ -6,6 +6,7 @@ from django.dispatch import receiver
 from django.utils import timezone
 from .base import BaseModel
 from .formations import Formation
+from django.conf import settings
 
 # Configuration du logger avec un nom plus spécifique
 logger = logging.getLogger("application.evenements")
@@ -111,6 +112,16 @@ class Evenement(BaseModel):
         verbose_name="Participants réels",
         help_text="Nombre de participants réels (à remplir après l'événement)"
     )
+
+    created_by = models.ForeignKey(
+    settings.AUTH_USER_MODEL,
+    on_delete=models.SET_NULL,
+    null=True,
+    blank=True,
+    related_name="evenements_crees",
+    verbose_name="Créé par"
+    )
+
 
     def clean(self):
         """
