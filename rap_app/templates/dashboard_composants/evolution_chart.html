@@ -1,0 +1,70 @@
+{% load static %}
+
+<div class="col-12">
+    <div class="card shadow-sm">
+        <div class="card-header bg-light d-flex justify-content-between align-items-center py-2">
+            <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i> Évolution des Métriques</h5>
+            <div>
+                <!-- Boutons de périodes -->
+                <div class="btn-group btn-group-sm me-2">
+                    <button class="btn btn-outline-primary period-btn active" data-period="mois" title="Afficher par mois">
+                        <i class="fas fa-calendar-alt"></i> Mois
+                    </button>
+                    <button class="btn btn-outline-primary period-btn" data-period="semaine" title="Afficher par semaine">
+                        <i class="fas fa-calendar-week"></i> Semaine
+                    </button>
+                    <button class="btn btn-outline-primary period-btn" data-period="annee" title="Afficher par année">
+                        <i class="fas fa-calendar"></i> Année
+                    </button>
+                </div>
+                
+                <!-- Bouton de rafraîchissement -->
+                <button id="refreshChart" class="btn btn-sm btn-outline-primary me-2" title="Rafraîchir les données">
+                    <i class="fas fa-sync-alt"></i>
+                </button>
+                
+                <!-- Bouton de collapse -->
+                <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#collapseChart">
+                    <i class="fas fa-chevron-down"></i>
+                </button>
+            </div>
+        </div>
+        
+        <div class="card-body p-0">
+            <!-- Boutons de métriques -->
+            <div class="btn-group w-100">
+                <button class="btn btn-outline-secondary metric-btn active flex-grow-1" data-metric="inscrits_candidats">
+                    <i class="fas fa-users me-1"></i> Recrutement
+                </button>
+                <button class="btn btn-outline-secondary metric-btn flex-grow-1" data-metric="saturation">
+                    <i class="fas fa-tachometer-alt me-1"></i> Saturation
+                </button>
+                <button class="btn btn-outline-secondary metric-btn flex-grow-1" data-metric="transformation">
+                    <i class="fas fa-exchange-alt me-1"></i> Transformation
+                </button>
+            </div>
+        </div>
+        
+        <div class="collapse show" id="collapseChart">
+            <div class="card-body" style="height: 400px; position: relative;">
+                <!-- Assurez-vous que Chart.js est chargé avant d'utiliser le graphique -->
+                <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+                <canvas id="evolutionChart"></canvas>
+                
+                <!-- Message d'erreur en cas de problème de chargement -->
+                <div id="chartError" class="alert alert-warning d-none position-absolute top-50 start-50 translate-middle text-center p-2" style="max-width: 80%;">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Affichage des données de démonstration.
+                </div>
+                
+                <!-- Message de chargement -->
+                <div id="chartLoading" class="position-absolute top-50 start-50 translate-middle text-center d-none">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Chargement...</span>
+                    </div>
+                    <p class="mt-2">Chargement des données...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

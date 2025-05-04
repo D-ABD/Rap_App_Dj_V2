@@ -1,0 +1,40 @@
+{% comment %}
+  Composant pour afficher la carte de la semaine actuelle
+  Paramètres :
+  - semaine : objet semaine à afficher
+{% endcomment %}
+
+<div class="card border-success h-100">
+    <div class="card-body">
+      <h5 class="card-title">📅 Semaine actuelle</h5>
+      {% if semaine %}
+      <p class="card-text">
+        <strong>{{ semaine.date_debut_semaine|date:"d/m/Y" }} → {{ semaine.date_fin_semaine|date:"d/m/Y" }}</strong><br>
+        Places ouvertes : {{ semaine.nombre_places_ouvertes }}<br>
+        Prescriptions : {{ semaine.nombre_prescriptions }}<br>
+        Présents : {{ semaine.nombre_presents_ic }}<br>
+        Adhésions : {{ semaine.nombre_adhesions }}<br>
+        {% if semaine.nombre_presents_ic > 0 %}
+          Taux de transformation : {{ semaine.taux_transformation|floatformat:1 }}%<br>
+        {% endif %}
+        {% if semaine.objectif_hebdo_prepa > 0 %}
+          Atteinte objectif : {{ semaine.pourcentage_objectif|floatformat:1 }}%
+        {% endif %}
+      </p>
+      
+      {% if semaine.objectif_hebdo_prepa > 0 %}
+      <div class="progress mb-3" style="height: 15px;">
+        <div class="progress-bar {% if semaine.pourcentage_objectif >= 100 %}bg-success{% elif semaine.pourcentage_objectif >= 50 %}bg-warning{% else %}bg-danger{% endif %}" 
+             role="progressbar" style="width: {{ semaine.pourcentage_objectif }}%;"
+             aria-valuenow="{{ semaine.pourcentage_objectif }}" aria-valuemin="0" aria-valuemax="100">
+          {{ semaine.pourcentage_objectif|floatformat:0 }}%
+        </div>
+      </div>
+      {% endif %}
+      
+      <a href="{% url 'prepa_semaine_detail' semaine.pk %}" class="btn btn-sm btn-outline-success">Détails</a>
+      {% else %}
+      <p class="card-text text-muted">Aucune semaine disponible</p>
+      {% endif %}
+    </div>
+  </div>

@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container my-4">
+  <h2>📅 Semaine {{ semaine.numero_semaine }} - {{ semaine.centre }}</h2>
+  <p><strong>Période :</strong> du {{ semaine.date_debut_semaine|date:"d/m/Y" }} au {{ semaine.date_fin_semaine|date:"d/m/Y" }}</p>
+  <p><strong>Année :</strong> {{ semaine.annee }} | <strong>Mois :</strong> {{ semaine.nom_mois }}</p>
+  <p><strong>Objectif hebdomadaire :</strong> {{ semaine.objectif_hebdo_prepa }}</p>
+
+  <hr>
+  <h5>Statistiques</h5>
+  <ul class="list-group mb-3">
+    <li class="list-group-item">Places ouvertes : {{ semaine.nombre_places_ouvertes }}</li>
+    <li class="list-group-item">Prescriptions : {{ semaine.nombre_prescriptions }}</li>
+    <li class="list-group-item">Présents : {{ semaine.nombre_presents_ic }}</li>
+    <li class="list-group-item">Adhésions : {{ semaine.nombre_adhesions }}</li>
+    <li class="list-group-item">Taux de transformation : {{ taux_transformation|floatformat:1 }}%</li>
+    <li class="list-group-item">Objectif atteint : {{ pourcentage_objectif|floatformat:1 }}%</li>
+  </ul>
+
+  {% if semaine.ateliers_nommés %}
+  <h5>Ateliers</h5>
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>Atelier</th>
+        <th>Nombre</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for atelier in ateliers %}
+      <tr>
+        <td>{{ atelier.nom }}</td>
+        <td>{{ atelier.valeur }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+
+  <div class="mt-4">
+    <a href="{% url 'prepa_semaine_update' semaine.pk %}" class="btn btn-warning">Modifier</a>
+    <a href="{% url 'prepa_semaine_delete' semaine.pk %}" class="btn btn-danger">Supprimer</a>
+    <a href="{% url 'prepa_semaine_list' %}" class="btn btn-secondary">Retour</a>
+  </div>
+</div>
+{% endblock %}

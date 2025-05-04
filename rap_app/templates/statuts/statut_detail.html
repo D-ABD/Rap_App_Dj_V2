@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- ✅ Bouton Retour Réutilisable -->
+    {% include "composants/bouton_retour.html" %}
+
+    <!-- ✅ Titre -->
+    <h2 class="text-primary text-center mb-4"><i class="fas fa-info-circle me-2"></i> Détails du Statut : {{ statut.nom }}</h2>
+
+    <!-- ✅ Carte des informations du statut -->
+    <div class="card shadow p-4 mb-4">
+        <div class="card-body">
+            <p><strong>Couleur :</strong> 
+                <span class="badge text-white" style="background-color: {{ statut.couleur }}; padding: 8px 12px;">
+                    {{ statut.couleur }}
+                </span>
+            </p>
+            {% if statut.description_autre %}
+                <p><strong>Description :</strong> {{ statut.description_autre }}</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- ✅ Liste des formations associées -->
+    <h3 class="mt-4 mb-3"><i class="fas fa-graduation-cap me-2"></i> Formations associées</h3>
+    <div class="table-responsive">
+        <table class="table table-striped table-bordered">
+            <thead class="table-dark">
+                <tr>
+                    <th>Nom</th>
+                    <th>Centre</th>
+                    <th>Type d'offre</th>
+                    <th>Date de début</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for formation in formations %}
+                <tr>
+                    <td>{{ formation.nom }}</td>
+                    <td>{{ formation.centre.nom }}</td>
+                    <td>{{ formation.type_offre.nom }}</td>
+                    <td>{{ formation.start_date }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="4" class="text-center text-muted">Aucune formation associée.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- ✅ Boutons d'action -->
+    <div class="d-flex justify-content-between mt-4">
+        <a href="{% url 'statut-update' statut.pk %}" class="btn btn-warning">
+            <i class="fas fa-edit"></i> Modifier
+        </a>
+        <a href="{% url 'statut-delete' statut.pk %}" class="btn btn-danger">
+            <i class="fas fa-trash-alt"></i> Supprimer
+        </a>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card border-danger">
+        <div class="card-header bg-danger text-white">
+            <h4><i class="fas fa-trash-alt me-2"></i> Supprimer {{ company.name }}</h4>
+        </div>
+        <div class="card-body">
+            {% if can_delete %}
+                <p class="mb-4">
+                    Êtes-vous sûr de vouloir supprimer cette entreprise ? <strong>Cette action est irréversible.</strong>
+                </p>
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="d-flex justify-content-end">
+                        <button type="submit" class="btn btn-danger me-2">
+                            <i class="fas fa-trash-alt"></i> Oui, supprimer
+                        </button>
+                        <a href="{% url 'company-detail' company.pk %}" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Annuler
+                        </a>
+                    </div>
+                </form>
+            {% else %}
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Cette entreprise ne peut pas être supprimée car elle est liée à <strong>{{ prospections_count }}</strong> prospection(s).
+                </div>
+                <a href="{% url 'company-detail' company.pk %}" class="btn btn-primary">
+                    <i class="fas fa-arrow-left"></i> Retour
+                </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

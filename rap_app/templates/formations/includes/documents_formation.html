@@ -1,0 +1,70 @@
+<div class="card mb-4 shadow-sm">
+    <div class="card-header bg-light d-flex justify-content-between align-items-center">
+        <button class="btn btn-link text-dark text-decoration-none fw-bold p-0 d-flex align-items-center"
+                type="button" data-bs-toggle="collapse" data-bs-target="#collapseDocuments"
+                aria-expanded="true" aria-controls="collapseDocuments">
+            <i class="fas fa-file-alt me-2"></i> Documents  
+            <span class="badge bg-primary ms-2">{{ documents.count }}</span>
+        </button>
+        <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse"
+                data-bs-target="#collapseDocuments">
+            <i class="fas fa-chevron-down"></i>
+        </button>
+    </div>
+
+    <div class="collapse" id="collapseDocuments">
+        <div class="card-body">
+            {% if documents %}
+                <ul class="list-group">
+                    {% for doc in documents %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div class="d-flex align-items-center">
+                                {% if doc.fichier.url|lower|slice:"-4:" == ".pdf" %}
+                                    <i class="fas fa-file-pdf text-danger me-2"></i>
+                                {% elif doc.fichier.url|lower|slice:"-4:" == ".doc" or doc.fichier.url|lower|slice:"-5:" == ".docx" %}
+                                    <i class="fas fa-file-word text-primary me-2"></i>
+                                {% elif doc.fichier.url|lower|slice:"-4:" == ".xls" or doc.fichier.url|lower|slice:"-5:" == ".xlsx" %}
+                                    <i class="fas fa-file-excel text-success me-2"></i>
+                                {% else %}
+                                    <i class="fas fa-file-alt text-secondary me-2"></i>
+                                {% endif %}
+                                <a href="{{ doc.fichier.url }}" target="_blank" class="fw-bold text-decoration-none">{{ doc.nom_fichier }}</a>
+                            </div>
+                            <small class="text-muted">
+                                <i class="fas fa-calendar-alt me-1"></i> {{ doc.uploaded_at|date:"d/m/Y H:i" }}
+                            </small>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="text-muted text-center">Aucun document disponible.</p>
+            {% endif %}
+        </div>
+
+        <!-- 📤 Formulaire d'Upload -->
+        <div class="card-footer bg-light">
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="add_document">
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Nom du fichier</label>
+                        <input type="text" class="form-control" name="nom" required placeholder="Ex: Présentation.pdf">
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Fichier</label>
+                        <input type="file" class="form-control" name="fichier" required accept=".pdf,.doc,.docx,.xls,.xlsx,.txt,.png,.jpg,.jpeg">
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end mt-3">
+                    <button type="submit" class="btn btn-primary shadow-sm">
+                        <i class="fas fa-upload"></i> Ajouter un document
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

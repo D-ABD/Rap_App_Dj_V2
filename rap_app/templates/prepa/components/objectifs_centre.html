@@ -1,0 +1,65 @@
+{% comment %}
+  Composant pour afficher les objectifs par centre
+  Paramètres :
+  - objectifs : liste des objectifs par centre
+  - annee : année des objectifs (optionnel)
+{% endcomment %}
+
+<h4 class="mt-4">🎯 Objectifs par centre{% if annee %} – {{ annee }}{% endif %}</h4>
+<div class="row g-3">
+  {% for o in objectifs %}
+    {% with calc=o.objectif_calculé defined=o.objectif_annuel_defini ecart=o.ecart pourcentage=o.pourcentage %}
+    <div class="col-md-6 col-lg-4">
+      <div class="card shadow-sm border">
+        <div class="card-body">
+          <h5 class="card-title d-flex justify-content-between">
+            {{ o.centre_nom }}
+            {% if calc >= defined %}
+              <span class="badge bg-success">✅</span>
+            {% elif pourcentage >= 50 %}
+              <span class="badge bg-warning">⚠️</span>
+            {% else %}
+              <span class="badge bg-danger">🔴</span>
+            {% endif %}
+          </h5>
+          <p class="card-text mb-2">
+            Annuel : <strong>{{ defined }}</strong><br>
+            Mensuel (4 sem.) : <strong>{{ o.objectif_mensuel }}</strong><br>
+            Hebdo : <strong>{{ o.objectif_hebdo }}</strong><br>
+            Réalisé : <strong>{{ calc }}</strong><br>
+            Écart :
+            {% if ecart > 0 %}
+              <span class="text-success">+{{ ecart }}</span>
+            {% elif ecart < 0 %}
+              <span class="text-danger">{{ ecart }}</span>
+            {% else %}
+              <span class="text-muted">✔️ Parfait</span>
+            {% endif %}
+          </p>
+          <div class="progress mb-2" role="progressbar" aria-valuenow="{{ calc }}" aria-valuemin="0" aria-valuemax="{{ defined }}">
+            <div class="progress-bar {% if calc < defined %}bg-warning{% else %}bg-success{% endif %}"
+                 style="width: {{ pourcentage }}%">
+              {{ pourcentage|floatformat:0 }}%
+            </div>
+          </div>
+          <div class="d-flex justify-content-between align-items-center">
+            <span class="small text-muted">Annuel</span>
+            <span class="badge {% if calc < defined %}bg-warning{% else %}bg-success{% endif %}">
+              {{ calc }} / {{ defined }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endwith %}
+  {% empty %}
+    <div class="col-12">
+      <div class="alert alert-secondary text-center">
+        Aucun centre trouvé. Veuillez configurer les objectifs pour visualiser les statistiques.
+        <div class="mt-2">
+          <a href="{% url 'prepa_objectifs' %}" class="btn btn-primary">Configurer les objectifs</a>
+        </div>
+      </div>
+    </div>
+  {% endfor %}
+</div>

@@ -1,0 +1,22 @@
+<h2>📋 Suivi des Statuts</h2>
+
+{% if donnees %}
+    <ul class="list-group">
+        {% for statut, nombre in donnees.items %}
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                <span>
+                    <strong>{{ statut|default:"Statut inconnu" }}</strong>
+                </span>
+                <span class="badge 
+                    {% if statut == 'En cours' %}bg-primary
+                    {% elif statut == 'Terminé' %}bg-success
+                    {% elif statut == 'Annulé' %}bg-danger
+                    {% else %}bg-secondary{% endif %} rounded-pill">
+                    {{ nombre|default:"0" }} formations
+                </span>
+            </li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p class="text-muted">Aucune formation trouvée par statut.</p>
+{% endif %}

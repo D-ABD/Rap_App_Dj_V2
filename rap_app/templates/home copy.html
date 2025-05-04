@@ -1,0 +1,184 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Accueil - Rap App{% endblock %}
+
+{% block content %}
+<!-- Section Hero -->
+<section class="hero-section text-white text-center py-5 bg-image position-relative" 
+         style="background-image: url('{% static 'images/logo2_Rapp_App.png' %}');">
+    <div class="overlay position-absolute top-0 start-0 w-100 h-100 bg-dark opacity-50"></div>
+    <div class="container position-relative z-1">
+        <h1 class="display-4 fw-bold animate__animated animate__fadeInDown">Bienvenue sur Rap App</h1>
+        <p class="lead animate__animated animate__fadeInUp animate__delay-1s">
+            Votre plateforme de gestion des formations, des événements et des partenaires.
+        </p>
+        <a href="{% url 'dashboard' %}" class="btn btn-light btn-lg animate__animated animate__fadeInUp animate__delay-2s">
+            <i class="fas fa-tachometer-alt me-2"></i> Accéder au Tableau de Bord
+        </a>
+    </div>
+</section>
+
+<!-- Section Fonctionnalités -->
+<section class="features-section py-5">
+    <div class="container">
+        <h2 class="text-center mb-5 animate__animated animate__fadeIn">Fonctionnalités Principales</h2>
+        <div class="row">
+            <!-- Formation -->
+            <div class="col-md-4 mb-4">
+                <div class="card text-center h-100 shadow animate__animated animate__fadeInLeft">
+                    <div class="card-body">
+                        <i class="fas fa-graduation-cap fa-3x text-primary mb-3"></i>
+                        <h5 class="card-title">Gestion des Formations</h5>
+                        <p class="card-text">
+                            Créez, modifiez et suivez vos formations en temps réel.
+                        </p>
+                        <a href="{% url 'formation-list' %}" class="btn btn-outline-primary">
+                            Voir les Formations
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Événements -->
+            <div class="col-md-4 mb-4">
+                <div class="card text-center h-100 shadow animate__animated animate__fadeInUp">
+                    <div class="card-body">
+                        <i class="fas fa-calendar-alt fa-3x text-success mb-3"></i>
+                        <h5 class="card-title">Gestion des Événements</h5>
+                        <p class="card-text">
+                            Planifiez et organisez vos événements facilement.
+                        </p>
+                        <a href="{% url 'evenement-list' %}" class="btn btn-outline-success">
+                            Voir les Événements
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Partenaires -->
+            <div class="col-md-4 mb-4">
+                <div class="card text-center h-100 shadow animate__animated animate__fadeInRight">
+                    <div class="card-body">
+                        <i class="fas fa-handshake fa-3x text-warning mb-3"></i>
+                        <h5 class="card-title">Gestion des Partenaires</h5>
+                        <p class="card-text">
+                            Collaborez avec vos partenaires efficacement.
+                        </p>
+                        <a href="{% url 'partenaire-list' %}" class="btn btn-outline-warning">
+                            Voir les Partenaires
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Section Statistiques -->
+<section class="stats-section bg-light py-5">
+    <div class="container">
+        <h2 class="text-center mb-5 animate__animated animate__fadeIn">Statistiques en Temps Réel</h2>
+        <div class="row text-center">
+            <!-- Nombre de Formations -->
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 shadow animate__animated animate__fadeInLeft">
+                    <div class="card-body">
+                        <i class="fas fa-graduation-cap fa-2x text-primary mb-3"></i>
+                        <h3 class="card-title">{{ total_formations }}</h3>
+                        <p class="card-text">Formations Actives</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Saturation des Formations -->
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 shadow animate__animated animate__fadeInUp">
+                    <div class="card-body">
+                        <i class="fas fa-chart-line fa-2x text-success mb-3"></i>
+                        <h3 class="card-title">{{ taux_saturation }}%</h3>
+                        <p class="card-text">Saturation des Formations</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Taux de Transformation -->
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 shadow animate__animated animate__fadeInRight">
+                    <div class="card-body">
+                        <i class="fas fa-exchange-alt fa-2x text-warning mb-3"></i>
+                        <h3 class="card-title">{{ taux_transformation }}%</h3>
+                        <p class="card-text">Taux de Transformation</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Section Explication de l'Application -->
+<section class="about-section bg-primary text-white text-center py-5">
+    <div class="container">
+        <h2 class="mb-4 animate__animated animate__fadeIn">Qu'est-ce que Rap App ?</h2>
+        <p class="lead mb-4 animate__animated animate__fadeInUp">
+            Rap_App est un outil de suivi des formations conçu pour faciliter la revue d'offre hebdomadaire. 
+            Elle permet de suivre le taux de saturation des formations, d'analyser les données et de mettre en place 
+            des plans d'action en fonction des besoins. Grâce à une gestion optimisée des formations, centres, statuts, 
+            commentaires et événements, elle offre une vue d’ensemble efficace avec des filtres avancés, une historisation des modifications et des statistiques détaillées. 🚀
+        </p>
+        <p class="mb-4 animate__animated animate__fadeInUp">
+          Rap App vous offre une solution centralisée pour suivre et améliorer votre suivi.
+        </p>
+        <a href="{% url 'dashboard' %}" class="btn btn-light btn-lg animate__animated animate__fadeInUp">
+            <i class="fas fa-tachometer-alt me-2"></i> Accéder au Tableau de Bord
+        </a>
+    </div>
+</section>
+
+<!-- Bouton de retour en haut -->
+<button id="back-to-top" class="btn btn-primary btn-lg back-to-top" title="Retour en haut">
+    <i class="fas fa-arrow-up"></i>
+</button>
+
+<!-- Styles personnalisés -->
+<style>
+    .bg-image {
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        min-height: 400px; /* Hauteur minimale pour la section hero */
+    }
+    .overlay {
+        z-index: 1;
+    }
+    .z-1 {
+        z-index: 2;
+    }
+    .back-to-top {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        display: none;
+        z-index: 1000;
+    }
+</style>
+
+<!-- Script pour le bouton de retour en haut -->
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const backToTopButton = document.getElementById("back-to-top");
+
+        window.addEventListener("scroll", function () {
+            if (window.scrollY > 300) {
+                backToTopButton.style.display = "block";
+            } else {
+                backToTopButton.style.display = "none";
+            }
+        });
+
+        backToTopButton.addEventListener("click", function () {
+            window.scrollTo({ top: 0, behavior: "smooth" });
+        });
+    });
+</script>
+{% endblock %}

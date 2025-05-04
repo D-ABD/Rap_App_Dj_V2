@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ form.instance.pk|yesno:"Modifier,Créer" }} une Prospection{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>{{ form.instance.pk|yesno:"Modifier,Créer" }} une Prospection</h1>
+
+    <form method="post">
+        {% csrf_token %}
+        <div class="mb-3">
+            {{ form.as_p }}
+        </div>
+        <button type="submit" class="btn btn-success">💾 Sauvegarder</button>
+        <a href="{% url 'prospection-list' %}" class="btn btn-secondary">Annuler</a>
+    </form>
+</div>
+{% endblock %}

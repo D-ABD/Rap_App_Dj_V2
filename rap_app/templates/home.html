@@ -1,0 +1,461 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Accueil - Rap App{% endblock %}
+
+{% block content %}
+<!-- Header avec animation -->
+<header class="bg-gradient-primary text-white py-5 position-relative overflow-hidden">
+    <div class="container py-4">
+        <div class="row align-items-center">
+            <div class="col-lg-6 mb-4 mb-lg-0">
+                <h1 class="display-4 fw-bold text-white mb-3 animate__animated animate__fadeInUp">
+                    <i class="fas fa-graduation-cap me-2"></i>Bienvenue sur Rap_App
+                </h1>
+                <p class="lead opacity-90 mb-4 animate__animated animate__fadeInUp animate__delay-1s">
+                    Centralisez et optimisez votre suivi des formations, partenaires, 
+                    prospections et performances en temps réel 📊
+                </p>
+                <div class="d-flex flex-wrap gap-3 animate__animated animate__fadeInUp animate__delay-2s">
+                    <a href="{% url 'dashboard' %}" class="btn btn-light btn-lg px-4 shadow-sm">
+                        <i class="fas fa-tachometer-alt me-2"></i>Tableau de Bord
+                    </a>
+                    <a href="#modules" class="btn btn-outline-light btn-lg px-4">
+                        <i class="fas fa-th-large me-2"></i>Découvrir les modules
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-6 text-center animate__animated animate__fadeIn animate__delay-1s">
+                <img src="{% static 'images/logo2_Rapp_App.png' %}" class="img-fluid rounded-3 shadow-lg" alt="Rap App Logo" style="max-height: 300px;">
+            </div>
+        </div>
+    </div>
+    
+    <!-- Éléments décoratifs -->
+    <div class="position-absolute top-0 end-0 opacity-10">
+        <i class="fas fa-chart-line fa-10x text-white"></i>
+    </div>
+    <div class="position-absolute bottom-0 start-0 opacity-10">
+        <i class="fas fa-graduation-cap fa-10x text-white"></i>
+    </div>
+</header>
+
+<!-- Stats en temps réel avec cartes modernes -->
+<section class="py-5 position-relative">
+    <div class="container">
+        <div class="row justify-content-center mb-5">
+            <div class="col-lg-8 text-center">
+                <h6 class="text-primary fw-bold mb-2">APERÇU EN TEMPS RÉEL</h6>
+                <h2 class="fw-bold mb-4">Vos statistiques clés</h2>
+                <p class="text-muted">Suivez vos performances en un coup d'œil grâce à notre tableau de bord interactif.</p>
+            </div>
+        </div>
+        
+        <div class="row g-4">
+            <!-- Formations -->
+            <div class="col-md-4 col-lg-2">
+                <div class="card border-0 shadow-sm h-100 text-center hover-card">
+                    <div class="card-body d-flex flex-column">
+                        <div class="icon-box bg-primary bg-opacity-10 text-primary rounded-circle mx-auto mb-3">
+                            <i class="fas fa-graduation-cap"></i>
+                        </div>
+                        <h3 class="display-6 fw-bold mb-0">{{ total_formations }}</h3>
+                        <p class="mb-0 text-muted">Formations Actives</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Taux de saturation -->
+            <div class="col-md-4 col-lg-2">
+                <div class="card border-0 shadow-sm h-100 text-center hover-card">
+                    <div class="card-body d-flex flex-column">
+                        <div class="icon-box bg-success bg-opacity-10 text-success rounded-circle mx-auto mb-3">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <h3 class="display-6 fw-bold mb-0">{{ taux_saturation|floatformat:1 }}%</h3>
+                        <p class="mb-0 text-muted">Saturation Moyenne</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Taux de transformation -->
+            <div class="col-md-4 col-lg-2">
+                <div class="card border-0 shadow-sm h-100 text-center hover-card">
+                    <div class="card-body d-flex flex-column">
+                        <div class="icon-box bg-warning bg-opacity-10 text-warning rounded-circle mx-auto mb-3">
+                            <i class="fas fa-exchange-alt"></i>
+                        </div>
+                        <h3 class="display-6 fw-bold mb-0">{{ taux_transformation|floatformat:1 }}%</h3>
+                        <p class="mb-0 text-muted">Transformation</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Prépa Comp -->
+            <div class="col-md-4 col-lg-2">
+                <div class="card border-0 shadow-sm h-100 text-center hover-card">
+                    <div class="card-body d-flex flex-column">
+                        <div class="icon-box bg-primary bg-opacity-10 text-primary rounded-circle mx-auto mb-3">
+                            <i class="fas fa-bullseye"></i>
+                        </div>
+                        <h3 class="display-6 fw-bold mb-0">{{ taux_objectif_prepa|floatformat:1 }}%</h3>
+                        <p class="mb-0 text-muted">Prépa Comp</p>
+                        <span class="small text-muted">{{ adhesions_globales_prepa }}/{{ objectif_annuel_prepa }}</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- VAE -->
+            <div class="col-md-4 col-lg-2">
+                <div class="card border-0 shadow-sm h-100 text-center hover-card">
+                    <div class="card-body d-flex flex-column">
+                        <div class="icon-box bg-info bg-opacity-10 text-info rounded-circle mx-auto mb-3">
+                            <i class="fas fa-file-alt"></i>
+                        </div>
+                        <h3 class="display-6 fw-bold mb-0">{{ total_vae }}</h3>
+                        <p class="mb-0 text-muted">Total VAE</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Jurys -->
+            <div class="col-md-4 col-lg-2">
+                <div class="card border-0 shadow-sm h-100 text-center hover-card">
+                    <div class="card-body d-flex flex-column">
+                        <div class="icon-box bg-dark bg-opacity-10 text-dark rounded-circle mx-auto mb-3">
+                            <i class="fas fa-balance-scale"></i>
+                        </div>
+                        <h3 class="display-6 fw-bold mb-0">{{ jury_total }}</h3>
+                        <p class="mb-0 text-muted">Jurys réalisés</p>
+                        <span class="small text-muted">Cette année: {{ jury_total_annee }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Section Modules avec design de cartes amélioré -->
+<section id="modules" class="py-5 bg-light">
+    <div class="container">
+        <div class="row justify-content-center mb-5">
+            <div class="col-lg-8 text-center">
+                <h6 class="text-primary fw-bold mb-2">FONCTIONNALITÉS</h6>
+                <h2 class="fw-bold mb-4">Modules Disponibles</h2>
+                <p class="text-muted mb-5">Accédez rapidement à tous les outils de gestion et de suivi de votre activité.</p>
+            </div>
+        </div>
+        
+        <div class="row g-4">
+            <!-- Formations -->
+            <div class="col-md-4">
+                <div class="card border-0 shadow h-100 module-card">
+                    <div class="card-body p-4 text-center">
+                        <div class="icon-circle bg-primary text-white mx-auto mb-4">
+                            <i class="fas fa-chalkboard-teacher"></i>
+                        </div>
+                        <h5 class="fw-bold mb-3">Formations</h5>
+                        <p class="text-muted mb-4">Suivi complet des sessions de formation, taux et indicateurs de performance.</p>
+                        <a href="{% url 'formation-list' %}" class="btn btn-primary w-100">
+                            <i class="fas fa-arrow-right me-2"></i>Accéder
+                        </a>
+                    </div>
+                    <div class="card-footer bg-transparent border-0 p-0">
+                        <div class="progress" style="height: 5px;">
+                            <div class="progress-bar bg-primary" role="progressbar" style="width: 100%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Partenaires -->
+            <div class="col-md-4">
+                <div class="card border-0 shadow h-100 module-card">
+                    <div class="card-body p-4 text-center">
+                        <div class="icon-circle bg-success text-white mx-auto mb-4">
+                            <i class="fas fa-handshake"></i>
+                        </div>
+                        <h5 class="fw-bold mb-3">Partenaires</h5>
+                        <p class="text-muted mb-4">Collaborez efficacement avec vos partenaires stratégiques et suivez les conventions.</p>
+                        <a href="{% url 'partenaire-list' %}" class="btn btn-success w-100">
+                            <i class="fas fa-arrow-right me-2"></i>Accéder
+                        </a>
+                    </div>
+                    <div class="card-footer bg-transparent border-0 p-0">
+                        <div class="progress" style="height: 5px;">
+                            <div class="progress-bar bg-success" role="progressbar" style="width: 100%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Rapports -->
+            <div class="col-md-4">
+                <div class="card border-0 shadow h-100 module-card">
+                    <div class="card-body p-4 text-center">
+                        <div class="icon-circle bg-info text-white mx-auto mb-4">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <h5 class="fw-bold mb-3">Rapports</h5>
+                        <p class="text-muted mb-4">Accédez aux statistiques et indicateurs en temps réel pour prendre les bonnes décisions.</p>
+                        <a href="{% url 'rapport-list' %}" class="btn btn-info w-100">
+                            <i class="fas fa-arrow-right me-2"></i>Accéder
+                        </a>
+                    </div>
+                    <div class="card-footer bg-transparent border-0 p-0">
+                        <div class="progress" style="height: 5px;">
+                            <div class="progress-bar bg-info" role="progressbar" style="width: 100%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Prospections -->
+            <div class="col-md-4">
+                <div class="card border-0 shadow h-100 module-card">
+                    <div class="card-body p-4 text-center">
+                        <div class="icon-circle bg-warning text-white mx-auto mb-4">
+                            <i class="fas fa-search-location"></i>
+                        </div>
+                        <h5 class="fw-bold mb-3">Prospections</h5>
+                        <p class="text-muted mb-4">Suivez vos actions de terrain et entreprises cibles pour maximiser votre impact.</p>
+                        <a href="{% url 'prospection-list' %}" class="btn btn-warning w-100">
+                            <i class="fas fa-arrow-right me-2"></i>Accéder
+                        </a>
+                    </div>
+                    <div class="card-footer bg-transparent border-0 p-0">
+                        <div class="progress" style="height: 5px;">
+                            <div class="progress-bar bg-warning" role="progressbar" style="width: 100%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Entreprises -->
+            <div class="col-md-4">
+                <div class="card border-0 shadow h-100 module-card">
+                    <div class="card-body p-4 text-center">
+                        <div class="icon-circle bg-secondary text-white mx-auto mb-4">
+                            <i class="fas fa-building"></i>
+                        </div>
+                        <h5 class="fw-bold mb-3">Entreprises</h5>
+                        <p class="text-muted mb-4">Base de données complète de vos entreprises partenaires et prospects.</p>
+                        <a href="{% url 'company-list' %}" class="btn btn-secondary w-100">
+                            <i class="fas fa-arrow-right me-2"></i>Accéder
+                        </a>
+                    </div>
+                    <div class="card-footer bg-transparent border-0 p-0">
+                        <div class="progress" style="height: 5px;">
+                            <div class="progress-bar bg-secondary" role="progressbar" style="width: 100%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Prépa Comp -->
+            <div class="col-md-4">
+                <div class="card border-0 shadow h-100 module-card">
+                    <div class="card-body p-4 text-center">
+                        <div class="icon-circle bg-primary text-white mx-auto mb-4">
+                            <i class="fas fa-bullseye"></i>
+                        </div>
+                        <h5 class="fw-bold mb-3">Prépa Comp</h5>
+                        <p class="text-muted mb-4">Pilotez vos objectifs hebdomadaires et annuels avec précision.</p>
+                        <a href="{% url 'prepa_home' %}" class="btn btn-primary w-100">
+                            <i class="fas fa-arrow-right me-2"></i>Accéder
+                        </a>
+                    </div>
+                    <div class="card-footer bg-transparent border-0 p-0">
+                        <div class="progress" style="height: 5px;">
+                            <div class="progress-bar bg-primary" role="progressbar" style="width: 100%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- VAE -->
+            <div class="col-md-6">
+                <div class="card border-0 shadow h-100 module-card">
+                    <div class="card-body p-4 text-center">
+                        <div class="icon-circle bg-info text-white mx-auto mb-4">
+                            <i class="fas fa-file-alt"></i>
+                        </div>
+                        <h5 class="fw-bold mb-3">VAE</h5>
+                        <p class="text-muted mb-4">Gestion complète des VAE par centre et par statut pour un suivi optimal.</p>
+                        <a href="{% url 'vae-list' %}" class="btn btn-info w-100">
+                            <i class="fas fa-arrow-right me-2"></i>Accéder
+                        </a>
+                    </div>
+                    <div class="card-footer bg-transparent border-0 p-0">
+                        <div class="progress" style="height: 5px;">
+                            <div class="progress-bar bg-info" role="progressbar" style="width: 100%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Suivis Jury -->
+            <div class="col-md-6">
+                <div class="card border-0 shadow h-100 module-card">
+                    <div class="card-body p-4 text-center">
+                        <div class="icon-circle bg-dark text-white mx-auto mb-4">
+                            <i class="fas fa-balance-scale"></i>
+                        </div>
+                        <h5 class="fw-bold mb-3">Suivi des Jurys</h5>
+                        <p class="text-muted mb-4">Suivez vos objectifs et réalisations mensuelles des jurys pour une meilleure planification.</p>
+                        <a href="{% url 'jury-list' %}" class="btn btn-dark w-100">
+                            <i class="fas fa-arrow-right me-2"></i>Accéder
+                        </a>
+                    </div>
+                    <div class="card-footer bg-transparent border-0 p-0">
+                        <div class="progress" style="height: 5px;">
+                            <div class="progress-bar bg-dark" role="progressbar" style="width: 100%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Section CTA avec fond dégradé -->
+<section class="py-5 bg-gradient-primary text-white">
+    <div class="container py-4">
+        <div class="row align-items-center">
+            <div class="col-lg-8 mx-auto text-center">
+                <h2 class="fw-bold mb-3">Qu'est-ce que Rap App ?</h2>
+                <p class="lead mb-4 opacity-90">
+                    Un outil complet de pilotage pour vos formations, statistiques, plans d'action et suivi partenaires. 
+                    Visualisez, filtrez, exportez et analysez vos données en toute simplicité.
+                </p>
+                <div class="d-flex justify-content-center">
+                    <a href="{% url 'dashboard' %}" class="btn btn-light btn-lg px-5 shadow">
+                        <i class="fas fa-tachometer-alt me-2"></i>Accéder au tableau de bord
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Bouton retour en haut amélioré -->
+<button id="back-to-top" class="btn btn-primary btn-lg rounded-circle shadow back-to-top" title="Retour en haut">
+    <i class="fas fa-arrow-up"></i>
+</button>
+
+<!-- Styles supplémentaires -->
+<style>
+    /* Dégradés et couleurs */
+    .bg-gradient-primary {
+        background: linear-gradient(135deg, #0066cc 0%, #2a5298 100%);
+    }
+    
+    /* Icônes de statistiques */
+    .icon-box {
+        width: 60px;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+    }
+    
+    /* Icônes des modules */
+    .icon-circle {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 30px;
+        margin-bottom: 15px;
+    }
+    
+    /* Animation des cartes */
+    .hover-card {
+        transition: all 0.3s ease;
+    }
+    
+    .hover-card:hover {
+        transform: translateY(-5px);
+    }
+    
+    .module-card {
+        transition: all 0.3s ease;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+    
+    .module-card:hover {
+        transform: translateY(-8px);
+    }
+    
+    /* Bouton retour en haut */
+    .back-to-top {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        display: none;
+        z-index: 1000;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    /* Classes d'opacité */
+    .opacity-90 {
+        opacity: 0.9;
+    }
+    
+    .opacity-10 {
+        opacity: 0.1;
+    }
+    
+    /* Animation */
+    .animate__animated {
+        animation-duration: 1s;
+    }
+    
+    .animate__delay-1s {
+        animation-delay: 0.3s;
+    }
+    
+    .animate__delay-2s {
+        animation-delay: 0.6s;
+    }
+</style>
+
+<!-- JavaScript pour le bouton retour en haut -->
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const backToTopButton = document.getElementById("back-to-top");
+
+        window.addEventListener("scroll", function () {
+            backToTopButton.style.display = window.scrollY > 300 ? "flex" : "none";
+        });
+
+        backToTopButton.addEventListener("click", function () {
+            window.scrollTo({ top: 0, behavior: "smooth" });
+        });
+        
+        // Animation des cartes au défilement
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('animate__animated', 'animate__fadeInUp');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.1 });
+        
+        document.querySelectorAll('.card').forEach(card => {
+            observer.observe(card);
+        });
+    });
+</script>
+{% endblock %}

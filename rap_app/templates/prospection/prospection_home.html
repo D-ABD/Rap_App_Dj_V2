@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+
+{% block title %}Accueil Prospection{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>🏢 Gestion de la Prospection</h1>
+    <a href="{% url 'prospection-list' %}" class="btn btn-primary">Voir toutes les prospections</a>
+</div>
+{% endblock %}

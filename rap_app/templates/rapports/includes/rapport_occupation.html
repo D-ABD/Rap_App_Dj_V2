@@ -1,0 +1,48 @@
+<h2>📈 Rapport d'Occupation des Formations</h2>
+
+<div class="table-responsive">
+    <table class="table table-hover table-striped">
+        <thead class="table-light">
+            <tr>
+                <th>Formation</th>
+                <th>Centre</th>
+                <th>Type d'Offre</th>
+                <th>Statut</th>
+                <th>Taux Remplissage</th>
+                <th>Inscrits (CRIF/MP)</th>
+                <th>Places (CRIF/MP)</th>
+                <th>Places Disponibles</th>
+                <th>Candidats</th>
+                <th>Entretiens</th>
+                <th>Événements</th>
+                <th>Partenaires</th>
+                <th>Dernier Commentaire</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for formation in donnees.formations %}
+            <tr>
+                <td>{{ formation.nom|default:"-" }}</td>
+                <td>{{ formation.centre|default:"-" }}</td>
+                <td>{{ formation.type_offre|default:"-" }}</td>
+                <td style="background-color: {{ formation.statut_couleur|default:"#f8f9fa" }};">
+                    {{ formation.statut|default:"-" }}
+                </td>
+                <td>{{ formation.taux_remplissage|floatformat:2 }}%</td>
+                <td>{{ formation.inscrits_crif|default:"0" }}/{{ formation.inscrits_mp|default:"0" }}</td>
+                <td>{{ formation.places_prevues_crif|default:"0" }}/{{ formation.places_prevues_mp|default:"0" }}</td>
+                <td>{{ formation.places_disponibles|default:"0" }}</td>
+                <td>{{ formation.nombre_candidats|default:"0" }}</td>
+                <td>{{ formation.nombre_entretiens|default:"0" }}</td>
+                <td>{{ formation.nombre_evenements|default:"0" }}</td>
+                <td>{{ formation.partenaires|join:", "|default:"Aucun" }}</td>
+                <td>{{ formation.dernier_commentaire|default:"Pas de commentaire" }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="13" class="text-center text-muted">Aucune formation trouvée.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>

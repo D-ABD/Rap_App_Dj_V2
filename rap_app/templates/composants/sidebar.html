@@ -1,0 +1,26 @@
+<!-- templates/composants/sidebar.html -->
+<div class="sidebar bg-secondary border-end" style="width: 250px; display: none;" id="sidebar">
+    <div class="p-3">
+        <!-- Titre du menu -->
+        <h5 class="mb-3 text-white">Menu</h5>
+
+        <!-- Liens du menu -->
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <a class="nav-link text-white" href="{% url 'home' %}">
+                    <i class="fas fa-home me-2"></i> Accueil
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-white" href="{% url 'centre-list' %}">
+                    <i class="fas fa-building me-2"></i> Centres
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-white" href="#">
+                    <i class="fas fa-cog me-2"></i> Paramètres
+                </a>
+            </li>
+        </ul>
+    </div>
+</div>

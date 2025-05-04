@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block title %}Détail de l'Historique Prospection{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>📋 Détail de l'historique de prospection</h2>
+
+    <p><strong>Date de modification :</strong> {{ historique.date_modification|date:"d/m/Y H:i" }}</p>
+    <p><strong>Entreprise :</strong> {{ historique.prospection.company.name }}</p>
+
+    <p><strong>Formation :</strong>
+        {% if historique.prospection.formation %}
+            {{ historique.prospection.formation.nom }} ({{ historique.prospection.formation.num_offre }})
+        {% else %}
+            <em>Sans formation</em>
+        {% endif %}
+    </p>
+
+    <p><strong>Ancien statut :</strong> {{ historique.get_ancien_statut_display }}</p>
+    <p><strong>Nouveau statut :</strong> {{ historique.get_nouveau_statut_display }}</p>
+    <p><strong>Commentaire :</strong> {{ historique.commentaire|linebreaksbr }}</p>
+    <p><strong>Responsable :</strong> {{ historique.modifie_par }}</p>
+    <p><strong>Date de relance :</strong> {{ historique.prochain_contact|date:"d/m/Y" }}</p>
+
+    {% if historique.resultat %}
+        <p><strong>Résultat :</strong> {{ historique.resultat }}</p>
+    {% endif %}
+
+    {% if historique.moyen_contact %}
+        <p><strong>Moyen de contact :</strong> {{ historique.get_moyen_contact_display }}</p>
+    {% endif %}
+
+    <a href="{% url 'historique-prospection-list' %}" class="btn btn-secondary mt-3">↩ Retour à la liste</a>
+</div>
+{% endblock %}

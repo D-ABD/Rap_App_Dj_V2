@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container my-4">
+  <h2>❌ Supprimer la semaine {{ semaine.numero_semaine }}</h2>
+  <p>Es-tu sûr de vouloir supprimer cette semaine du {{ semaine.date_debut }} au {{ semaine.date_fin }} ({{ semaine.centre }}) ?</p>
+  <form method="post">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-danger">Confirmer</button>
+    <a href="{% url 'prepa_semaine_list' %}" class="btn btn-secondary">Annuler</a>
+  </form>
+</div>
+{% endblock %}

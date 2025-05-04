@@ -1,0 +1,65 @@
+<div class="card shadow-lg mb-4 border-0 rounded-3">
+    <div class="card-header bg-gradient-light d-flex justify-content-between align-items-center py-3 border-bottom">
+        <h5 class="mb-0 fw-bold text-primary"><i class="fas fa-layer-group me-2"></i> Formations - Types & Statuts</h5>
+        <button class="btn btn-sm btn-outline-primary rounded-pill" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFormations">
+            <i class="fas fa-chevron-down"></i>
+        </button>
+    </div>
+    <div class="collapse " id="collapseFormations">
+        <div class="card-body p-0">
+            <!-- Accordéon interne permettant d'ouvrir plusieurs sections en même temps -->
+            <div class="accordion" id="accordionFormations">
+                
+                <!-- Formations par Type -->
+                <div class="accordion-item border-0">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button fw-bold py-3" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTypes">
+                            <i class="fas fa-bookmark me-2 text-primary"></i> Formations par Type
+                        </button>
+                    </h2>
+                    <div id="collapseTypes" class="accordion-collapse collapse show">
+                        <div class="accordion-body p-0">
+                            <div class="list-group list-group-flush">
+                                {% for type_offre in formations_par_type_offre %}
+                                <div class="list-group-item d-flex justify-content-between align-items-center py-3 border-start-0 border-end-0">
+                                    <span class="fw-medium">{{ type_offre.nom }}</span>
+                                    <span class="badge bg-primary rounded-pill px-3 py-2">{{ type_offre.total }}</span>
+                                </div>
+                                {% empty %}
+                                <div class="list-group-item text-muted text-center py-3">Aucune donnée disponible</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Formations par Statut -->
+                <div class="accordion-item border-0">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button fw-bold py-3" type="button" data-bs-toggle="collapse" data-bs-target="#collapseStatuts">
+                            <i class="fas fa-tasks me-2 text-primary"></i> Formations par Statut
+                        </button>
+                    </h2>
+                    <div id="collapseStatuts" class="accordion-collapse collapse show">
+                        <div class="accordion-body p-0">
+                            <div class="list-group list-group-flush">
+                                {% for statut in formations_par_statut %}
+                                <div class="list-group-item d-flex justify-content-between align-items-center py-3 border-start-0 border-end-0">
+                                    <div class="d-flex align-items-center">
+                                        <span class="status-dot me-2" style="background-color: {{ statut.couleur }}; width: 14px; height: 14px; border-radius: 50%; box-shadow: 0 0 4px rgba(0,0,0,0.2);"></span>
+                                        <span class="fw-medium">{{ statut.nom }}</span>
+                                    </div>
+                                    <span class="badge bg-primary rounded-pill px-3 py-2">{{ statut.total }}</span>
+                                </div>
+                                {% empty %}
+                                <div class="list-group-item text-muted text-center py-3">Aucune formation</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div> 
+                </div>
+
+            </div> <!-- Fin de l'accordéon interne -->
+        </div>
+    </div>
+</div>

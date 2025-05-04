@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>❌ Supprimer le Rapport</h1>
+<p>Es-tu sûr de vouloir supprimer <strong>{{ rapport.nom }}</strong> ?</p>
+
+<form method="POST">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-danger">🗑 Supprimer</button>
+    <a href="{% url 'rapport-list' %}" class="btn btn-secondary">❌ Annuler</a>
+</form>
+{% endblock %}

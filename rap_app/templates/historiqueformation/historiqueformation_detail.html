@@ -1,0 +1,42 @@
+<div class="card mb-4">
+    <div class="card-header bg-light">
+        {% include "composants/bouton_retour.html" %}
+
+        <h5 class="mb-0">🕓 Détail des dernières modifications</h5>
+    </div>
+    <div class="card-body p-0">
+        {% if historiques %}
+        <div class="table-responsive">
+            <table class="table table-sm table-striped mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Date</th>
+                        <th>Champ</th>
+                        <th>Ancienne valeur</th>
+                        <th>Nouvelle valeur</th>
+                        <th>Modifié par</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for historique in historiques %}
+                    <tr>
+                        <td>{{ historique.date_modification|date:"d/m/Y H:i" }}</td>
+                        <td>{{ historique.champ_modifie }}</td>
+                        <td>{{ historique.ancienne_valeur }}</td>
+                        <td>{{ historique.nouvelle_valeur }}</td>
+                        <td>{{ historique.modifie_par }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="text-end p-3">
+            <a href="{% url 'historique-formation-list' %}?formation={{ formation.id }}" class="btn btn-outline-primary btn-sm">
+                Voir tout l’historique 🔎
+            </a>
+        </div>
+        {% else %}
+        <p class="p-3 text-muted">Aucune modification enregistrée pour cette formation.</p>
+        {% endif %}
+    </div>
+</div>

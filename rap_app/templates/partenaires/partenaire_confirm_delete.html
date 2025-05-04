@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Supprimer l'partenaire</h1>
+
+<p>Êtes-vous sûr de vouloir supprimer l'partenaire "{{ partenaire.nom }}" ?</p>
+
+<form method="post">
+    {% csrf_token %}
+    <button type="submit">Confirmer la suppression</button>
+</form>
+
+<!-- Lien de retour -->
+<a href="{% url 'partenaire-detail' partenaire.pk %}">Annuler</a>
+{% endblock %}

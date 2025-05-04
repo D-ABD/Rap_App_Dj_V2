@@ -1,0 +1,88 @@
+<div class="card mb-4 shadow-sm">
+    <div class="card-header bg-light">
+        <h5 class="mb-0 d-flex justify-content-between align-items-center">
+            <button class="btn btn-link text-dark text-decoration-none fw-bold p-0" type="button" 
+                    data-bs-toggle="collapse" data-bs-target="#collapseEvenements" 
+                    aria-expanded="true" aria-controls="collapseEvenements">
+                <i class="fas fa-calendar-alt me-2"></i> Événements  
+                <span class="badge bg-primary ms-2">{{ evenements.count }}</span>
+            </button>
+            <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#collapseEvenements">
+                <i class="fas fa-chevron-down"></i>
+            </button>
+        </h5>
+    </div>
+
+    <div class="collapse" id="collapseEvenements">
+        <div class="card-body">
+            {% if evenements %}
+                <ul class="list-group">
+                    {% for event in evenements %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>
+                                    <i class="fas 
+                                        {% if event.type_evenement == 'info_collective_presentiel' %} fa-users
+                                        {% elif event.type_evenement == 'info_collective_distanciel' %} fa-video
+                                        {% elif event.type_evenement == 'job_dating' %} fa-handshake
+                                        {% elif event.type_evenement == 'evenement_emploi' %} fa-briefcase
+                                        {% elif event.type_evenement == 'forum' %} fa-comments
+                                        {% elif event.type_evenement == 'jpo' %} fa-door-open
+                                        {% else %} fa-calendar {% endif %} me-2"></i>
+                                    {{ event.get_type_evenement_display }}
+                                </strong> 
+                                <span class="text-muted small"> - {{ event.event_date|date:"d/m/Y" }}</span>
+                                {% if event.details %}
+                                    <br><small class="text-muted">📌 {{ event.details }}</small>
+                                {% endif %}
+                            </div>
+                            <span class="badge bg-primary">{{ event.formation.nom }}</span>
+                        </li> 
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="text-muted text-center">Aucun événement associé.</p>
+            {% endif %}
+        </div>
+
+        <!-- Formulaire d'ajout d'événement -->
+        <div class="card-footer bg-light">
+            <form method="POST">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="add_evenement">
+                
+                <div class="row">
+                    <div class="col-md-4">
+                        <label class="form-label">Type d'événement</label>
+                        <select name="type_evenement" class="form-control mb-2" required>
+                            <option value="" disabled selected>Choisir un type</option>
+                            <option value="info_collective_presentiel">📍 Info collective présentiel</option>
+                            <option value="info_collective_distanciel">💻 Info collective distanciel</option>
+                            <option value="job_dating">🤝 Job dating</option>
+                            <option value="evenement_emploi">💼 Événement emploi</option>
+                            <option value="forum">🗣️ Forum</option>
+                            <option value="jpo">🚪 Journée Portes Ouvertes (JPO)</option>
+                            <option value="autre">❓ Autre</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label">Date</label>
+                        <input type="date" name="date" class="form-control mb-2" required>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label">Détails (optionnel)</label>
+                        <input type="text" name="details" class="form-control mb-2" placeholder="Ex: Lieu, heure, infos...">
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Ajouter
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

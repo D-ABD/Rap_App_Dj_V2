@@ -1,0 +1,134 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Détails de la Formation | {{ formation.nom }}{% endblock %}
+
+{% block content %}
+{% include "composants/bouton_retour.html" %}
+
+<div class="container mt-4">
+    <!-- 🎓 En-tête -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="fw-bold text-primary">{{ formation.nom }}</h1>
+        <div class="btn-group">
+            <a href="{% url 'formation-update' formation.id %}" class="btn btn-warning">
+                <i class="fas fa-edit"></i> Modifier
+            </a>
+            <a href="{% url 'formation-delete' formation.id %}" class="btn btn-danger">
+                <i class="fas fa-trash"></i> Supprimer
+            </a>
+        </div>
+    </div>
+
+    <!-- 📊 Accordéons -->
+    <div class="accordion" id="accordionFormation">
+
+        <!-- 📊 Informations générales -->
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="headingInfo">
+                <button class="accordion-button fw-bold text-primary" type="button" data-bs-toggle="collapse" data-bs-target="#collapseInfo" aria-expanded="true">
+                    <i class="fas fa-info-circle me-2"></i> Informations Générales
+                </button>
+            </h2>
+            <div id="collapseInfo" class="accordion-collapse collapse show">
+                <div class="accordion-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Centre :</strong> 
+                                <a href="{% url 'centre-detail' formation.centre.id %}" class="text-decoration-none">
+                                    {{ formation.centre.nom }}
+                                </a>
+                            </p>
+                            <p><strong>Type d'offre :</strong> {{ formation.type_offre }}</p>
+                            <p><strong>Statut :</strong> 
+                                <span class="badge" style="background-color: {{ formation.statut.couleur }};">
+                                    {{ formation.statut }}
+                                </span>
+                            </p>
+                            <p><strong>Assistante :</strong> {{ formation.assistante|default:"-" }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Dates :</strong> Du {{ formation.start_date|date:"d/m/Y" }} au {{ formation.end_date|date:"d/m/Y" }}</p>
+                            <p><strong>Numéro Kairos :</strong> {{ formation.num_kairos|default:"-" }}</p>
+                            <p><strong>Numéro de l'offre :</strong> {{ formation.num_offre|default:"-" }}</p>
+                            <p><strong>Numéro du produit :</strong> {{ formation.num_produit|default:"-" }}</p>
+                            <p><strong>Capacité maximale :</strong> {{ formation.cap|default:"-" }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 🎓 Gestion des inscriptions -->
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="headingInscriptions">
+                <button class="accordion-button fw-bold text-primary collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseInscriptions">
+                    <i class="fas fa-user-check me-2"></i> Gestion des Inscriptions
+                </button>
+            </h2>
+            <div id="collapseInscriptions" class="accordion-collapse collapse">
+                <div class="accordion-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Places prévues CRIF :</strong> {{ formation.prevus_crif }}</p>
+                            <p><strong>Places prévues MP :</strong> {{ formation.prevus_mp }}</p>
+                            <p><strong>Inscrits CRIF :</strong> {{ formation.inscrits_crif }}</p>
+                            <p><strong>Inscrits MP :</strong> {{ formation.inscrits_mp }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Entrées en formation :</strong> {{ formation.entresformation }}</p>
+                            <p><strong>Places restantes CRIF :</strong> {{ formation.get_places_restantes_crif }}</p>
+                            <p><strong>Places restantes MP :</strong> {{ formation.get_places_restantes_mp }}</p>
+                            <p><strong>Total places disponibles :</strong> {{ formation.get_places_disponibles }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 📈 Statistiques -->
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="headingStats">
+                <button class="accordion-button fw-bold text-primary collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseStats">
+                    <i class="fas fa-chart-bar me-2"></i> Statistiques
+                </button>
+            </h2>
+            <div id="collapseStats" class="accordion-collapse collapse">
+                <div class="accordion-body">
+                    <p><strong>Nombre de candidats :</strong> {{ formation.nombre_candidats }}</p>
+                    <p><strong>Nombre d'entretiens :</strong> {{ formation.nombre_entretiens }}</p>
+                    <p><strong>Taux de saturation :</strong> {{ formation.get_taux_saturation|floatformat:1 }}%</p>
+                </div>
+            </div>
+        </div>
+
+           <!-- 📝 Saturation -->
+    {% include 'formations/includes/saturation_formation.html' %}
+
+    <!-- 📝 Commentaires -->
+    {% include 'formations/includes/commentaires_formation.html' %}
+
+    <!-- 📅 Événements -->
+    {% include 'formations/includes/evenements_formation.html' %}
+
+    <!-- 🏢 Partenaires -->
+    {% include 'formations/includes/partenaires_formation.html' %}
+
+    <!-- 📄 Entreprises -->
+    {% include 'formations/includes/entreprises_formation.html' %}
+
+    <!-- 📄 Prospection -->
+    {% include 'formations/includes/prospections_formation.html' %}
+
+    <!-- 📄 Documents -->
+    {% include 'formations/includes/documents_formation.html' %}
+
+    <a href="{% url 'historique-formation-list' %}?formation={{ formation.id }}" class="btn btn-outline-info mt-2">
+        🕓 Voir l’historique des modifications de cette formation
+    </a>
+    
+
+        
+    </div>
+</div>
+{% endblock %}

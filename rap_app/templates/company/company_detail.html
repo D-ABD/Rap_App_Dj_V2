@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-building me-2"></i> {{ company.name }}</h2>
+        <div>
+            <a href="{% url 'company-update' company.pk %}" class="btn btn-warning me-2">
+                <i class="fas fa-edit"></i> Modifier
+            </a>
+            <a href="{% url 'company-delete' company.pk %}" class="btn btn-danger me-2">
+                <i class="fas fa-trash"></i> Supprimer
+            </a>
+            <a href="{% url 'company-list' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Retour
+            </a>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title">📍 Adresse</h5>
+            <p>{{ company.get_full_address }}</p>
+
+            <h5 class="card-title">👤 Contact</h5>
+            <p>{{ company.get_contact_info }}</p>
+
+            <h5 class="card-title">🏢 Secteur</h5>
+            <p>{{ company.sector_name|default:"Non spécifié" }}</p>
+
+            <h5 class="card-title">🌐 Site web</h5>
+            {% if company.website %}
+                <p><a href="{{ company.website }}" target="_blank" rel="noopener">{{ company.website }}</a></p>
+            {% else %}
+                <p class="text-muted">Non renseigné</p>
+            {% endif %}
+
+            <h5 class="card-title">📣 Réseau social</h5>
+            <p>{{ company.social_network_url|default:"Non renseigné" }}</p>
+
+            <h5 class="card-title">📄 Description de l'action</h5>
+            <p>{{ company.action_description|linebreaks|default:"Non renseigné" }}</p>
+
+            <h5 class="card-title">📌 Type d'action</h5>
+            <p>{{ company.get_actions_display|default:"Non spécifié" }}</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

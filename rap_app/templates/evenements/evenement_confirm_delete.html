@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Supprimer l'Événement{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header bg-danger text-white">
+            <h5 class="mb-0">Confirmation de suppression</h5>
+        </div>
+        <div class="card-body">
+            <h4 class="mb-4">Êtes-vous sûr de vouloir supprimer cet événement ?</h4>
+            
+            <div class="alert alert-warning">
+                <p><strong>Attention :</strong> Cette action est irréversible.</p>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0">Détails de l'événement</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <dl class="row mb-0">
+                                <dt class="col-sm-4">Type</dt>
+                                <dd class="col-sm-8">
+                                    <span class="badge 
+                                        {% if evenement.type_evenement == 'info_collective_presentiel' %}bg-success
+                                        {% elif evenement.type_evenement == 'info_collective_distanciel' %}bg-info
+                                        {% elif evenement.type_evenement == 'job_dating' %}bg-warning
+                                        {% elif evenement.type_evenement == 'evenement_emploi' %}bg-secondary
+                                        {% elif evenement.type_evenement == 'forum' %}bg-dark
+                                        {% elif evenement.type_evenement == 'jpo' %}bg-danger
+                                        {% else %}bg-light text-dark{% endif %}">
+                                        {{ evenement.get_type_evenement_display }}
+                                    </span>
+                                    {% if evenement.type_evenement == 'autre' and evenement.description_autre %}
+                                        <br>
+                                        <small>{{ evenement.description_autre }}</small>
+                                    {% endif %}
+                                </dd>
+                                
+                                <dt class="col-sm-4">Date</dt>
+                                <dd class="col-sm-8">
+                                    {% if evenement.event_date %}
+                                        {{ evenement.event_date|date:"d/m/Y" }}
+                                        {% if evenement.event_date >= now %}
+                                            <br>
+                                            <small class="text-muted">Dans {{ evenement.event_date|timeuntil }}</small>
+                                        {% else %}
+                                            <br>
+                                            <small class="text-muted">Il y a {{ evenement.event_date|timesince }}</small>
+                                        {% endif %}
+                                    {% else %}
+                                        Date non définie
+                                    {% endif %}
+                                </dd>
+                            </dl>
+                        </div>
+                        <div class="col-md-6">
+                            <dl class="row mb-0">
+                                <dt class="col-sm-4">Formation</dt>
+                                <dd class="col-sm-8">
+                                    {% if evenement.formation %}
+                                        <a href="{% url 'formation-detail' evenement.formation.id %}">
+                                            {{ evenement.formation.nom }}
+                                        </a>
+                                    {% else %}
+                                        Aucune formation associée
+                                    {% endif %}
+                                </dd>
+                                
+                                <dt class="col-sm-4">Créé le</dt>
+                                <dd class="col-sm-8">{{ evenement.created_at|date:"d/m/Y H:i" }}</dd>
+                            </dl>
+                        </div>
+                    </div>
+                    
+                    {% if evenement.details %}
+                        <hr>
+                        <h6>Détails</h6>
+                        <p>{{ evenement.details|linebreaks }}</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <form method="post">
+                {% csrf_token %}
+                <div class="d-flex justify-content-end">
+                    {% if evenement.formation %}
+                        <a href="{% url 'formation-detail' evenement.formation.id %}" class="btn btn-outline-secondary me-2">
+                            <i class="fas fa-times"></i> Annuler et retourner à la formation
+                        </a>
+                    {% else %}
+                        <a href="{% url 'evenement-detail' evenement.id %}" class="btn btn-outline-secondary me-2">
+                            <i class="fas fa-times"></i> Annuler
+                        </a>
+                    {% endif %}
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash"></i> Confirmer la suppression
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

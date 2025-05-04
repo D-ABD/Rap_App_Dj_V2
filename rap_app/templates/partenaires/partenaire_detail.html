@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>{{ partenaire.nom }}</h1>
+
+<!-- Informations de l'partenaire -->
+<p><strong>Secteur d'activité :</strong> {{ partenaire.secteur_activite }}</p>
+<p><strong>Contact :</strong> {{ partenaire.contact_nom }} ({{ partenaire.contact_poste }})</p>
+<p><strong>Téléphone :</strong> {{ partenaire.contact_telephone }}</p>
+<p><strong>Email :</strong> {{ partenaire.contact_email }}</p>
+<p><strong>Description :</strong> {{ partenaire.description }}</p>
+
+<!-- Formations associées -->
+<h2>Formations</h2>
+
+<!-- Filtres pour les formations -->
+<form method="get" action=".">
+    <select name="type_offre">
+        <option value="">Tous les types d'offre</option>
+        {% for type in types_offre %}
+        <option value="{{ type.id }}" {% if request.GET.type_offre == type.id|stringformat:"s" %}selected{% endif %}>{{ type.nom }}</option>
+        {% endfor %}
+    </select>
+    <select name="statut">
+        <option value="">Tous les statuts</option>
+        {% for statut in statuts %}
+        <option value="{{ statut.id }}" {% if request.GET.statut == statut.id|stringformat:"s" %}selected{% endif %}>{{ statut.nom }}</option>
+        {% endfor %}
+    </select>
+    <button type="submit">Filtrer</button>
+</form>
+
+<ul>
+    {% for formation in formations %}
+    <li>
+        <strong>{{ formation.nom }}</strong> ({{ formation.type_offre.nom }}) - {{ formation.statut.nom }}
+        <br>
+        <small>Du {{ formation.start_date }} au {{ formation.end_date }}</small>
+    </li>
+    {% endfor %}
+</ul>
+
+<!-- Actions -->
+{% if perms.rap_app.change_partenaire %}
+<a href="{% url 'partenaire-update' partenaire.pk %}">Modifier</a>
+{% endif %}
+{% if perms.rap_app.delete_partenaire %}
+<a href="{% url 'partenaire-delete' partenaire.pk %}">Supprimer</a>
+{% endif %}
+{% endblock %}

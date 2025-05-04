@@ -1,0 +1,225 @@
+<div class="container-fluid">
+  <!-- Titre avec effet shadow et décoration -->
+  <h2 class="text-center text-uppercase my-4 fw-bold position-relative">
+      <span class="badge bg-primary rounded-pill position-relative px-3 py-2 me-2">
+          <i class="fas fa-chart-bar"></i>
+      </span>
+      Statistiques Générales
+      <div class="position-absolute start-50 translate-middle-x" style="width: 100px; height: 4px; background: linear-gradient(90deg, transparent, var(--bs-primary), transparent); bottom: -10px;"></div>
+  </h2>
+
+  <!-- Accordéon modernisé -->
+  <div class="accordion shadow-sm rounded-3 overflow-hidden mb-4" id="accordionStats">
+      <div class="accordion-item border-0">
+          <h2 class="accordion-header">
+              <button class="accordion-button fw-bold bg-gradient" type="button" data-bs-toggle="collapse" data-bs-target="#collapseStats" aria-expanded="true">
+                  <i class="fas fa-chart-line me-2 text-primary"></i> Afficher/Masquer les Statistiques
+              </button>
+          </h2>
+          <div id="collapseStats" class="accordion-collapse collapse show" data-bs-parent="#accordionStats">
+              <div class="accordion-body bg-light bg-opacity-50 p-4">
+                  <div class="row g-4">
+                      
+                      <!-- Formations -->
+                      <div class="col-xl-3 col-lg-6 col-md-6">
+                          <div class="stat-card bg-gradient bg-success text-white shadow-lg rounded-4 p-3 h-100 d-flex align-items-center border border-light border-opacity-25">
+                              <div class="stat-icon me-3 d-flex align-items-center justify-content-center rounded-circle bg-white text-success p-3 shadow">
+                                  <i class="fas fa-graduation-cap fa-2x"></i>
+                              </div>
+                              <div>
+                                  <h3 class="fw-bold mb-0 display-6">{{ total_formations }}</h3>
+                                  <p class="mb-2 text-white-50">Total Formations</p>
+                                  <div class="d-flex flex-wrap gap-2">
+                                      <span class="badge bg-white bg-opacity-25 text-white border border-light border-opacity-25">✅ Actives: {{ formations_actives }}</span>
+                                      <span class="badge bg-white bg-opacity-25 text-white border border-light border-opacity-25">⏳ À Venir: {{ formations_a_venir }}</span>
+                                      <span class="badge bg-white bg-opacity-25 text-white border border-light border-opacity-25">✔️ Terminées: {{ formations_terminees }}</span>
+                                      <span class="badge bg-white bg-opacity-25 text-white border border-light border-opacity-25">🔍 Recrutements: {{ formations_a_recruter }}</span>
+                                  </div>
+                              </div>
+                          </div>
+                      </div>
+
+                      <!-- Candidats / Entretiens / Inscriptions fusionnés -->
+                      <div class="col-xl-3 col-lg-6 col-md-6">
+                          <div class="stat-card bg-gradient bg-info text-white shadow-lg rounded-4 p-3 h-100 d-flex align-items-start border border-light border-opacity-25">
+                              <div class="stat-icon me-3 d-flex align-items-center justify-content-center rounded-circle bg-white text-info p-3 shadow">
+                                  <i class="fas fa-users fa-2x"></i>
+                              </div>
+                              <div class="w-100">
+                                  <h3 class="fw-bold mb-0 display-6">{{ total_candidats }}</h3>
+                                  <p class="mb-2 text-white-50">Total Candidats</p>
+                                  <div class="d-flex flex-wrap gap-2 mt-2">
+                                      <span class="badge bg-white bg-opacity-25 text-white border border-light border-opacity-25">
+                                          <i class="fas fa-handshake me-1"></i> Entretiens : {{ total_entretiens }}
+                                      </span>
+                                      <span class="badge bg-white bg-opacity-25 text-white border border-light border-opacity-25">
+                                          <i class="fas fa-user-check me-1"></i> Inscriptions : {{ total_inscrits }}
+                                      </span>
+                                  </div>
+                              </div>
+                          </div>
+                      </div>
+                        
+                      <!-- Places prévues / restantes fusionnées -->
+                      <div class="col-xl-3 col-lg-6 col-md-6">
+                          <div class="stat-card bg-gradient bg-primary text-white shadow-lg rounded-4 p-3 h-100 d-flex align-items-center border border-light border-opacity-25">
+                              <div class="stat-icon me-3 d-flex align-items-center justify-content-center rounded-circle bg-white text-primary p-3 shadow">
+                                  <i class="fas fa-calendar-check fa-2x"></i>
+                              </div>
+                              <div>
+                                  <h3 class="fw-bold mb-0 display-6">
+                                      {{ total_places_prevues }} 
+                                      <span class="text-white-50">/</span> 
+                                      {{ total_places_restantes }}
+                                  </h3>
+                                  <p class="mb-1 text-white-50">Places Prévues / Restantes</p>
+                              </div>
+                          </div>
+                      </div>
+                        
+                      <!-- Prospections -->
+                      <div class="col-xl-3 col-lg-6 col-md-6">
+                          <div class="stat-card bg-gradient bg-secondary text-white shadow-lg rounded-4 p-3 h-100 d-flex align-items-center border border-light border-opacity-25">
+                              <div class="stat-icon me-3 d-flex align-items-center justify-content-center rounded-circle bg-white text-secondary p-3 shadow">
+                                  <i class="fas fa-bullseye fa-2x"></i>
+                              </div>
+                              <div>
+                                  <h3 class="fw-bold mb-0 display-6">{{ total_prospections }}</h3>
+                                  <p class="mb-2 text-white-50">Total Prospections</p>
+                                  <div class="d-flex flex-wrap gap-2">
+                                      <span class="badge bg-white bg-opacity-25 text-white border border-light border-opacity-25">🟡 En cours: {{ nb_prospections_en_cours }}</span>
+                                      <span class="badge bg-white bg-opacity-25 text-white border border-light border-opacity-25">🟢 Acceptées: {{ nb_prospections_acceptees }}</span>
+                                      <span class="badge bg-white bg-opacity-25 text-white border border-light border-opacity-25">🔵 À faire: {{ nb_prospections_a_faire }}</span>
+                                      <span class="badge bg-white bg-opacity-25 text-white border border-light border-opacity-25">🔁 À relancer: {{ nb_prospections_a_relancer }}</span>
+                                  </div>
+                              </div>
+                          </div>
+                      </div>
+
+                      <!-- Entreprises -->
+                      <div class="col-xl-3 col-lg-6 col-md-6">
+                          <div class="stat-card bg-gradient bg-secondary text-white shadow-lg rounded-4 p-3 h-100 d-flex align-items-center border border-light border-opacity-25">
+                              <div class="stat-icon me-3 d-flex align-items-center justify-content-center rounded-circle bg-white text-warning p-3 shadow">
+                                  <i class="fas fa-building fa-2x"></i>
+                              </div>
+                              <div>
+                                  <h3 class="fw-bold mb-0 display-6">{{ total_entreprises }}</h3>
+                                  <p class="mb-1 text-white-50">Total Entreprises</p>
+                              </div>
+                          </div>
+                      </div>
+
+                      <!-- Statistiques VAE -->
+                      <div class="col-xl-3 col-lg-6 col-md-6">
+                          <div class="stat-card bg-gradient bg-dark text-white shadow-lg rounded-4 p-3 h-100 d-flex align-items-start border border-light border-opacity-25">
+                              <div class="stat-icon me-3 d-flex align-items-center justify-content-center rounded-circle bg-white text-dark p-3 shadow">
+                                  <i class="fas fa-file-alt fa-2x"></i>
+                              </div>
+                              <div>
+                                  <h3 class="fw-bold mb-0 display-6">{{ vae_total }}</h3>
+                                  <p class="mb-2 text-white-50">Total VAE</p>
+                                  <span class="badge bg-white bg-opacity-25 text-white border border-light border-opacity-25">⏳ En cours : {{ vae_en_cours }}</span>
+                              </div>
+                          </div>
+                      </div>
+
+                      <!-- Statistiques Jury -->
+                      <div class="col-xl-3 col-lg-6 col-md-6">
+                          <div class="stat-card bg-gradient bg-dark text-white shadow-lg rounded-4 p-3 h-100 d-flex flex-column justify-content-between border border-light border-opacity-25">
+                              <div class="d-flex align-items-start">
+                                  <div class="stat-icon me-3 d-flex align-items-center justify-content-center rounded-circle bg-white text-dark p-3 shadow">
+                                      <i class="fas fa-balance-scale fa-2x"></i>
+                                  </div>
+                                  <div>
+                                      <h3 class="fw-bold mb-0 display-6">{{ total_jurys }}</h3>
+                                      <p class="mb-2 text-white-50">Jurys réalisés (total)</p>
+                                      <span class="badge bg-white bg-opacity-25 text-white border border-light border-opacity-25 mb-1">📅 Cette année : {{ jurys_realises_annee }}</span><br>
+                                      <span class="badge bg-white bg-opacity-25 text-white border border-light border-opacity-25">🎯 Objectif : {{ objectif_annuel_jury }} — {{ taux_objectif_jury }}%</span>
+                                  </div>
+                              </div>
+                              <div class="progress mt-3 rounded-pill" style="height: 8px; background-color: rgba(255,255,255,0.2);">
+                                  <div class="progress-bar bg-success rounded-pill" role="progressbar" style="width: {{ taux_objectif_jury }}%"></div>
+                              </div>
+                          </div>
+                      </div>
+                  </div> <!-- Fin du premier row -->
+                  
+                  <div class="row g-4 mt-2 mb-3">
+                      <!-- Taux de transformation Candidats -->
+                      <div class="col-xl-3 col-lg-6 col-md-6">
+                          <div class="stat-card bg-gradient bg-warning text-dark shadow-lg rounded-4 p-3 h-100 d-flex flex-column justify-content-between border border-light border-opacity-25">
+                              <div class="d-flex align-items-center mb-2">
+                                  <div class="stat-icon me-3 d-flex align-items-center justify-content-center rounded-circle bg-white text-primary p-3 shadow">
+                                      <i class="fas fa-chart-line fa-2x"></i>
+                                  </div>
+                                  <div>
+                                      <h4 class="fw-bold mb-0 display-6">{{ taux_transformation_moyen|floatformat:1 }}%</h4>
+                                      <p class="mb-0 small text-dark text-opacity-75">Transformation Candidats</p>
+                                  </div>
+                              </div>
+                              <div class="progress rounded-pill" style="height: 8px; background-color: rgba(0,0,0,0.1);">
+                                  <div class="progress-bar bg-dark rounded-pill" role="progressbar" style="width: {{ taux_transformation_moyen }}%"></div>
+                              </div>
+                          </div>
+                      </div>
+                        
+                      <!-- Taux de saturation Formations -->
+                      <div class="col-xl-3 col-lg-6 col-md-6">
+                          <div class="stat-card bg-gradient bg-warning text-dark shadow-lg rounded-4 p-3 h-100 d-flex flex-column justify-content-between border border-light border-opacity-25">
+                              <div class="d-flex align-items-center mb-2">
+                                  <div class="stat-icon me-3 d-flex align-items-center justify-content-center rounded-circle bg-white text-primary p-3 shadow">
+                                      <i class="fas fa-tachometer-alt fa-2x"></i>
+                                  </div>
+                                  <div>
+                                      <h4 class="fw-bold mb-0 display-6">{{ taux_saturation_moyen|floatformat:1 }}%</h4>
+                                      <p class="mb-0 small text-dark text-opacity-75">Saturation Formations</p>
+                                  </div>
+                              </div>
+                              <div class="progress rounded-pill" style="height: 8px; background-color: rgba(0,0,0,0.1);">
+                                  <div class="progress-bar bg-dark rounded-pill" role="progressbar" style="width: {{ taux_saturation_moyen }}%"></div>
+                              </div>
+                          </div>
+                      </div>
+                        
+                      <!-- Taux de transformation Prospections -->
+                      <div class="col-xl-3 col-lg-6 col-md-6">
+                          <div class="stat-card bg-gradient bg-warning text-dark shadow-lg rounded-4 p-3 h-100 d-flex flex-column justify-content-between border border-light border-opacity-25">
+                              <div class="d-flex align-items-center mb-2">
+                                  <div class="stat-icon me-3 d-flex align-items-center justify-content-center rounded-circle bg-white text-primary p-3 shadow">
+                                      <i class="fas fa-user-plus fa-2x"></i>
+                                  </div>
+                                  <div>
+                                      <h4 class="fw-bold mb-0 display-6">{{ taux_transformation_prospections|floatformat:1 }}%</h4>
+                                      <p class="mb-0 small text-dark text-opacity-75">Transformation Prospections</p>
+                                  </div>
+                              </div>
+                              <div class="progress rounded-pill" style="height: 8px; background-color: rgba(0,0,0,0.1);">
+                                  <div class="progress-bar bg-dark rounded-pill" role="progressbar" style="width: {{ taux_transformation_prospections }}%"></div>
+                              </div>
+                          </div>
+                      </div>
+                        
+                      <!-- Objectif Prépa Comp -->
+                      <div class="col-xl-3 col-lg-6 col-md-6">
+                          <div class="stat-card bg-gradient bg-warning text-dark shadow-lg rounded-4 p-3 h-100 d-flex flex-column justify-content-between border border-light border-opacity-25">
+                              <div class="d-flex align-items-center mb-2">
+                                  <div class="stat-icon me-3 d-flex align-items-center justify-content-center rounded-circle bg-white text-primary p-3 shadow">
+                                      <i class="fas fa-bullseye fa-2x"></i>
+                                  </div>
+                                  <div>
+                                      <h4 class="fw-bold mb-0 display-6">{{ taux_objectif_prepa|floatformat:1 }}%</h4>
+                                      <p class="mb-0 small text-dark text-opacity-75">Objectif Prépa Comp</p>
+                                  </div>
+                              </div>
+                              <div class="progress rounded-pill mb-1" style="height: 8px; background-color: rgba(0,0,0,0.1);">
+                                  <div class="progress-bar bg-primary rounded-pill" role="progressbar" style="width: {{ taux_objectif_prepa }}%"></div>
+                              </div>
+                              <small class="text-dark text-opacity-75 text-end fw-medium">Réalisé : {{ adhesions_globales_prepa }} / {{ objectif_annuel_prepa }}</small>
+                          </div>
+                      </div>
+                  </div> <!-- Fin du second row -->
+              </div>
+          </div>
+      </div>
+  </div>
+</div>

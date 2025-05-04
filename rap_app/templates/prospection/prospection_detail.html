@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+
+{% block title %}Détail de la Prospection{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>📋 Détail de la Prospection</h1>
+
+    <p><strong>Entreprise :</strong> {{ prospection.company.name }}</p>
+
+    {% if prospection.formation %}
+<p><strong>Formation :</strong>
+    <a href="{% url 'formation-detail' prospection.formation.id %}">
+        {{ prospection.formation.nom }}
+    </a>
+    <br>
+    <small>
+        📄 Offre : {{ prospection.formation.num_offre|default:"-" }}<br>
+        📅 Dates : du {{ prospection.formation.start_date|date:"d/m/Y" }} au {{ prospection.formation.end_date|date:"d/m/Y" }}<br>
+        🏷️ Type d’offre : {{ prospection.formation.type_offre }}<br><br>
+
+        🎯 <u>Places prévues</u><br>
+        • CRIF : {{ prospection.formation.prevus_crif }}<br>
+        • MP : {{ prospection.formation.prevus_mp }}<br>
+        • Total : {{ prospection.formation.get_total_places }}<br><br>
+
+
+        👥 <u>Inscrits</u><br>
+        • CRIF : {{ prospection.formation.inscrits_crif }}<br>
+        • MP : {{ prospection.formation.inscrits_mp }}<br>
+        • Total : {{ prospection.formation.get_total_inscrits }}<br><br>
+
+
+        ✅ <u>Places disponibles</u><br>
+        • CRIF : {{ prospection.formation.get_places_restantes_crif }}<br>
+        • MP : {{ prospection.formation.get_places_restantes_mp }}<br>
+        • Total : {{ prospection.formation.get_places_disponibles }}
+    </small>
+</p>
+{% else %}
+<p><strong>Formation :</strong> <em>Non liée</em></p>
+{% endif %}
+
+
+    <p><strong>Statut :</strong> {{ prospection.get_statut_display }}</p>
+    <p><strong>Objectif :</strong> {{ prospection.get_objectif_display }}</p>
+    <p><strong>Commentaire :</strong> {{ prospection.commentaire|linebreaksbr }}</p>
+    <p><strong>Responsable :</strong> {{ prospection.responsable }}</p>
+
+    <a href="{% url 'historique-prospection-list' %}?prospection={{ prospection.id }}" class="btn btn-outline-info mt-3">
+        🕓 Voir l’historique de cette prospection
+    </a>
+    
+
+    <div class="mt-4">
+        <a href="{% url 'prospection-update' prospection.id %}" class="btn btn-warning">✏ Modifier</a>
+        <a href="{% url 'prospection-delete' prospection.id %}" class="btn btn-danger">🗑 Supprimer</a>
+        <a href="{% url 'prospection-list' %}" class="btn btn-secondary">↩ Retour</a>
+    </div>
+</div>
+{% endblock %}

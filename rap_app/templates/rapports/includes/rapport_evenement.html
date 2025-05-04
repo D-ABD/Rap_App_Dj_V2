@@ -1,0 +1,19 @@
+<h2>📆 Suivi des Événements</h2>
+
+{% if donnees %}
+    <ul class="list-group">
+        {% for event in donnees %}
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                <span>
+                    <strong>{{ event.nom|default:"Événement inconnu" }}</strong>  
+                    - {{ event.date|date:"d/m/Y" }}
+                </span>
+                <span class="badge bg-primary rounded-pill">
+                    {{ event.nombre_participants|default:"0" }} participants
+                </span>
+            </li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p class="text-muted">Aucun événement enregistré.</p>
+{% endif %}

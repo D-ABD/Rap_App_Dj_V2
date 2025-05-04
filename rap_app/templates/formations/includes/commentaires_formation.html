@@ -1,0 +1,61 @@
+<div class="card mb-4 shadow-sm">
+    <div class="card-header bg-light">
+        <h5 class="mb-0 d-flex justify-content-between align-items-center">
+            <button class="btn btn-link text-dark text-decoration-none fw-bold p-0" type="button" 
+                    data-bs-toggle="collapse" data-bs-target="#collapseCommentaires" 
+                    aria-expanded="true" aria-controls="collapseCommentaires">
+                <i class="fas fa-comments me-2"></i> Commentaires 
+                <span class="badge bg-primary ms-2">{{ commentaires_page.paginator.count }}</span>
+            </button>
+            <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#collapseCommentaires">
+                <i class="fas fa-chevron-down"></i>
+            </button>
+        </h5>
+    </div>
+
+    <div class="collapse show" id="collapseCommentaires">
+        <div class="card-body">
+            {% if commentaires_page %}
+                <div class="list-group">
+                    {% for commentaire in commentaires_page %}
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong class="text-primary">{{ commentaire.utilisateur.username|default:"Anonyme" }}</strong> 
+                                    <small class="text-muted">({{ commentaire.created_at|date:"d/m/Y H:i" }})</small>
+                                </div>
+                                <small class="text-secondary">{{ commentaire.formation.nom }}</small>
+                            </div>
+                            <p class="mb-0 text-dark mt-2">{{ commentaire.contenu }}</p>
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <!-- ✅ Pagination -->
+                <div class="mt-3">
+                    {% include "composants/pagination.html" with page_obj=commentaires_page %}
+                </div>
+            {% else %}
+                <p class="text-muted text-center">Aucun commentaire pour cette formation.</p>
+            {% endif %}
+        </div>
+
+        <!-- ✅ Formulaire d'ajout -->
+        <div class="card-footer bg-light">
+            <form method="POST">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="add_commentaire">
+                
+                <div class="mb-2">
+                    <textarea name="contenu" class="form-control" rows="2" required placeholder="Ajoutez un commentaire..."></textarea>
+                </div>
+                
+                <div class="d-flex justify-content-end">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-paper-plane"></i> Ajouter
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

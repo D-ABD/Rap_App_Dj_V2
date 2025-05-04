@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Dashboard - Suivi des Formations{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-3">
+    <!-- Statistiques principales -->
+    <div class="row g-3 mb-3">
+        {% include "dashboard_composants/stats_cards.html" %}
+    </div>
+    
+    <!-- Tableau des performances et formations par centre -->
+    {% include "dashboard_composants/performance_table.html" %}
+
+    <!-- Formations par Type d'offre et statut -->
+    {% include "dashboard_composants/formations_by_type_and_statut.html" %}
+    
+    <div class="row g-3">
+        <!-- Colonne gauche (8/12) -->
+        <div class="col-lg-8">
+            <!-- Événements par type et par centre -->
+            {% include "dashboard_composants/events_by_type_and_center.html" %}
+
+            <!-- Prospections -->
+            {% include "dashboard_composants/propections_par_statuts.html" %}  
+        </div>
+        
+        <!-- Colonne droite (4/12) -->
+        <div class="col-lg-4">
+            <!-- Derniers commentaires -->
+            {% include "dashboard_composants/comments_list.html" %}
+
+            <!-- Entreprises -->
+            {% include "dashboard_composants/entreprises_par_prospections.html" %}  
+        </div>
+    </div>
+</div>
+{% endblock %}

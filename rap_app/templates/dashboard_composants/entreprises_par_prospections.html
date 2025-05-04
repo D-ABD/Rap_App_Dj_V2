@@ -1,0 +1,46 @@
+<div class="card shadow-sm mb-3">
+    <div class="card-header bg-light d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">
+            <button class="btn btn-link text-dark fw-bold text-decoration-none p-0" 
+                    type="button" data-bs-toggle="collapse" 
+                    data-bs-target="#collapseEntreprises" aria-expanded="true" 
+                    aria-controls="collapseEntreprises">
+                🏢 Entreprises & Prospections
+            </button>
+        </h5>
+        <button class="btn btn-sm btn-outline-secondary" 
+                type="button" data-bs-toggle="collapse" 
+                data-bs-target="#collapseEntreprises" aria-expanded="true" 
+                aria-controls="collapseEntreprises">
+            <i class="fas fa-chevron-down"></i>
+        </button>
+    </div>
+
+    <div class="collapse " id="collapseEntreprises">
+        <div class="card-body p-0">
+            <ul class="list-group list-group-flush">
+                <!-- Total entreprises -->
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    Total d'entreprises
+                    <span class="badge bg-success rounded-pill">{{ total_entreprises }}</span>
+                </li>
+
+                <!-- Total entreprises avec prospections -->
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    Entreprises avec prospections
+                    <span class="badge bg-info rounded-pill">{{ entreprises_avec_prospections|length }}</span>
+                </li>
+
+                <!-- Détail par entreprise -->
+                {% for entreprise in entreprises_avec_prospections %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    {{ entreprise.name }}
+                    <span class="badge bg-secondary rounded-pill">{{ entreprise.nb_prospections }}</span>
+                </li>
+                {% empty %}
+                <li class="list-group-item text-muted text-center">Aucune entreprise trouvée</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>

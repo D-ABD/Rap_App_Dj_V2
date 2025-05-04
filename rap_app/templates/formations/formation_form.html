@@ -1,0 +1,461 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load form_filters %}
+
+{% block title %}{{ titre }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- En-tête de page avec titre et bouton de retour -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="fw-bold text-primary">{{ titre }}</h1>
+        <div>
+            {% if formation.id %}
+                <a href="{% url 'formation-detail' formation.id %}" class="btn btn-outline-primary rounded-pill shadow-sm">
+                    <i class="fas fa-arrow-left me-1"></i> Retour au détail
+                </a>
+            {% else %}
+                <a href="{% url 'formation-list' %}" class="btn btn-outline-primary rounded-pill shadow-sm">
+                    <i class="fas fa-arrow-left me-1"></i> Retour à la liste
+                </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Affichage des messages globaux -->
+    {% if messages %}
+    <div class="messages-container mb-4">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} border-0 shadow-sm rounded-3 d-flex align-items-center" role="alert">
+            <div class="bg-{{ message.tags }} bg-opacity-25 rounded-circle p-2 me-3 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                {% if message.tags == 'success' %}
+                    <i class="fas fa-check-circle text-success"></i>
+                {% elif message.tags == 'error' or message.tags == 'danger' %}
+                    <i class="fas fa-exclamation-circle text-danger"></i>
+                {% elif message.tags == 'warning' %}
+                    <i class="fas fa-exclamation-triangle text-warning"></i>
+                {% elif message.tags == 'info' %}
+                    <i class="fas fa-info-circle text-info"></i>
+                {% endif %}
+            </div>
+            <div class="me-auto">{{ message }}</div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Carte principale du formulaire -->
+    <div class="card shadow-lg border-0 rounded-4 overflow-hidden">
+        <div class="card-header bg-gradient-primary text-white py-3">
+            <h5 class="mb-0 fw-bold"><i class="fas fa-edit me-2"></i> Modifier la Formation</h5>
+        </div>
+        <div class="card-body p-4">
+            <form method="post">
+                {% csrf_token %}
+
+                <!-- Affichage des erreurs de formulaire amélioré -->
+                {% if form.errors %}
+                <div class="alert alert-danger border-0 shadow-sm rounded-3 mb-4">
+                    <div class="d-flex align-items-center">
+                        <div class="bg-danger bg-opacity-25 rounded-circle p-2 me-3 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                            <i class="fas fa-exclamation-triangle text-danger"></i>
+                        </div>
+                        <div>
+                            <h5 class="alert-heading mb-1">Erreurs dans le formulaire</h5>
+                            <ul class="mb-0 list-unstyled">
+                                {% for field in form %}
+                                    {% for error in field.errors %}
+                                        <li class="small"><strong>{{ field.label }}</strong> : {{ error }}</li>
+                                    {% endfor %}
+                                {% endfor %}
+                                {% for error in form.non_field_errors %}
+                                    <li class="small">{{ error }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Pour les erreurs de validation côté serveur (HttpResponseBadRequest) -->
+                {% if error_message %}
+                <div class="alert alert-danger border-0 shadow-sm rounded-3 mb-4">
+                    <div class="d-flex align-items-center">
+                        <div class="bg-danger bg-opacity-25 rounded-circle p-2 me-3 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                            <i class="fas fa-times-circle text-danger"></i>
+                        </div>
+                        <div>{{ error_message }}</div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Accordéon du formulaire -->
+                <div class="accordion accordion-flush" id="accordionForm">
+                    <!-- Section 1 : Informations principales -->
+                    <div class="accordion-item border mb-3 rounded-3 shadow-sm">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#collapseInfo">
+                                <div class="bg-primary bg-opacity-10 p-2 rounded-circle me-2 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+                                    <i class="fas fa-info-circle text-primary"></i>
+                                </div>
+                                Informations Principales
+                            </button>
+                        </h2>
+                        <div id="collapseInfo" class="accordion-collapse collapse show">
+                            <div class="accordion-body bg-light bg-opacity-50 p-4">
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label for="{{ form.nom.id_for_label }}" class="form-label fw-medium text-primary">{{ form.nom.label }}</label>
+                                        {{ form.nom|add_class:"form-control shadow-sm rounded-3 border-0" }}
+                                        {% if form.nom.errors %}
+                                            <div class="invalid-feedback d-block">
+                                                {% for error in form.nom.errors %}
+                                                    {{ error }}
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="{{ form.centre.id_for_label }}" class="form-label fw-medium text-primary">{{ form.centre.label }}</label>
+                                        {{ form.centre|add_class:"form-select shadow-sm rounded-3 border-0" }}
+                                        {% if form.centre.errors %}
+                                            <div class="invalid-feedback d-block">
+                                                {% for error in form.centre.errors %}
+                                                    {{ error }}
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="row g-3 mt-2">
+                                    <div class="col-md-6">
+                                        <label for="{{ form.type_offre.id_for_label }}" class="form-label fw-medium text-primary">{{ form.type_offre.label }}</label>
+                                        {{ form.type_offre|add_class:"form-select shadow-sm rounded-3 border-0" }}
+                                        {% if form.type_offre.errors %}
+                                            <div class="invalid-feedback d-block">
+                                                {% for error in form.type_offre.errors %}
+                                                    {{ error }}
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="{{ form.statut.id_for_label }}" class="form-label fw-medium text-primary">{{ form.statut.label }}</label>
+                                        {{ form.statut|add_class:"form-select shadow-sm rounded-3 border-0" }}
+                                        {% if form.statut.errors %}
+                                            <div class="invalid-feedback d-block">
+                                                {% for error in form.statut.errors %}
+                                                    {{ error }}
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="row g-3 mt-2">
+                                    <div class="col-md-6">
+                                        <label for="{{ form.start_date.id_for_label }}" class="form-label fw-medium text-primary">
+                                            <i class="fas fa-calendar-alt me-1"></i> {{ form.start_date.label }}
+                                        </label>
+                                        <div class="input-group date-picker-container shadow-sm rounded-3 overflow-hidden">
+                                            <span class="input-group-text bg-white border-0">
+                                                <i class="fas fa-calendar-alt text-primary"></i>
+                                            </span>
+                                            {{ form.start_date|add_class:"form-control datepicker border-0 shadow-none" }}
+                                        </div>
+                                        {% if form.start_date.errors %}
+                                            <div class="invalid-feedback d-block">
+                                                {% for error in form.start_date.errors %}
+                                                    {{ error }}
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="{{ form.end_date.id_for_label }}" class="form-label fw-medium text-primary">
+                                            <i class="fas fa-calendar-check me-1"></i> {{ form.end_date.label }}
+                                        </label>
+                                        <div class="input-group date-picker-container shadow-sm rounded-3 overflow-hidden">
+                                            <span class="input-group-text bg-white border-0">
+                                                <i class="fas fa-calendar-check text-primary"></i>
+                                            </span>
+                                            {{ form.end_date|add_class:"form-control datepicker border-0 shadow-none" }}
+                                        </div>
+                                        {% if form.end_date.errors %}
+                                            <div class="invalid-feedback d-block">
+                                                {% for error in form.end_date.errors %}
+                                                    {{ error }}
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Section 2 : Numéros et Identifiants -->
+                    <div class="accordion-item border mb-3 rounded-3 shadow-sm">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#collapseNum">
+                                <div class="bg-info bg-opacity-10 p-2 rounded-circle me-2 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+                                    <i class="fas fa-id-card text-info"></i>
+                                </div>
+                                Numéros, Identifiants et Assistant(e)
+                            </button>
+                        </h2>
+                        <div id="collapseNum" class="accordion-collapse collapse">
+                            <div class="accordion-body bg-light bg-opacity-50 p-4">
+                                <div class="row g-3">
+                                    <div class="col-md-4">
+                                        <label for="{{ form.num_kairos.id_for_label }}" class="form-label fw-medium text-primary">{{ form.num_kairos.label }}</label>
+                                        {{ form.num_kairos|add_class:"form-control shadow-sm rounded-3 border-0" }}
+                                        {% if form.num_kairos.errors %}
+                                            <div class="invalid-feedback d-block">
+                                                {% for error in form.num_kairos.errors %}
+                                                    {{ error }}
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="{{ form.num_offre.id_for_label }}" class="form-label fw-medium text-primary">{{ form.num_offre.label }}</label>
+                                        {{ form.num_offre|add_class:"form-control shadow-sm rounded-3 border-0" }}
+                                        {% if form.num_offre.errors %}
+                                            <div class="invalid-feedback d-block">
+                                                {% for error in form.num_offre.errors %}
+                                                    {{ error }}
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="{{ form.num_produit.id_for_label }}" class="form-label fw-medium text-primary">{{ form.num_produit.label }}</label>
+                                        {{ form.num_produit|add_class:"form-control shadow-sm rounded-3 border-0" }}
+                                        {% if form.num_produit.errors %}
+                                            <div class="invalid-feedback d-block">
+                                                {% for error in form.num_produit.errors %}
+                                                    {{ error }}
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="row g-3 mt-2">
+                                    <div class="col-md-4">
+                                        <label for="{{ form.assistante.id_for_label }}" class="form-label fw-medium text-primary">{{ form.assistante.label }}</label>
+                                        {{ form.assistante|add_class:"form-control shadow-sm rounded-3 border-0" }}
+                                        {% if form.assistante.errors %}
+                                            <div class="invalid-feedback d-block">
+                                                {% for error in form.assistante.errors %}
+                                                    {{ error }}
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Section 3 : Gestion des places -->
+                    <div class="accordion-item border mb-3 rounded-3 shadow-sm">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#collapsePlaces">
+                                <div class="bg-success bg-opacity-10 p-2 rounded-circle me-2 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+                                    <i class="fas fa-users text-success"></i>
+                                </div>
+                                Gestion des Places
+                            </button>
+                        </h2>
+                        <div id="collapsePlaces" class="accordion-collapse collapse">
+                            <div class="accordion-body bg-light bg-opacity-50 p-4">
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label for="{{ form.prevus_crif.id_for_label }}" class="form-label fw-medium text-primary">{{ form.prevus_crif.label }}</label>
+                                        {{ form.prevus_crif|add_class:"form-control shadow-sm rounded-3 border-0" }}
+                                        {% if form.prevus_crif.errors %}
+                                            <div class="invalid-feedback d-block">
+                                                {% for error in form.prevus_crif.errors %}
+                                                    {{ error }}
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="{{ form.prevus_mp.id_for_label }}" class="form-label fw-medium text-primary">{{ form.prevus_mp.label }}</label>
+                                        {{ form.prevus_mp|add_class:"form-control shadow-sm rounded-3 border-0" }}
+                                        {% if form.prevus_mp.errors %}
+                                            <div class="invalid-feedback d-block">
+                                                {% for error in form.prevus_mp.errors %}
+                                                    {{ error }}
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="row g-3 mt-2">
+                                    <div class="col-md-6">
+                                        <label for="{{ form.inscrits_crif.id_for_label }}" class="form-label fw-medium text-primary">{{ form.inscrits_crif.label }}</label>
+                                        {{ form.inscrits_crif|add_class:"form-control shadow-sm rounded-3 border-0" }}
+                                        {% if form.inscrits_crif.errors %}
+                                            <div class="invalid-feedback d-block">
+                                                {% for error in form.inscrits_crif.errors %}
+                                                    {{ error }}
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="{{ form.inscrits_mp.id_for_label }}" class="form-label fw-medium text-primary">{{ form.inscrits_mp.label }}</label>
+                                        {{ form.inscrits_mp|add_class:"form-control shadow-sm rounded-3 border-0" }}
+                                        {% if form.inscrits_mp.errors %}
+                                            <div class="invalid-feedback d-block">
+                                                {% for error in form.inscrits_mp.errors %}
+                                                    {{ error }}
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="row g-3 mt-2">
+                                    <div class="col-md-6">
+                                        <label for="{{ form.cap.id_for_label }}" class="form-label fw-medium text-primary">{{ form.cap.label }}</label>
+                                        {{ form.cap|add_class:"form-control shadow-sm rounded-3 border-0" }}
+                                        {% if form.cap.errors %}
+                                            <div class="invalid-feedback d-block">
+                                                {% for error in form.cap.errors %}
+                                                    {{ error }}
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Section 4 : Statistiques -->
+                    <div class="accordion-item border mb-3 rounded-3 shadow-sm">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#collapseStats">
+                                <div class="bg-warning bg-opacity-10 p-2 rounded-circle me-2 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+                                    <i class="fas fa-chart-line text-warning"></i>
+                                </div>
+                                Statistiques de Recrutement
+                            </button>
+                        </h2>
+                        <div id="collapseStats" class="accordion-collapse collapse">
+                            <div class="accordion-body bg-light bg-opacity-50 p-4">
+                                <div class="row g-3">
+                                    <div class="col-md-4">
+                                        <label for="{{ form.entresformation.id_for_label }}" class="form-label fw-medium text-primary">{{ form.entresformation.label }}</label>
+                                        {{ form.entresformation|add_class:"form-control shadow-sm rounded-3 border-0" }}
+                                        {% if form.entresformation.errors %}
+                                            <div class="invalid-feedback d-block">
+                                                {% for error in form.entresformation.errors %}
+                                                    {{ error }}
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="{{ form.nombre_candidats.id_for_label }}" class="form-label fw-medium text-primary">{{ form.nombre_candidats.label }}</label>
+                                        {{ form.nombre_candidats|add_class:"form-control shadow-sm rounded-3 border-0" }}
+                                        {% if form.nombre_candidats.errors %}
+                                            <div class="invalid-feedback d-block">
+                                                {% for error in form.nombre_candidats.errors %}
+                                                    {{ error }}
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="{{ form.nombre_entretiens.id_for_label }}" class="form-label fw-medium text-primary">{{ form.nombre_entretiens.label }}</label>
+                                        {{ form.nombre_entretiens|add_class:"form-control shadow-sm rounded-3 border-0" }}
+                                        {% if form.nombre_entretiens.errors %}
+                                            <div class="invalid-feedback d-block">
+                                                {% for error in form.nombre_entretiens.errors %}
+                                                    {{ error }}
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div> <!-- Fin de l'accordéon -->
+
+                <!-- Bouton de soumission -->
+                <div class="d-flex justify-content-end mt-4">
+                    <button type="submit" class="btn btn-primary btn-lg shadow rounded-pill px-4">
+                        <i class="fas fa-save me-2"></i> Enregistrer
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Ajout du CSS Flatpickr -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/material_blue.css">
+
+<!-- Ajout du JavaScript Flatpickr -->
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/fr.js"></script>
+
+<!-- Configuration des calendriers -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Configuration du datepicker pour la date de début
+    const startDatePicker = flatpickr("#{{ form.start_date.id_for_label }}", {
+        locale: "fr",
+        dateFormat: "Y-m-d",
+        allowInput: true,
+        monthSelectorType: "static",
+        altInput: true,
+        altFormat: "d/m/Y",
+        theme: "material_blue",
+        animate: true,
+        onChange: function(selectedDates, dateStr) {
+            endDatePicker.set('minDate', dateStr);
+        }
+    });
+    
+    const endDatePicker = flatpickr("#{{ form.end_date.id_for_label }}", {
+        locale: "fr",
+        dateFormat: "Y-m-d",
+        allowInput: true,
+        monthSelectorType: "static",
+        altInput: true,
+        altFormat: "d/m/Y",
+        theme: "material_blue",
+        animate: true,
+        minDate: document.getElementById("{{ form.start_date.id_for_label }}").value || null
+    });
+});
+</script>
+
+<style>
+/* Styles personnalisés pour améliorer l'apparence des calendriers */
+.date-picker-container {
+    position: relative;
+}
+.flatpickr-calendar {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+    border: none !important;
+}
+.flatpickr-day.selected {
+    background: var(--primary-color) !important;
+    border-color: var(--primary-color) !important;
+}
+.flatpickr-day.today {
+    border-color: var(--primary-color) !important;
+}
+.flatpickr-day:hover {
+    background: rgba(0, 123, 255, 0.1) !important;
+}
+</style>
+{% endblock %}

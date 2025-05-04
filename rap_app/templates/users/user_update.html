@@ -1,0 +1,11 @@
+<!-- rap_app/templates/users/user_update.html -->
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>Modifier l'utilisateur</h1>
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Mettre à jour</button>
+</form>
+{% endblock %}

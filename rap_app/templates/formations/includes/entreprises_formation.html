@@ -1,0 +1,24 @@
+<!-- 🏢 Entreprises liées -->
+<div class="card mb-4">
+    <div class="card-header bg-light">
+        <h5 class="mb-0">Entreprises liées à la formation</h5>
+    </div>
+    <div class="card-body">
+        {% if entreprises %}
+            <ul class="list-group">
+                {% for company in entreprises %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        {{ company.name }} ({{ company.city }})
+                        <a href="{% url 'company-detail' company.id %}" class="btn btn-sm btn-outline-info">👁 Détail</a>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="text-muted">Aucune entreprise liée à cette formation.</p>
+        {% endif %}
+
+        <a href="{% url 'company-create' %}?next={{ request.path }}" class="btn btn-primary mt-3">
+            ➕ Ajouter une entreprise
+        </a>
+        </div>
+</div>

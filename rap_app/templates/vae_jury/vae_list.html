@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+  <h2>Liste des VAE</h2>
+
+  <form method="get" class="row g-2 mb-3">
+    <div class="col-md-3">
+      <select name="centre" class="form-select" onchange="this.form.submit()">
+        <option value="">Tous les centres</option>
+        {% for c in centres %}
+        <option value="{{ c.id }}" {% if request.GET.centre == c.id|stringformat:"s" %}selected{% endif %}>{{ c.nom }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-2">
+      <select name="annee" class="form-select" onchange="this.form.submit()">
+        <option value="">Toutes les années</option>
+        {% for a in annees %}
+        <option value="{{ a.year }}" {% if request.GET.annee == a.year|stringformat:"s" %}selected{% endif %}>{{ a.year }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-2">
+      <select name="mois" class="form-select" onchange="this.form.submit()">
+        <option value="">Tous les mois</option>
+        {% for mois_num, mois_label in vaes.first.MOIS_CHOICES %}
+        <option value="{{ mois_num }}" {% if request.GET.mois == mois_num|stringformat:"s" %}selected{% endif %}>{{ mois_label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-3">
+      <select name="statut" class="form-select" onchange="this.form.submit()">
+        <option value="">Tous les statuts</option>
+        {% for key, label in statuts %}
+        <option value="{{ key }}" {% if request.GET.statut == key %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+  </form>
+
+  <table class="table table-bordered table-hover">
+    <thead class="table-light">
+      <tr>
+        <th>Réf.</th>
+        <th>Centre</th>
+        <th>Date</th>
+        <th>Statut</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for vae in vaes %}
+      <tr>
+        <td>{{ vae.reference }}</td>
+        <td>{{ vae.centre.nom }}</td>
+        <td>{{ vae.date_creation|date:"d/m/Y" }}</td>
+        <td>{{ vae.get_statut_display }}</td>
+        <td>
+          <a href="{% url 'vae-detail' vae.pk %}" class="btn btn-sm btn-outline-primary">Détail</a>
+          <a href="{% url 'vae-update' vae.pk %}" class="btn btn-sm btn-outline-warning">Modifier</a>
+          <a href="{% url 'vae-delete' vae.pk %}" class="btn btn-sm btn-outline-danger">Supprimer</a>
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="5" class="text-center">Aucune VAE trouvée.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <a href="{% url 'vae-create' %}" class="btn btn-success mt-3">Ajouter une VAE</a>
+</div>
+{% endblock %}

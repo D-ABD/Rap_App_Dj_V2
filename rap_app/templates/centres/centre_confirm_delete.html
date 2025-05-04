@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    {% include "composants/bouton_retour.html" %}
+
+    <h2 class="text-danger"><i class="fas fa-trash-alt me-2"></i> Supprimer le centre : {{ centre.nom }}</h2>
+
+    {% if not can_delete %}
+        <div class="alert alert-warning mt-3">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            Ce centre ne peut pas être supprimé car il a <strong>{{ formations_count }}</strong> formation(s) associée(s),
+            dont <strong>{{ formations_actives }}</strong> formation(s) active(s).
+            <br>Veuillez d'abord réassigner ou supprimer ces formations.
+        </div>
+    {% else %}
+        <div class="alert alert-danger mt-3">
+            <i class="fas fa-exclamation-circle me-2"></i>
+            Cette action est <strong>irréversible</strong>. La suppression entraînera la perte de toutes les données liées à ce centre.
+        </div>
+    {% endif %}
+
+    <form method="post" class="mt-4">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger" {% if not can_delete %}disabled{% endif %}>
+            <i class="fas fa-trash-alt"></i> Oui, supprimer
+        </button>
+        <a href="{% url 'centre-detail' centre.pk %}" class="btn btn-secondary">
+            <i class="fas fa-times"></i> Annuler
+        </a>
+    </form>
+</div>
+{% endblock %}

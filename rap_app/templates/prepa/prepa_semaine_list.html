@@ -1,0 +1,183 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container my-4">
+  <h2 class="mb-4"><i class="bi bi-calendar-week"></i> Semaines de Prépa Comp</h2>
+
+  <!-- Filtres -->
+<!-- Filtres -->
+<form method="get" class="card card-body shadow-sm mb-4">
+  <div class="row g-3 align-items-end">
+    <div class="col-md-3">
+      <label for="id_centre" class="form-label">🏢 Centre</label>
+      <select name="centre" id="id_centre" class="form-select">
+        <option value="">Tous les centres</option>
+        {% for c in centres %}
+          <option value="{{ c.id }}" {% if request.GET.centre == c.id|stringformat:"i" %}selected{% endif %}>{{ c.nom }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="col-md-2">
+      <label for="id_annee" class="form-label">📅 Année</label>
+      <select name="annee" id="id_annee" class="form-select">
+        <option value="">Toutes</option>
+        {% for a in annees %}
+          <option value="{{ a }}" {% if request.GET.annee == a|stringformat:"i" %}selected{% endif %}>{{ a }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="col-md-2">
+      <label for="id_mois" class="form-label">🗓 Mois</label>
+      <select name="mois" id="id_mois" class="form-select">
+        <option value="">Tous</option>
+        {% for num, nom in NOMS_MOIS.items %}
+          <option value="{{ num }}" {% if request.GET.mois == num|stringformat:"i" %}selected{% endif %}>{{ nom }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="col-md-4">
+      <label for="id_semaine" class="form-label">📆 Semaine (avec période)</label>
+      <select name="semaine" id="id_semaine" class="form-select">
+        <option value="">Toutes</option>
+        {% for s in semaines_disponibles %}
+          <option value="{{ s.numero_semaine }}" {% if request.GET.semaine == s.numero_semaine|stringformat:"i" %}selected{% endif %}>
+            S{{ s.numero_semaine }} – du {{ s.date_debut_semaine|date:"d/m" }} au {{ s.date_fin_semaine|date:"d/m" }}
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <!-- Bouton filtrer -->
+    <div class="col-md-1 d-grid">
+      <button class="btn btn-primary" title="Filtrer">
+        <i class="bi bi-search me-1"></i>
+        <span class="d-none d-md-inline">Filtrer</span>
+      </button>
+    </div>
+
+    <!-- Bouton réinitialiser -->
+    <div class="col-md-1 d-grid">
+      <a href="{% url 'prepa_semaine_list' %}" class="btn btn-outline-secondary" title="Réinitialiser">
+        <i class="bi bi-arrow-clockwise me-1"></i>
+        <span class="d-none d-md-inline">Réinitialiser</span>
+      </a>
+    </div>
+  </div>
+</form>
+
+  <!-- Objectifs globaux -->
+  <div class="row mb-4">
+    <div class="col-md-6">
+      <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+          <h5 class="mb-0"><i class="bi bi-bullseye"></i> Objectifs Globaux</h5>
+        </div>
+        <div class="card-body">
+          <p><strong>Objectif annuel :</strong> {{ objectif_annuel_global }}</p>
+          <p><strong>Objectif hebdomadaire :</strong> {{ objectif_hebdo_global }}</p>
+          {% if total_objectif_annuel and total_objectif_hebdo %}
+          <hr>
+          <h6>Total des centres :</h6>
+          <div class="d-flex flex-wrap gap-2">
+            <span class="badge bg-primary">Annuel : {{ total_objectif_annuel }}</span>
+            <span class="badge bg-info text-dark">Hebdo : {{ total_objectif_hebdo }}</span>
+            <span class="badge bg-success">Mensuel : {{ total_objectif_mensuel }}</span>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bouton d'ajout -->
+  <div class="mb-3 d-flex justify-content-end">
+    <a href="{% url 'prepa_semaine_create' %}?centre={{ request.GET.centre }}" class="btn btn-success">
+      <i class="bi bi-plus-circle"></i> Ajouter une semaine
+    </a>
+  </div>
+
+  <!-- Tableau des semaines -->
+  <div class="table-responsive">
+    <table class="table table-striped table-hover align-middle shadow-sm">
+      <thead class="table-light">
+        <tr>
+          <th>Semaine</th>
+          <th>Mois / Année</th>
+          <th>Centre</th>
+          <th>Places</th>
+          <th>Prescriptions</th>
+          <th>Présents</th>
+          <th>Adhésions</th>
+          <th>Taux transfo.</th>
+          <th>Objectif</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for semaine in semaines %}
+        <tr>
+          <td>
+            <strong>S{{ semaine.numero_semaine }}</strong><br>
+            <small class="text-muted">{{ semaine.date_debut_semaine|date:"d/m" }} → {{ semaine.date_fin_semaine|date:"d/m" }}</small>
+          </td>
+          <td>{{ semaine.mois|stringformat:"02d" }}/{{ semaine.annee }}</td>
+          <td>{{ semaine.centre }}</td>
+          <td>{{ semaine.nombre_places_ouvertes }}</td>
+          <td>{{ semaine.nombre_prescriptions }}</td>
+          <td>{{ semaine.nombre_presents_ic }}</td>
+          <td>{{ semaine.nombre_adhesions }}</td>
+          <td>
+            {% if semaine.nombre_presents_ic > 0 %}
+              <span class="badge {% if semaine.taux_transformation >= 80 %}bg-success{% elif semaine.taux_transformation >= 50 %}bg-warning text-dark{% else %}bg-danger{% endif %}">
+                {{ semaine.taux_transformation|floatformat:1 }}%
+              </span>
+            {% else %}
+              <span class="badge bg-secondary">N/A</span>
+            {% endif %}
+          </td>
+          <td>
+            {% with taux=semaine.pourcentage_objectif|floatformat:0 %}
+              <span class="badge {% if taux >= 100 %}bg-success{% elif taux >= 50 %}bg-warning text-dark{% else %}bg-danger{% endif %}">
+                {{ semaine.nombre_adhesions }} / {{ semaine.objectif_hebdo_prepa }} ({{ taux }}%)
+              </span>
+            {% endwith %}
+          </td>
+          <td>
+            <div class="btn-group btn-group-sm">
+              <a href="{% url 'prepa_semaine_detail' semaine.pk %}" class="btn btn-outline-primary" title="Détail"><i class="bi bi-eye"></i></a>
+              <a href="{% url 'prepa_semaine_update' semaine.pk %}" class="btn btn-outline-warning" title="Modifier"><i class="bi bi-pencil-square"></i></a>
+              <a href="{% url 'prepa_semaine_delete' semaine.pk %}" class="btn btn-outline-danger" title="Supprimer"><i class="bi bi-trash"></i></a>
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="10" class="text-center text-muted">Aucune semaine trouvée.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination -->
+  {% if is_paginated %}
+    <nav>
+      <ul class="pagination justify-content-center">
+        {% if page_obj.has_previous %}
+          <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{{ request.GET.urlencode|cut:'page='|yesno:',&' }}" aria-label="Précédent">←</a>
+          </li>
+        {% endif %}
+        <li class="page-item active"><span class="page-link">{{ page_obj.number }}</span></li>
+        {% if page_obj.has_next %}
+          <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.next_page_number }}{{ request.GET.urlencode|cut:'page='|yesno:',&' }}" aria-label="Suivant">→</a>
+          </li>
+        {% endif %}
+      </ul>
+    </nav>
+  {% endif %}
+</div>
+{% endblock %}

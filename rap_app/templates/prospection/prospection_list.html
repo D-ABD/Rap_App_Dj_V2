@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+
+{% block title %}Liste des Prospections{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <a href="{% url 'prospection-export' %}?{{ request.GET.urlencode }}" class="btn btn-outline-success mb-3 float-end">
+        <i class="fas fa-file-csv"></i> Exporter CSV
+    </a>    
+    <h1>📋 Liste des Prospections</h1>
+    <a href="{% url 'prospection-add' %}" class="btn btn-primary mb-3">➕ Ajouter une prospection</a>
+
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Entreprise</th>
+                <th>Formation</th>
+                <th> Type de formation</th>
+                <th>Statut</th>
+                <th>Objectif</th>
+                <th>Date</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for prospection in prospections %}
+            <tr>
+                <td>{{ prospection.company.name }}</td>
+                <td>
+                    {% if prospection.formation %}
+                        <strong>{{ prospection.formation.nom }} {{ prospection.formation.num_offre|default:"-" }}</strong><br>
+                        <small>
+                            Offre:{{ prospection.formation.num_offre|default:"-" }} <br>
+                            Du {{ prospection.formation.start_date|date:"d/m/Y" }} au {{ prospection.formation.end_date|date:"d/m/Y" }}<br>
+                        </small>
+
+                    {% else %}
+                        <em>Sans formation</em>
+                    {% endif %}
+                </td>
+                <td>{{ prospection.formation.type_offre }}</td>
+
+                <td>{{ prospection.get_statut_display }}</td>
+                <td>{{ prospection.get_objectif_display }}</td>
+                <td>{{ prospection.date_prospection|date:"d/m/Y" }}</td>
+                <td>
+                    <a href="{% url 'prospection-detail' prospection.id %}" class="btn btn-info btn-sm">👁</a>
+                    <a href="{% url 'prospection-update' prospection.id %}" class="btn btn-warning btn-sm">✏</a>
+                    <a href="{% url 'prospection-delete' prospection.id %}" class="btn btn-danger btn-sm">🗑</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

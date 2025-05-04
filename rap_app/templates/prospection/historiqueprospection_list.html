@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block title %}Historique des Prospections{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>🕓 Historique des modifications de prospections</h2>
+
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Entreprise</th>
+                <th>Formation</th>
+                <th>Ancien Statut</th>
+                <th>Nouveau Statut</th>
+                <th>Modifié par</th>
+                <th>Détail</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for h in historiques %}
+            <tr>
+                <td>{{ h.date_modification|date:"d/m/Y H:i" }}</td>
+                <td>{{ h.prospection.company.name }}</td>
+                <td>
+                    {% if h.prospection.formation %}
+                        {{ h.prospection.formation.nom }} ({{ h.prospection.formation.num_offre }})
+                    {% else %}
+                        <em>Sans formation</em>
+                    {% endif %}
+                </td>
+                <td>{{ h.get_ancien_statut_display }}</td>
+                <td>{{ h.get_nouveau_statut_display }}</td>
+                <td>{{ h.modifie_par }}</td>
+                <td>
+                    <a href="{% url 'historique-prospection-detail' h.id %}" class="btn btn-sm btn-outline-primary">👁</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7" class="text-center text-muted">Aucune modification enregistrée.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

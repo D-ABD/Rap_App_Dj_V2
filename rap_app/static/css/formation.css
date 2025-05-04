@@ -1,0 +1,345 @@
+    /* Variables CSS pour une cohérence des couleurs et des mesures */
+    :root {
+        --primary-color: #0d6efd;
+        --primary-dark: #0a58ca;
+        --success-color: #198754;
+        --info-color: #0dcaf0;
+        --danger-color: #dc3545;
+        --warning-color: #ffc107;
+        --secondary-color: #6c757d;
+        --light-color: #f8f9fa;
+        --dark-color: #212529;
+        --border-radius: 0.5rem;
+        --transition-speed: 0.25s;
+        --box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        --input-size: 60px;
+    }
+
+    /* Styles généraux */
+    .formation-card {
+        transition: all var(--transition-speed) ease;
+        margin-bottom: 1.5rem;
+    }
+    
+    .bg-gradient-primary {
+        background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    }
+    
+    /* Animation pulse pour les icônes */
+    .pulse-icon {
+        animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+        100% { transform: scale(1); }
+    }
+    
+    /* Boutons d'action dans l'en-tête */
+    .btn-icon {
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all var(--transition-speed) ease;
+    }
+    
+    .btn-icon:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
+    
+    /* Table responsive avec design moderne */
+    .table-container {
+        overflow-x: auto;
+        scrollbar-width: thin;
+        scrollbar-color: var(--secondary-color) var(--light-color);
+        border-radius: 0 0 var(--border-radius) var(--border-radius);
+    }
+    
+    .formation-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+    
+    .formation-table thead {
+        z-index: 10;
+    }
+    
+    .formation-table th {
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: var(--dark-color);
+        position: sticky;
+        top: 0;
+        background-color: var(--light-color);
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    }
+    
+    /* Lignes avec effet hover amélioré */
+    .formation-row {
+        transition: all var(--transition-speed) ease;
+        position: relative;
+    }
+    
+    .formation-row:hover {
+        background-color: rgba(13, 110, 253, 0.05);
+        transform: translateY(-2px);
+        box-shadow: var(--box-shadow);
+        z-index: 5;
+    }
+    
+    /* Liens de formation avec animation */
+    .formation-link {
+        position: relative;
+        transition: all var(--transition-speed) ease;
+        text-decoration: none;
+    }
+    
+    .formation-link:hover {
+        color: var(--primary-dark) !important;
+    }
+    
+    .formation-link::after {
+        content: '';
+        position: absolute;
+        width: 0;
+        height: 2px;
+        bottom: -2px;
+        left: 50%;
+        background-color: var(--primary-color);
+        transition: all var(--transition-speed) ease;
+    }
+    
+    .formation-link:hover::after {
+        width: 100%;
+        left: 0;
+    }
+    
+    /* Indicateurs de statut et badges améliorés */
+    .type-badge {
+        border-radius: var(--border-radius);
+        padding: 0.35rem 0.65rem;
+        transition: all var(--transition-speed) ease;
+        font-weight: 500;
+    }
+    
+    .status-select {
+        border-radius: var(--border-radius);
+        cursor: pointer;
+        transition: all var(--transition-speed) ease;
+    }
+    
+    .status-select:focus {
+        transform: scale(1.03);
+        box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+    }
+    
+    /* Inputs stylisés */
+    .number-input {
+        width: var(--input-size);
+        min-width: var(--input-size);
+        max-width: var(--input-size);
+        text-align: center;
+        border-radius: var(--border-radius);
+        transition: all var(--transition-speed) ease;
+    }
+    
+    .date-input {
+        width: 90%; /* Prend toute la largeur disponible */
+        max-width: 300px; /* Largeur maximale */
+        min-width: 200px; /* Largeur minimale pour éviter un rétrécissement excessif */
+        font-size: 0.9rem; /* Taille de police légèrement augmentée pour une meilleure lisibilité */
+        padding: 0.5rem 0.75rem; /* Padding plus généreux pour un meilleur confort de saisie */
+        border: 1px solid #ced4da; /* Bordure subtile */
+        border-radius: 0.375rem; /* Coins arrondis */
+        transition: all 0.2s ease-in-out; /* Transition fluide pour les interactions */
+        background-color: #fff; /* Fond blanc */
+        color: #495057; /* Couleur de texte sombre */
+    }
+    
+    .date-input:focus {
+        border-color: #80bdff; /* Bordure bleue au focus */
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25); /* Ombre portée au focus */
+        outline: none; /* Supprime l'outline par défaut */
+    }
+    
+    /* Style pour les petits écrans */
+    @media (max-width: 768px) {
+        .date-input {
+            max-width: 100%; /* Prend toute la largeur sur les petits écrans */
+            font-size: 0.8rem; /* Taille de police réduite pour les petits écrans */
+            padding: 0.4rem 0.6rem; /* Padding ajusté */
+        }
+    }
+
+    
+    .kairos-input {
+        width: 100%;
+        max-width: 120px;
+        font-size: 0.8rem;
+        padding: 0.25rem 0.5rem;
+        word-break: break-word;     /* Permet de couper les mots si besoin */
+        white-space: normal;        /* Autorise le retour à la ligne */
+    }
+    
+    
+    .number-input:focus, .date-input:focus, .kairos-input:focus {
+        transform: scale(1.03);
+        box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+    }
+    
+    /* Indicateurs visuels améliorés */
+    .dot-indicator {
+        display: inline-block;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        margin-right: 5px;
+    }
+    
+    .label-with-icon {
+        display: flex;
+        align-items: center;
+        font-size: 0.75rem;
+    }
+    
+    .custom-progress {
+        height: 8px;
+        width: 90px;
+        border-radius: 4px;
+        background-color: rgba(0,0,0,0.05);
+        overflow: hidden;
+        box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
+    }
+    
+    .progress-bar {
+        transition: width 1s ease-in-out;
+    }
+    
+    .badge-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .custom-badge {
+        transition: all var(--transition-speed) ease;
+        min-width: 80px;
+    }
+    
+    /* Animation pour les mises à jour */
+    @keyframes highlightUpdate {
+        0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(13, 110, 253, 0.7); }
+        50% { transform: scale(1.1); box-shadow: 0 0 10px 0 rgba(13, 110, 253, 0.5); }
+        100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(13, 110, 253, 0); }
+    }
+    
+    .highlight-update {
+        animation: highlightUpdate 1s ease-in-out;
+    }
+    
+    /* Personnalisation des valeurs numériques */
+    .transformation-value, .saturation-value {
+        font-size: 0.9rem;
+        transition: all var(--transition-speed) ease;
+    }
+    
+    /* État vide amélioré */
+    .empty-state {
+        padding: 3rem 1rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .empty-state i {
+        color: var(--secondary-color);
+        margin-bottom: 1rem;
+    }
+    
+    .empty-state p {
+        font-size: 1.1rem;
+        color: var(--secondary-color);
+    }
+    
+    /* Toast amélioré */
+    .toast {
+        border-radius: var(--border-radius);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        animation: slideIn 0.3s ease-out;
+    }
+    
+    @keyframes slideIn {
+        from { transform: translateY(100%); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+    
+    /* Adaptation pour mobiles et tablettes */
+    @media (max-width: 992px) {
+        .formation-card {
+            margin: 0 -0.5rem 1rem -0.5rem;
+            border-radius: 0;
+        }
+        
+        .table th, .table td {
+            padding: 0.5rem 0.25rem;
+            font-size: 0.85rem;
+        }
+        
+        .number-input {
+            width: 50px;
+            min-width: 50px;
+        }
+        
+        .date-input {
+            max-width: 120px;
+        }
+    }
+    
+    @media (max-width: 576px) {
+        .card-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        
+        .action-buttons {
+            margin-top: 0.5rem;
+            align-self: flex-end;
+        }
+        
+        .table th, .table td {
+            padding: 0.4rem 0.2rem;
+            font-size: 0.75rem;
+        }
+        
+        .number-input {
+            width: 40px;
+            min-width: 40px;
+            padding-left: 2px;
+            padding-right: 2px;
+        }
+        
+        .status-select {
+            width: 100%;
+            min-width: 80px;
+        }
+
+        .input-group-text {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.375rem;
+        }
+        .date-input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+        }
+        
+    }
