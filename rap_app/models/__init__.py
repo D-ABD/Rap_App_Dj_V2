@@ -11,43 +11,20 @@ from .evenements import Evenement
 from .documents import Document
 from .partenaires import Partenaire
 from .rapports import Rapport
-from .company import Company
 from .prospection import Prospection, HistoriqueProspection
 from .prepacomp import Semaine, PrepaCompGlobal
 from .vae_jury import VAE, SuiviJury, HistoriqueStatutVAE
 from .logs import LogUtilisateur
-from .user_profil import UserProfile
+from .custom_user import CustomUser
 
-__all__ = [
-    'BaseModel',
-    'Centre',
-    'Statut',
-    'TypeOffre',
-    'Formation',
-    'FormationManager',
-    'HistoriqueFormation',
-    'Commentaire',
-    'Partenaire',
-    'Evenement',
-    'Document',
-    'Rapport',
-    'Prospection',
-    'HistoriqueProspection',
-    'Company',
-    'Semaine',
-    'PrepaCompGlobal',
-    'VAE',
-    'SuiviJury',
-    'HistoriqueStatutVAE',
-    'LogUtilisateur',
-    'UserProfile',
-]
+__all__ = ['CustomUser']  # Important pour l'importation
+
+
 
 # ✅ Import des fichiers contenant des signaux (obligatoire pour qu'ils soient déclenchés)
 from . import (
     centres,
     commentaires,
-    company,
     documents,
     evenements,
     formations,
@@ -58,6 +35,6 @@ from . import (
     rapports,
     statut,
     types_offre,
-    user_profil,
+    custom_user,
     vae_jury,
 )

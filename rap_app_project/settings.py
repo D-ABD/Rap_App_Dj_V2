@@ -29,17 +29,13 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    
-    # Third party apps
+    'rap_app',  
     'rest_framework',
     'django_filters',
     'corsheaders',
     'rest_framework_simplejwt.token_blacklist',
     'rest_framework_simplejwt',
 
-
-    # Local apps
-    'rap_app',
 ]
 
 MIDDLEWARE = [
@@ -54,6 +50,8 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'rap_app_project.urls'
+
+
 
 TEMPLATES = [
     {
@@ -72,6 +70,10 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'rap_app_project.wsgi.application'
+
+
+AUTH_USER_MODEL = 'rap_app.CustomUser'
+
 
 # Database
 DATABASES = {
@@ -221,3 +223,5 @@ LOGGING = {
         },
     },
 }
+
+ENABLE_MODEL_LOGGING = True  # ou False en production

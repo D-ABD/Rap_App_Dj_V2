@@ -132,4 +132,42 @@ python3 manage.py test
 python3 manage.py test nom_de_lapp
 python3 manage.py test nom_de_lapp.tests.NomDeLaClasseDeTest
 python3 manage.py test nom_de_lapp.tests.NomDeLaClasseDeTest.nom_methode
-exemple : python3 manage.py test accounts.tests.UserSerializerTest -v 2
+exemple : python3 manage.py test accounts.tests.UserSerializerTest 
+
+python3 manage.py test rap_app.tests.test_model
+
+
+# --------------------------
+#Models
+# --------------------------
+
+- ajouter shéma sawgger
+
+- dosctrings complets, verbose name, help text
+
+- Déplacer les signaux dans signals et services dans services
+
+ - verifier si c'est fait, ou intégrer la journalisation dans un modèle de logs générique en créant un log LogUtilisateur à chaque save() ou suppression via les signaux). 
+
+ - Intégrer des messages d'erreur eplicites dans les models
+
+ - Je souhaite que quand le user chois "autre" qu'il remplisse un champ pour définir "autre"
+
+ - Retirer created_by des models, et les autes champs; puisque dans base model : 
+Timestamps :
+created_at (DateTime)
+updated_at (DateTime)
+Tracking utilisateur :
+created_by (ForeignKey → User)
+updated_by (ForeignKey → User)
+
+Méthodes génériques :
+save() (sauf besoin spécifique)
+__str__() (sauf personnalisation)
+
+Configuration Meta :
+abstract = True
+ordering = ['-created_at']
+get_latest_by = 'created_at'
+
+ - 

@@ -1,42 +1,29 @@
 from django.db import models
-from django.contrib.auth import get_user_model
+from .base import BaseModel  # Assure-toi que BaseModel est bien importé
 
-User = get_user_model()
+class LogUtilisateur(BaseModel):
+    """
+    Log simplifié pour tracer les actions des utilisateurs dans l'application.
+    Hérite de BaseModel pour les dates et les utilisateurs.
+    """
 
-class LogUtilisateur(models.Model):
-    """Log générique pour tracer les actions des utilisateurs dans l'app."""
-
-    utilisateur = models.ForeignKey(
-        User,
-        on_delete=models.SET_NULL,
-        null=True,
-        verbose_name="Utilisateur"
-    )
-    modele = models.CharField(
-        max_length=100,
-        verbose_name="Modèle concerné"
-    )
-    object_id = models.PositiveIntegerField(
-        verbose_name="ID de l'objet"
-    )
     action = models.CharField(
         max_length=255,
-        verbose_name="Action"
+        verbose_name="Action",
+        help_text="Type d'action (création, modification, suppression...)"
     )
+
     details = models.TextField(
         blank=True,
         null=True,
-        verbose_name="Détails complémentaires"
-    )
-    date = models.DateTimeField(
-        auto_now_add=True,
-        verbose_name="Date de l'action"
+        verbose_name="Détails",
+        help_text="Informations supplémentaires sur l'action"
     )
 
     class Meta:
         verbose_name = "Log utilisateur"
         verbose_name_plural = "Logs utilisateurs"
-        ordering = ['-date']
+        ordering = ['-created_at']  # Utilisation de created_at pour l'ordre
 
     def __str__(self):
-        return f"{self.utilisateur} - {self.action} - {self.modele}({self.object_id})"
+        return f"{self.action} - {self.created_at.strftime('%d/%m/%Y %H:%M')}"

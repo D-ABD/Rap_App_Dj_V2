@@ -1,6 +1,7 @@
 # models/rapports.py
 from django.db import models
 from django.utils import timezone
+from django.core.exceptions import ValidationError
 
 from ..models.formations import Formation
 from .base import BaseModel
@@ -78,14 +79,17 @@ class Rapport(BaseModel):
     donnees = models.JSONField(default=dict, verbose_name="Données du rapport")
     
     # Métadonnées
-    date_generation = models.DateTimeField(default=timezone.now, verbose_name="Date de génération")
-    utilisateur = models.ForeignKey('auth.User', null=True, blank=True, on_delete=models.SET_NULL, verbose_name="Généré par")
     temps_generation = models.FloatField(null=True, blank=True, verbose_name="Temps de génération (s)")
     
     class Meta:
         verbose_name = "Rapport"
         verbose_name_plural = "Rapports"
-        ordering = ['-date_generation']
+        ordering = ['-created_at']
         
     def __str__(self):
         return f"{self.nom} - {self.get_type_rapport_display()} ({self.date_debut} à {self.date_fin})"
+    
+    def clean(self):
+        super().clean()
+        if self.date_debut and self.date_fin and self.date_debut > self.date_fin:
+            raise ValidationError("La date de début ne peut pas être postérieure à la date de fin.")

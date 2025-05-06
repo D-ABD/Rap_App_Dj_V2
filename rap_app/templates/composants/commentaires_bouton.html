@@ -1,9 +1,0 @@
-
-
-<a href="{% url 'all-commentaires' %}{% if request.GET %}?{{ request.GET.urlencode }}{% endif %}"
-   class="btn btn-outline-primary btn-sm d-flex align-items-center">
-    <i class="fas fa-comments me-2"></i> Voir Tous les Commentaires
-    {% if total_commentaires is not None %}
-        <span class="badge bg-primary ms-2">{{ total_commentaires }}</span>
-    {% endif %}
-</a>

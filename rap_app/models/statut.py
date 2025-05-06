@@ -1,4 +1,5 @@
 import logging
+import re
 from django.db import models
 from django.core.exceptions import ValidationError
 from django.db.models.signals import post_delete
@@ -15,6 +16,12 @@ logger = logging.getLogger("application.statut")
 def get_default_color(statut_nom):
     """
     Retourne une couleur prédéfinie selon le type de statut.
+    
+    Args:
+        statut_nom (str): Le nom du statut (clé dans STATUT_CHOICES)
+        
+    Returns:
+        str: Code couleur hexadécimal correspondant au statut
     """
     COULEURS_PREDEFINIES = {
         'non_defini': "#FFEB3B",             # Jaune
@@ -30,9 +37,39 @@ def get_default_color(statut_nom):
     return COULEURS_PREDEFINIES.get(statut_nom, "#607D8B")  # Bleu-gris par défaut
 
 
+def calculer_couleur_texte(couleur_fond):
+    """
+    Calcule si le texte doit être noir ou blanc en fonction de la luminosité de la couleur de fond.
+    
+    Args:
+        couleur_fond (str): Code hexadécimal de la couleur de fond (#RRGGBB)
+        
+    Returns:
+        str: "#000000" (noir) ou "#FFFFFF" (blanc) selon la luminosité
+    """
+    # Extraire les composants RGB
+    r = int(couleur_fond[1:3], 16)
+    g = int(couleur_fond[3:5], 16)
+    b = int(couleur_fond[5:7], 16)
+    
+    # Calculer la luminosité (formule standard)
+    luminosite = (0.299 * r + 0.587 * g + 0.114 * b) / 255
+    
+    # Si luminosité > 0.5, le fond est clair, donc texte noir
+    return "#000000" if luminosite > 0.5 else "#FFFFFF"
+
+
 class Statut(BaseModel):
     """
-    🔵 Modèle représentant les statuts possibles d’une formation.
+    🔵 Modèle représentant les statuts possibles d'une formation.
+    
+    Ce modèle stocke les différents états qu'une formation peut avoir,
+    avec des couleurs associées pour l'affichage visuel.
+    
+    Attributes:
+        nom (str): L'identifiant du statut (choix prédéfini)
+        couleur (str): Code couleur hexadécimal (#RRGGBB)
+        description_autre (str): Description personnalisée pour le statut 'autre'
     """
 
     # Choix de statuts
@@ -82,21 +119,29 @@ class Statut(BaseModel):
         """
         ✅ Validation personnalisée :
         - Vérifie `description_autre` si le statut est 'autre'
-        - Vérifie le format couleur si fourni
+        - Vérifie le format couleur si fourni (format et caractères valides)
+        
+        Raises:
+            ValidationError: Si les données ne sont pas valides
         """
         if self.nom == self.AUTRE and not self.description_autre:
             raise ValidationError({
                 'description_autre': "Le champ 'description personnalisée' est requis pour le statut 'Autre'."
             })
 
-        if self.couleur and (not self.couleur.startswith('#') or len(self.couleur) != 7):
-            raise ValidationError({
-                'couleur': "La couleur doit être au format hexadécimal (#RRGGBB)."
-            })
+        if self.couleur:
+            # Vérification améliorée avec regex pour le format hexadécimal
+            if not re.match(r'^#[0-9A-Fa-f]{6}$', self.couleur):
+                raise ValidationError({
+                    'couleur': "La couleur doit être au format hexadécimal valide (#RRGGBB)."
+                })
 
     def get_nom_display(self):
         """
         Affiche le libellé du statut. Si 'Autre', retourne la description personnalisée.
+        
+        Returns:
+            str: Le libellé du statut à afficher
         """
         if self.nom == self.AUTRE and self.description_autre:
             return self.description_autre
@@ -104,11 +149,19 @@ class Statut(BaseModel):
 
     def get_badge_html(self):
         """
-        Génère un badge HTML avec la couleur associée.
+        Génère un badge HTML avec la couleur associée et un texte contrasté.
+        
+        Le texte sera en noir ou blanc selon la luminosité de la couleur de fond
+        pour garantir une meilleure accessibilité.
+        
+        Returns:
+            SafeString: Code HTML formaté pour l'affichage du badge
         """
+        couleur_texte = calculer_couleur_texte(self.couleur)
         return format_html(
-            '<span class="badge" style="background-color:{}; color:white; padding: 3px 8px; border-radius: 5px;">{}</span>',
+            '<span class="badge" style="background-color:{}; color:{}; padding: 3px 8px; border-radius: 5px;">{}</span>',
             self.couleur,
+            couleur_texte,
             self.get_nom_display()
         )
 
@@ -117,13 +170,20 @@ class Statut(BaseModel):
         🔁 Sauvegarde du statut :
         - Applique une couleur par défaut si vide
         - Journalise création ou modification
+        
+        Args:
+            *args: Arguments variables
+            **kwargs: Arguments nommés variables
         """
         is_new = self.pk is None
 
         if not self.couleur:
             self.couleur = get_default_color(self.nom)
 
-        self.full_clean()
+        # Possibilité de désactiver la validation complète avec skip_validation=True
+        if not kwargs.pop('skip_validation', False):
+            self.full_clean()
+            
         super().save(*args, **kwargs)
 
         if is_new:
@@ -134,11 +194,38 @@ class Statut(BaseModel):
     def __str__(self):
         """
         Représentation textuelle du modèle.
+        
+        Returns:
+            str: Le libellé du statut
         """
         return self.get_nom_display()
     
     def get_absolute_url(self):
+        """
+        Retourne l'URL pour accéder à la vue détaillée de ce statut.
+        
+        Returns:
+            str: URL absolue vers la page de détail du statut
+        """
         return reverse("statut-detail", kwargs={"pk": self.pk})
+    
+    @property
+    def serializable_data(self):
+        """
+        Retourne un dictionnaire des données du statut pour sérialisation.
+        
+        Cette propriété facilite la création de serializers DRF.
+        
+        Returns:
+            dict: Données du statut formatées pour sérialisation
+        """
+        return {
+            'id': self.id,
+            'nom': self.nom,
+            'libelle': self.get_nom_display(),
+            'couleur': self.couleur,
+            'description_autre': self.description_autre,
+        }
 
     class Meta:
         verbose_name = "Statut"
@@ -146,8 +233,16 @@ class Statut(BaseModel):
         ordering = ['nom']
 
 
-# 🔴 Signal pour journaliser la suppression d’un statut
+# 🔴 Signal pour journaliser la suppression d'un statut
 @receiver(post_delete, sender=Statut)
 def log_statut_deleted(sender, instance, **kwargs):
+    """
+    Signal déclenché lors de la suppression d'un statut.
+    Journalise l'information de suppression.
+    
+    Args:
+        sender: Le modèle qui a envoyé le signal
+        instance: L'instance du modèle qui a été supprimée
+        **kwargs: Arguments supplémentaires
+    """
     logger.warning(f"❌ Statut supprimé : {instance.get_nom_display()} ({instance.couleur})")
-

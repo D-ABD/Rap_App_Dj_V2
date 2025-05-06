@@ -3,6 +3,7 @@ import re
 from django.db import models, transaction
 from django.core.exceptions import ValidationError
 from django.utils.text import slugify
+from django.utils.html import format_html
 from .base import BaseModel
 
 # Configuration du logger
@@ -27,6 +28,7 @@ class TypeOffre(BaseModel):
     - Associer un type d'offre à une formation.
     - Filtrer les formations par type d'offre.
     - Permettre l'ajout d'un type personnalisé si besoin.
+    - Sérialisation facilité pour l'API REST.
     """
 
     # Constantes pour les choix de types d'offre
@@ -131,9 +133,13 @@ class TypeOffre(BaseModel):
         
         Args:
             *args, **kwargs: Arguments à passer à la méthode save() de base
+            
+        Kwargs:
+            skip_validation (bool): Si True, ignore la validation complète
         """
         is_new = self.pk is None
         old_instance = None
+        skip_validation = kwargs.pop('skip_validation', False)
         
         # Si modification, récupérer l'instance avant les changements
         if not is_new:
@@ -147,8 +153,9 @@ class TypeOffre(BaseModel):
             self.autre = self.autre.strip()
         self.couleur = self.couleur.lower() if self.couleur else '#6c757d'
         
-        # Validation complète
-        self.full_clean()
+        # Validation complète sauf si désactivée
+        if not skip_validation:
+            self.full_clean()
         
         # Attribution d'une couleur par défaut si nécessaire
         self.assign_default_color()
@@ -203,17 +210,7 @@ class TypeOffre(BaseModel):
         """
         return self.nom == self.AUTRE
     
-    def get_badge_html(self):
-        """
-        Génère le HTML pour afficher un badge avec la couleur du type d'offre.
-        
-        Returns:
-            str: Code HTML pour afficher un badge formaté
-        """
-        text_color = self.text_color()
-        return f'<span class="badge" style="background-color:{self.couleur};color:{text_color};">{self}</span>'
-    
-    def text_color(self):
+    def calculer_couleur_texte(self):
         """
         Détermine la couleur de texte adaptée (blanc ou noir) en fonction de la couleur de fond.
         
@@ -221,16 +218,8 @@ class TypeOffre(BaseModel):
         les autres ont un texte blanc pour assurer la lisibilité.
         
         Returns:
-            str: 'black' pour les fonds clairs, 'white' pour les fonds foncés
+            str: '#000000' pour les fonds clairs, '#FFFFFF' pour les fonds foncés
         """
-        # Couleurs claires qui nécessitent un texte noir
-        couleurs_claires = ['#ffff00', '#ffeb3b', '#fff176', '#fff59d', '#fffde7', '#ffffcc']
-        
-        if self.couleur.lower() in couleurs_claires:
-            return 'black'
-        
-        # Heuristique avancée: calculer la luminosité de la couleur
-        # Si la luminosité est élevée, utiliser du texte noir
         try:
             # Convertir le code hexadécimal en valeurs RGB
             hex_color = self.couleur.lstrip('#')
@@ -245,13 +234,27 @@ class TypeOffre(BaseModel):
             
             # Si la luminosité est supérieure à 0.5, la couleur est considérée comme claire
             if luminance > 0.5:
-                return 'black'
+                return '#000000'  # Texte noir pour les fonds clairs
+            return '#FFFFFF'  # Texte blanc pour les fonds foncés
         except Exception as e:
-            # En cas d'erreur, revenir à la logique simple
+            # En cas d'erreur, utiliser du texte blanc par défaut
             logger.warning(f"Erreur lors du calcul de la luminosité pour {self.couleur}: {str(e)}")
+            return '#FFFFFF'
+    
+    def get_badge_html(self):
+        """
+        Génère le HTML pour afficher un badge avec la couleur du type d'offre.
         
-        # Par défaut, utiliser du texte blanc
-        return 'white'
+        Returns:
+            SafeString: Code HTML formaté pour le badge
+        """
+        couleur_texte = self.calculer_couleur_texte()
+        return format_html(
+            '<span class="badge" style="background-color:{}; color:{}; padding: 3px 8px; border-radius: 5px;">{}</span>',
+            self.couleur,
+            couleur_texte,
+            self.__str__()
+        )
     
     def get_formations_count(self):
         """
@@ -261,6 +264,26 @@ class TypeOffre(BaseModel):
             int: Nombre de formations utilisant ce type d'offre
         """
         return self.formations.count()
+    
+    @property
+    def serializable_data(self):
+        """
+        Retourne un dictionnaire des données du type d'offre pour sérialisation.
+        
+        Cette propriété facilite la création de serializers DRF.
+        
+        Returns:
+            dict: Données du type d'offre formatées pour sérialisation
+        """
+        return {
+            'id': self.id,
+            'nom': self.nom,
+            'libelle': self.__str__(),
+            'couleur': self.couleur,
+            'autre': self.autre,
+            'is_personnalise': self.is_personnalise(),
+            'formations_count': self.get_formations_count(),
+        }
 
     class Meta:
         verbose_name = "Type d'offre"
@@ -278,9 +301,3 @@ class TypeOffre(BaseModel):
             models.Index(fields=['nom']),
             models.Index(fields=['autre']),
         ]
-    def get_badge_html(self):
-        """
-        Retourne un badge HTML avec la couleur associée au type d'offre.
-        """
-        color = self.couleur or "#6c757d"  # couleur par défaut si absente
-        return f'<span class="badge" style="background-color: {color}; color: white;">{self.nom}</span>'

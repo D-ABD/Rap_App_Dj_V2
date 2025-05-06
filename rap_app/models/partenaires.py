@@ -1,261 +1,193 @@
-import logging
-from django.conf import settings
 from django.db import models
-from django.core.exceptions import ValidationError
+from django.core.validators import RegexValidator
 from django.utils.text import slugify
+from django.utils import timezone
 from django.urls import reverse
+from django.conf import settings
+import logging
 from .base import BaseModel
-
-# Configuration du logger
 logger = logging.getLogger("application.partenaires")
 
-class PartenaireManager(models.Manager):
-    """
-    Manager personnalisé pour le modèle Partenaire avec des méthodes utilitaires.
-    
-    Ce manager fournit des méthodes de requête optimisées et des raccourcis
-    pour les opérations courantes sur les partenaires.
-    """
-    
-    def get_with_formations(self):
-        """
-        Retourne tous les partenaires avec le nombre de formations associées.
-        
-        Returns:
-            QuerySet: Partenaires annotés avec le nombre de formations
-        """
-        return self.annotate(nb_formations=models.Count('formations'))
-    
-    def actifs(self):
-        """
-        Retourne uniquement les partenaires associés à au moins une formation.
-        
-        Returns:
-            QuerySet: Partenaires actifs (avec formations)
-        """
-        return self.filter(formations__isnull=False).distinct()
-    
-    def par_secteur(self, secteur):
-        """
-        Filtre les partenaires par secteur d'activité.
-        
-        Args:
-            secteur (str): Secteur d'activité à rechercher
-            
-        Returns:
-            QuerySet: Partenaires filtrés par secteur
-        """
-        return self.filter(secteur_activite__icontains=secteur)
-    
-    def recherche(self, terme):
-        """
-        Recherche des partenaires par nom, secteur ou description.
-        
-        Args:
-            terme (str): Terme de recherche
-            
-        Returns:
-            QuerySet: Partenaires correspondant à la recherche
-        """
-        if not terme:
-            return self.all()
-            
-        return self.filter(
-            models.Q(nom__icontains=terme) |
-            models.Q(secteur_activite__icontains=terme) |
-            models.Q(description__icontains=terme) |
-            models.Q(contact_nom__icontains=terme)
-        )
+# Validators
+phone_regex = RegexValidator(
+    regex=r'^(0[1-9]\d{8})$|^(?:\+33|0033)[1-9]\d{8}$',
+    message="Entrez un numéro de téléphone français valide."
+)
 
+zip_code_regex = RegexValidator(
+    regex=r'^[0-9]{5}$',
+    message="Le code postal doit être composé de 5 chiffres."
+)
+
+url_regex = RegexValidator(
+    regex=r'^(http|https)://',
+    message="L'URL doit commencer par http:// ou https://"
+)
+
+CHOICES_TYPE_OF_ACTION = [
+    ('recrutement_emploi', 'Recrutement - Emploi'),
+    ('recrutement_stage', 'Recrutement - Stage'),
+    ('recrutement_apprentissage', 'Recrutement - Apprentissage'),
+    ('presentation_metier_entreprise', 'Présentation métier/entreprise'),
+    ('visite_entreprise', "Visite d'entreprise"),
+    ('coaching', 'Coaching'),
+    ('autre', 'Autre'),
+    ('partenariat', 'Partenariat'),
+    ('non_definie', 'Non définie')
+]
+
+TYPE_CHOICES = [
+    ("entreprise", "Entreprise"),
+    ("partenaire", "Partenaire institutionnel"),
+    ("personne", "Personne physique"),
+]
 
 class Partenaire(BaseModel):
     """
-    Modèle représentant un partenaire.
-    
-    Ce modèle permet de gérer les entreprises et organisations partenaires
-    qui collaborent aux formations et événements.
-    
-    Attributes:
-        nom: Nom officiel du partenaire
-        secteur_activite: Secteur d'activité principal du partenaire
-        contact_nom: Nom de la personne de contact principale
-        contact_poste: Poste occupé par le contact
-        contact_telephone: Numéro de téléphone du contact
-        contact_email: Adresse email du contact
-        description: Description de la relation avec le partenaire
+    Modèle représentant une entité externe liée à l'organisation :
+    - une entreprise,
+    - un partenaire institutionnel,
+    - ou une personne physique.
+
+    Ce modèle regroupe les informations générales, de contact, web et d'activité,
+    en lien avec les prospections commerciales.
     """
 
-    nom = models.CharField(
-        max_length=255, 
-        verbose_name="Nom du partenaire", 
-        unique=True,
-        help_text="Nom officiel de l'entreprise ou de l'organisation partenaire"
-    )
-    
-    secteur_activite = models.CharField(
-        max_length=255, 
-        verbose_name="Secteur d'activité",
-        blank=True, 
-        null=True,
-        help_text="Domaine d'activité principal du partenaire (ex: Santé, IT, Formation...)"
-    )
-    
-    contact_nom = models.CharField(
-        max_length=255,
-        verbose_name="Nom du contact",
-        blank=True, 
-        null=True,
-        help_text="Nom de la personne à contacter chez le partenaire"
-    )
-    
-    contact_poste = models.CharField(
-        max_length=255,
-        verbose_name="Poste du contact",
-        blank=True, 
-        null=True,
-        help_text="Fonction occupée par le contact au sein de l'organisation"
-    )
-    
-    contact_telephone = models.CharField(
-        max_length=20, 
-        verbose_name="Téléphone du contact", 
-        blank=True, 
-        null=True,
-        help_text="Numéro de téléphone direct du contact"
-    )
-    
-    contact_email = models.EmailField(
-        verbose_name="Email du contact", 
-        blank=True, 
-        null=True,
-        help_text="Adresse email professionnelle du contact"
-    )
-    
-    description = models.TextField(
-        verbose_name="Description de la relation", 
-        blank=True, 
-        null=True,
-        help_text="Informations sur le partenariat et l'historique de la relation"
+    type = models.CharField(
+        max_length=20,
+        choices=TYPE_CHOICES,
+        default="partenaire",
+        verbose_name="Type de partenaire",
+        help_text="Définit s'il s'agit d'une entreprise, d'un partenaire ou d'une personne physique"
     )
 
-    created_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='partenaires_crees',
-        verbose_name="Créé par",
-        help_text="Utilisateur ayant créé ce partenaire"
-    )
-    # Ajout d'un slug pour des URLs plus propres et SEO-friendly
-    slug = models.SlugField(
-        max_length=255, 
-        unique=True, 
-        blank=True, 
-        null=True,
-        verbose_name="Slug",
-        help_text="Identifiant unique pour les URLs (généré automatiquement)"
-    )
+    nom = models.CharField(max_length=255, unique=True, verbose_name="Nom")
+    secteur_activite = models.CharField(max_length=255, blank=True, null=True, verbose_name="Secteur d'activité")
 
-    # Managers
-    objects = models.Manager()  # Manager par défaut pour compatibilité
-    partenaires = PartenaireManager()  # Manager personnalisé
+    # Localisation
+    street_name = models.CharField(max_length=200, blank=True, null=True, verbose_name="Adresse")
+    zip_code = models.CharField(max_length=5, blank=True, null=True, validators=[zip_code_regex], verbose_name="Code postal")
+    city = models.CharField(max_length=100, blank=True, null=True, verbose_name="Ville")
+    country = models.CharField(max_length=100, blank=True, null=True, default="France", verbose_name="Pays")
 
-    def clean(self):
-        """
-        Validation personnalisée:
-        - Vérification de la présence d'informations de contact
-        - Validation du format de téléphone
-        """
-        super().clean()
-        
-        # Vérifier qu'au moins une information de contact est présente
-        if all(not field for field in [
-            self.contact_nom, self.contact_telephone, self.contact_email
-        ]):
-            logger.warning(f"Partenaire {self.nom} créé sans aucune information de contact")
-        
-        # Validation simple du format de téléphone
-        if self.contact_telephone and not self.contact_telephone.replace('+', '').replace(' ', '').isdigit():
-            raise ValidationError({
-                'contact_telephone': "Le numéro de téléphone doit contenir uniquement des chiffres, des espaces ou le symbole +"
-            })
+    # Contact
+    contact_nom = models.CharField(max_length=255, blank=True, null=True, verbose_name="Nom du contact")
+    contact_poste = models.CharField(max_length=255, blank=True, null=True, verbose_name="Poste du contact")
+    contact_telephone = models.CharField(max_length=20, blank=True, null=True, validators=[phone_regex], verbose_name="Téléphone")
+    contact_email = models.EmailField(blank=True, null=True, verbose_name="Email")
 
-    def save(self, *args, **kwargs):
-        """
-        Personnalisation de la sauvegarde:
-        - Génération automatique du slug s'il n'existe pas
-        - Normalisation des données
-        - Journalisation
-        """
-        # Création du slug s'il n'existe pas déjà
-        if not self.slug:
-            self.slug = slugify(self.nom)
-            
-            # Vérification de l'unicité du slug
-            counter = 1
-            original_slug = self.slug
-            while Partenaire.objects.filter(slug=self.slug).exists():
-                self.slug = f"{original_slug}-{counter}"
-                counter += 1
-        
-        # Normalisation des données
-        if self.nom:
-            self.nom = self.nom.strip()
-        if self.contact_email:
-            self.contact_email = self.contact_email.lower().strip()
-        
-        # Journalisation
-        is_new = not self.pk
-        if is_new:
-            logger.info(f"Création d'un nouveau partenaire: {self.nom}")
-        else:
-            logger.info(f"Mise à jour du partenaire: {self.nom} (ID: {self.pk})")
-        
-        super().save(*args, **kwargs)
+    # Web
+    website = models.URLField(blank=True, null=True, validators=[url_regex], verbose_name="Site web")
+    social_network_url = models.URLField(blank=True, null=True, verbose_name="Réseau social")
 
-    def get_absolute_url(self):
-        """
-        Retourne l'URL pour accéder à une instance particulière du partenaire.
-        
-        Returns:
-            str: URL absolue vers le détail du partenaire
-        """
-        return reverse('partenaire-detail', kwargs={'pk': self.pk})
-    
-    def get_formations_count(self):
-        """
-        Retourne le nombre de formations associées au partenaire.
-        
-        Returns:
-            int: Nombre de formations liées
-        """
-        return self.formations.count()
-    
-    def has_contact_info(self):
-        """
-        Vérifie si le partenaire a des informations de contact.
-        
-        Returns:
-            bool: True si au moins une information de contact est présente
-        """
-        return any([self.contact_nom, self.contact_telephone, self.contact_email])
-    
-    def __str__(self):
-        """
-        Représentation lisible du partenaire.
-        
-        Returns:
-            str: Nom du partenaire
-        """
-        return self.nom
+    # Détails
+    actions = models.CharField(max_length=50, blank=True, null=True, choices=CHOICES_TYPE_OF_ACTION, verbose_name="Type d'action")
+    action_description = models.TextField(blank=True, null=True, verbose_name="Description de l'action")
+    description = models.TextField(blank=True, null=True, verbose_name="Description générale")
 
+    # Slug & métadonnées
+    slug = models.SlugField(max_length=255, unique=True, blank=True, null=True)
     class Meta:
         verbose_name = "Partenaire"
         verbose_name_plural = "Partenaires"
         ordering = ['nom']
         indexes = [
-            models.Index(fields=['nom']),  # Index pour optimiser la recherche par nom
-            models.Index(fields=['secteur_activite']),  # Index pour le filtrage par secteur
-            models.Index(fields=['slug']),  # Index pour les recherches par slug
+            models.Index(fields=['nom']),
+            models.Index(fields=['secteur_activite']),
+            models.Index(fields=['slug']),
+            models.Index(fields=['zip_code']),
+            models.Index(fields=['type']),
         ]
+
+    def __str__(self) -> str:
+        """
+        Représentation textuelle de l'entité.
+
+        Returns:
+            str: Nom et type formatés (ex. "ACME Corp (Entreprise)")
+        """
+        return f"{self.nom} ({self.get_type_display()})"
+
+    def save(self, *args, **kwargs) -> None:
+        """
+        Sauvegarde personnalisée :
+        - Génère un slug unique automatiquement
+        - Normalise l'email et l'URL du site web
+        - Journalise la création ou la modification
+        """
+        if not self.slug:
+            base_slug = slugify(self.nom)
+            slug = base_slug
+            counter = 1
+            while Partenaire.objects.filter(slug=slug).exclude(pk=self.pk).exists():
+                slug = f"{base_slug}-{counter}"
+                counter += 1
+            self.slug = slug
+
+        if self.contact_email:
+            self.contact_email = self.contact_email.lower().strip()
+
+        if self.website and not self.website.startswith(('http://', 'https://')):
+            self.website = f"https://{self.website}"
+
+        is_new = not self.pk
+        logger.info(f"{'Création' if is_new else 'Modification'} de {self.get_type_display().lower()} : {self.nom}")
+        super().save(*args, **kwargs)
+
+    def get_absolute_url(self) -> str:
+        """
+        Retourne l'URL de détail du partenaire (pour l'admin ou les vues publiques).
+
+        Returns:
+            str: URL vers la vue de détail du partenaire
+        """
+        return reverse('partenaire-detail', kwargs={'pk': self.pk})
+
+    def get_full_address(self) -> str:
+        """
+        Retourne l'adresse complète formatée (rue, code postal, ville, pays).
+
+        Returns:
+            str: Adresse lisible ou "Adresse non spécifiée"
+        """
+        parts = [self.street_name, f"{self.zip_code or ''} {self.city or ''}".strip(), self.country]
+        return ", ".join(filter(None, parts)) or "Adresse non spécifiée"
+
+    def get_contact_info(self) -> str:
+        """
+        Retourne une chaîne formatée contenant les infos de contact.
+
+        Returns:
+            str: Détails du contact ou "Aucun contact"
+        """
+        parts = [self.contact_nom, f"({self.contact_poste})" if self.contact_poste else None, self.contact_email, self.contact_telephone]
+        return " - ".join(filter(None, parts)) or "Aucun contact"
+
+    def has_contact_info(self) -> bool:
+        """
+        Vérifie si le partenaire possède au moins une info de contact.
+
+        Returns:
+            bool: True si nom, téléphone ou email est renseigné
+        """
+        return any([self.contact_nom, self.contact_telephone, self.contact_email])
+
+    def get_prospections_info(self, with_list: bool = False) -> dict:
+        """
+        Retourne les informations sur les prospections liées à ce partenaire.
+
+        Args:
+            with_list (bool): Si True, inclut également la liste des objets Prospection.
+
+        Returns:
+            dict: Un dictionnaire contenant :
+                - 'count': nombre total de prospections associées
+                - 'prospections' (facultatif): liste des objets (si with_list est True)
+        """
+        queryset = self.prospections.all().order_by('-date_prospection')
+        info = {
+            "count": queryset.count()
+        }
+        if with_list:
+            info["prospections"] = queryset
+        return info
