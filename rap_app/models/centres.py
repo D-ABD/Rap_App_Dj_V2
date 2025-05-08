@@ -1,8 +1,12 @@
 from datetime import timezone
 import logging
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 from django.db import models
 from django.core.validators import RegexValidator
+from django.core.exceptions import ValidationError
 from django.urls import reverse
+
 from .base import BaseModel
 
 logger = logging.getLogger(__name__)
@@ -46,20 +50,38 @@ class Centre(BaseModel):
     def __str__(self):
         return self.nom
 
+    def __repr__(self):
+        return f"<Centre {self.pk}: {self.nom}>"
+
     def get_absolute_url(self):
         return reverse('centre-detail', kwargs={'pk': self.pk})
 
-    def full_address(self):
+    def full_address(self) -> str:
+        """Retourne l'adresse complète sous forme textuelle."""
         address = self.nom
         if self.code_postal:
             address += f" ({self.code_postal})"
         return address
 
+    def to_serializable_dict(self) -> dict:
+        """Renvoie un dictionnaire JSON-serializable de l'objet."""
+        return {
+            "id": self.pk,
+            "nom": self.nom,
+            "code_postal": self.code_postal,
+            "full_address": self.full_address(),
+            "url": self.get_absolute_url(),
+        }
+
     def save(self, *args, **kwargs):
+        user = kwargs.pop("user", None)
+        if user:
+            self._user = user  # transmis au BaseModel
+
         is_new = self.pk is None
 
         if is_new:
-            logger.info(f"Création d'un nouveau centre: {self.nom}")
+            logger.info(f"[Centre] Création: {self.nom}")
         else:
             try:
                 old = Centre.objects.get(pk=self.pk)
@@ -69,14 +91,19 @@ class Centre(BaseModel):
                 if old.code_postal != self.code_postal:
                     changes.append(f"code_postal: '{old.code_postal}' → '{self.code_postal}'")
                 if changes:
-                    logger.info(f"Modification du centre #{self.pk}: {', '.join(changes)}")
+                    logger.info(f"[Centre] Modif #{self.pk}: {', '.join(changes)}")
             except Centre.DoesNotExist:
-                pass
+                logger.warning(f"[Centre] Ancienne instance introuvable pour {self.pk}")
 
         super().save(*args, **kwargs)
 
-        if is_new:
-            logger.info(f"Centre #{self.pk} '{self.nom}' créé avec succès")
+        logger.debug(f"[Centre] Sauvegarde complète de #{self.pk} (user={getattr(self, '_user', None)})")
+
+    def clean(self):
+        """Validation métier spécifique pour le code postal."""
+        super().clean()
+        if self.code_postal and not self.code_postal.isdigit():
+            raise ValidationError("Le code postal doit être numérique.")
 
     def prepa_global(self, annee=None):
         """
@@ -94,3 +121,9 @@ class Centre(BaseModel):
             models.Index(fields=['nom']),
             models.Index(fields=['code_postal']),
         ]
+@receiver(post_save, sender=Centre)
+def log_centre_saved(sender, instance, created, **kwargs):
+    if created:
+        logger.info(f"[Signal] Nouveau centre créé : {instance.nom}")
+    else:
+        logger.info(f"[Signal] Centre mis à jour : {instance.nom}")

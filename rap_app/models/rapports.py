@@ -85,11 +85,68 @@ class Rapport(BaseModel):
         verbose_name = "Rapport"
         verbose_name_plural = "Rapports"
         ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['created_at']),
+            models.Index(fields=['date_debut', 'date_fin']),
+            models.Index(fields=['type_rapport']),
+            models.Index(fields=['format']),
+            models.Index(fields=['centre']),
+            models.Index(fields=['formation']),
+        ]
+
         
     def __str__(self):
         return f"{self.nom} - {self.get_type_rapport_display()} ({self.date_debut} à {self.date_fin})"
     
     def clean(self):
+        """
+        🔎 Validation des dates de début et de fin du rapport :
+        - La date de début ne peut pas être après la date de fin.
+        - La période couverte doit respecter les contraintes de la périodicité.
+        """
         super().clean()
-        if self.date_debut and self.date_fin and self.date_debut > self.date_fin:
-            raise ValidationError("La date de début ne peut pas être postérieure à la date de fin.")
+        errors = {}
+
+        if self.date_debut and self.date_fin:
+            if self.date_debut > self.date_fin:
+                errors['date_debut'] = "La date de début ne peut pas être postérieure à la date de fin."
+                errors['date_fin'] = "La date de fin ne peut pas précéder la date de début."
+
+            delta = (self.date_fin - self.date_debut).days
+
+            # Contraintes selon la périodicité
+            max_days = {
+                self.PERIODE_QUOTIDIEN: 1,
+                self.PERIODE_HEBDOMADAIRE: 7,
+                self.PERIODE_MENSUEL: 31,
+                self.PERIODE_TRIMESTRIEL: 93,
+                self.PERIODE_ANNUEL: 366,
+            }
+
+            if self.periode != self.PERIODE_PERSONNALISE:
+                max_allowed = max_days.get(self.periode, None)
+                if max_allowed is not None and delta > max_allowed:
+                    errors['date_fin'] = f"La période sélectionnée ne doit pas dépasser {max_allowed} jour(s)."
+
+        if errors:
+            raise ValidationError(errors)
+
+    def save(self, *args, **kwargs):
+        """
+        💾 Sauvegarde du rapport avec journalisation de l'action via logger.
+        Transmet également l'utilisateur au modèle de base si fourni.
+        """
+        user = kwargs.pop("user", None)
+        is_new = self.pk is None
+
+        if user:
+            self._user = user  # transmis à BaseModel
+
+        super().save(*args, **kwargs)
+
+        import logging
+        logger = logging.getLogger("application.rapports")
+
+        action = "créé" if is_new else "modifié"
+        user_info = f" par {user.get_full_name() or user.username}" if user else ""
+        logger.info(f"[Rapport] Rapport {action} : {self.nom} ({self.get_type_rapport_display()}){user_info}")

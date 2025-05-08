@@ -1,15 +1,16 @@
 import logging
-from django.db import models
+from django.db import models, transaction
 from django.utils import timezone
 from django.core.exceptions import ValidationError
+from django.urls import reverse
 
-from ..models.formations import Formation
+from .base import BaseModel
+from .formations import Formation
 from .partenaires import Partenaire
-from .base import BaseModel  # Assure-toi que BaseModel est bien importé ici
 
 logger = logging.getLogger(__name__)
 
-# Statuts possibles
+# Choix standards
 PROSPECTION_STATUS_CHOICES = [
     ('a_faire', 'À faire'),
     ('en_cours', 'En cours'),
@@ -20,7 +21,6 @@ PROSPECTION_STATUS_CHOICES = [
     ('non_renseigne', 'Non renseigné'),
 ]
 
-# Objectifs
 PROSPECTION_OBJECTIF_CHOICES = [
     ('prise_contact', 'Prise de contact'),
     ('rendez_vous', 'Obtenir un rendez-vous'),
@@ -30,7 +30,6 @@ PROSPECTION_OBJECTIF_CHOICES = [
     ('autre', 'Autre'),
 ]
 
-# Motifs
 PROSPECTION_MOTIF_CHOICES = [
     ('POEI', 'POEI'),
     ('apprentissage', 'Apprentissage'),
@@ -39,7 +38,6 @@ PROSPECTION_MOTIF_CHOICES = [
     ('autre', 'Autre'),
 ]
 
-# Moyens de contact
 MOYEN_CONTACT_CHOICES = [
     ('email', 'Email'),
     ('telephone', 'Téléphone'),
@@ -47,70 +45,41 @@ MOYEN_CONTACT_CHOICES = [
     ('reseaux', 'Réseaux sociaux'),
 ]
 
+TYPE_CONTACT_CHOICES = [
+    ('premier_contact', 'Premier contact'),
+    ('relance', 'Relance'),
+]
+
 class Prospection(BaseModel):
     """
-    Représente une action commerciale envers un partenaire (entreprise, institution ou personne).
-    Permet de suivre le motif, le statut, l’objectif et les commentaires liés à une prospection.
+    🔍 Représente une prospection commerciale vers un partenaire.
+    Permet de suivre l’objectif, le motif, le type de contact, le statut et les commentaires associés.
     """
 
     partenaire = models.ForeignKey(
-        Partenaire,
-        on_delete=models.CASCADE,
-        related_name="prospections",
-        verbose_name="Partenaire",
-        help_text="Partenaire concerné par cette prospection"
+        Partenaire, on_delete=models.CASCADE, related_name="prospections",
+        verbose_name="Partenaire", help_text="Partenaire concerné"
     )
-
     formation = models.ForeignKey(
-        Formation,
-        on_delete=models.CASCADE,
-        null=True,
-        blank=True,
-        related_name="prospections",
-        verbose_name="Formation",
-        help_text="Formation liée à cette prospection (facultatif)"
+        Formation, on_delete=models.CASCADE, null=True, blank=True,
+        related_name="prospections", verbose_name="Formation", help_text="Formation liée"
     )
-
-    date_prospection = models.DateTimeField(
-        default=timezone.now,
-        verbose_name="Date de prospection",
-        help_text="Date à laquelle la prospection a eu lieu"
-    )
-
-    motif = models.CharField(
-        max_length=30,
-        choices=PROSPECTION_MOTIF_CHOICES,
-        default='prise_contact',
-        verbose_name="Motif",
-        help_text="Motif principal de la prospection"
-    )
-
-    statut = models.CharField(
+    date_prospection = models.DateTimeField(default=timezone.now)
+    type_contact = models.CharField(
         max_length=20,
-        choices=PROSPECTION_STATUS_CHOICES,
-        default='a_faire',
-        verbose_name="Statut",
-        help_text="Statut actuel de la prospection"
+        choices=TYPE_CONTACT_CHOICES,
+        default='premier_contact',
+        verbose_name="Type de contact",
+        help_text="Indique s’il s’agit d’un premier contact ou d’une relance"
     )
-
-    objectif = models.CharField(
-        max_length=30,
-        choices=PROSPECTION_OBJECTIF_CHOICES,
-        default='prise_contact',
-        verbose_name="Objectif",
-        help_text="Objectif visé par la prospection"
-    )
-
-    commentaire = models.TextField(
-        blank=True,
-        null=True,
-        verbose_name="Commentaire",
-        help_text="Remarques ou suivi concernant la prospection"
-    )
+    motif = models.CharField(max_length=30, choices=PROSPECTION_MOTIF_CHOICES)
+    statut = models.CharField(max_length=20, choices=PROSPECTION_STATUS_CHOICES, default='a_faire')
+    objectif = models.CharField(max_length=30, choices=PROSPECTION_OBJECTIF_CHOICES, default='prise_contact')
+    commentaire = models.TextField(blank=True, null=True)
 
     class Meta:
-        verbose_name = "Suivi de la prospection"
-        verbose_name_plural = "Suivis des prospections"
+        verbose_name = "Suivi de prospection"
+        verbose_name_plural = "Suivis de prospections"
         ordering = ['-date_prospection']
         indexes = [
             models.Index(fields=['statut']),
@@ -123,116 +92,100 @@ class Prospection(BaseModel):
     def __str__(self):
         formation = self.formation.nom if self.formation else "Sans formation"
         auteur = self.created_by.username if self.created_by else "Anonyme"
-        return f"{self.partenaire.nom} - {formation} - {self.get_statut_display()} - {self.get_objectif_display()} ({auteur})"
+        return f"{self.partenaire.nom} - {formation} - {self.get_statut_display()} ({auteur})"
 
     def clean(self):
-        super().clean()
-
         if self.date_prospection > timezone.now():
             raise ValidationError("La date de prospection ne peut pas être dans le futur.")
-
         if self.statut == 'acceptee' and self.objectif != 'contrat':
-            raise ValidationError("Une prospection acceptée doit avoir pour objectif la signature d'un contrat.")
+            raise ValidationError("Une prospection acceptée doit viser la signature d'un contrat.")
 
     def save(self, *args, **kwargs):
+        user = kwargs.pop("user", None)
         is_new = self.pk is None
-        old = Prospection.objects.filter(pk=self.pk).first() if not is_new else None
+        original = None if is_new else Prospection.objects.filter(pk=self.pk).first()
 
-        super().save(*args, **kwargs)
+        if user:
+            self._user = user
 
-        logger.info(
-            f"{'Création' if is_new else 'Mise à jour'} prospection #{self.pk} pour {self.partenaire.nom} "
-            f"({self.get_statut_display()} - {self.get_objectif_display()})"
-        )
+        with transaction.atomic():
+            super().save(*args, **kwargs)
+            logger.info(f"{'Création' if is_new else 'Mise à jour'} prospection #{self.pk}")
 
-        if old:
-            if (
-                old.statut != self.statut or
-                old.objectif != self.objectif or
-                old.commentaire != self.commentaire
+            if is_new:
+                HistoriqueProspection.objects.create(
+                    prospection=self,
+                    ancien_statut='non_renseigne',
+                    nouveau_statut=self.statut,
+                    type_contact=self.type_contact,
+                    commentaire=self.commentaire or "",
+                    resultat=f"Objectif initial : {self.get_objectif_display()}",
+                    prochain_contact=timezone.now().date() + timezone.timedelta(days=7),
+                    moyen_contact=None
+                )
+            elif original and (
+                original.statut != self.statut or
+                original.objectif != self.objectif or
+                original.commentaire != self.commentaire
             ):
                 HistoriqueProspection.objects.create(
                     prospection=self,
-                    ancien_statut=old.statut,
+                    ancien_statut=original.statut,
                     nouveau_statut=self.statut,
-                    modifie_par=self.updated_by or self.created_by,
+                    modifie_par=user or self.updated_by or self.created_by,
                     commentaire=self.commentaire or "",
                     resultat=(
-                        f"Objectif modifié : {old.get_objectif_display()} → {self.get_objectif_display()}"
-                        if old.objectif != self.objectif else ""
+                        f"Objectif modifié : {original.get_objectif_display()} → {self.get_objectif_display()}"
+                        if original.objectif != self.objectif else ""
                     ),
-                    prochain_contact=timezone.now().date() + timezone.timedelta(days=7)
-                )
-                logger.info(
-                    f"📌 Historique créé pour prospection #{self.pk} : "
-                    f"{old.get_statut_display()} → {self.get_statut_display()}"
+                    prochain_contact=timezone.now().date() + timezone.timedelta(days=7),
+                    type_contact=self.type_contact,
+                    moyen_contact=None
                 )
 
-class HistoriqueProspection(models.Model):
+    def get_absolute_url(self):
+        return reverse("prospection-detail", kwargs={"pk": self.pk})
+
+    def to_serializable_dict(self):
+        return {
+            "id": self.pk,
+            "partenaire": str(self.partenaire),
+            "formation": self.formation.nom if self.formation else None,
+            "date": self.date_prospection.strftime('%Y-%m-%d %H:%M'),
+            "type_contact": self.get_type_contact_display(),
+            "statut": self.get_statut_display(),
+            "objectif": self.get_objectif_display(),
+            "motif": self.get_motif_display(),
+            "commentaire": self.commentaire,
+        }
+
+class HistoriqueProspection(BaseModel):
     """
-    Historique des modifications d'une prospection : changement de statut, objectif, etc.
-    Utile pour le suivi temporel et l'audit des actions commerciales.
+    🕓 Historique des modifications d'une prospection.
+    Enregistre les changements de statut, d’objectif, de commentaires, et de date de relance.
     """
 
     prospection = models.ForeignKey(
-        Prospection,
-        on_delete=models.CASCADE,
-        related_name="historiques",
-        verbose_name="Prospection",
-        help_text="Prospection liée à cet historique"
+        Prospection, on_delete=models.CASCADE, related_name="historiques"
     )
-
-    date_modification = models.DateTimeField(
-        auto_now_add=True,
-        verbose_name="Date",
-        help_text="Date de la modification"
-    )
-
-    ancien_statut = models.CharField(
+    date_modification = models.DateTimeField(auto_now_add=True)
+    ancien_statut = models.CharField(max_length=20, choices=PROSPECTION_STATUS_CHOICES)
+    nouveau_statut = models.CharField(max_length=20, choices=PROSPECTION_STATUS_CHOICES)
+    type_contact = models.CharField(
         max_length=20,
-        choices=PROSPECTION_STATUS_CHOICES,
-        verbose_name="Ancien statut"
+        choices=TYPE_CONTACT_CHOICES,
+        default='premier_contact',
+        verbose_name="Type de contact"
     )
-
-    nouveau_statut = models.CharField(
-        max_length=20,
-        choices=PROSPECTION_STATUS_CHOICES,
-        verbose_name="Nouveau statut"
-    )
-
-    commentaire = models.TextField(
-        null=True,
-        blank=True,
-        verbose_name="Commentaire",
-        help_text="Commentaire éventuel de modification"
-    )
-
-
-
-    prochain_contact = models.DateField(
-        null=True,
-        blank=True,
-        verbose_name="Date de relance"
-    )
-
-    resultat = models.TextField(
-        null=True,
-        blank=True,
-        verbose_name="Résultat"
-    )
-
-    moyen_contact = models.CharField(
-        max_length=50,
-        choices=MOYEN_CONTACT_CHOICES,
-        null=True,
-        blank=True,
-        verbose_name="Moyen de contact"
-    )
+    commentaire = models.TextField(blank=True, null=True)
+    resultat = models.TextField(blank=True, null=True)
+    prochain_contact = models.DateField(blank=True, null=True)
+    moyen_contact = models.CharField(max_length=50, choices=MOYEN_CONTACT_CHOICES, blank=True, null=True)
 
     class Meta:
-        ordering = ['-date_modification']
         verbose_name = "Historique de prospection"
-        verbose_name_plural = "Historiques de prospection"
+        verbose_name_plural = "Historiques de prospections"
+        ordering = ['-date_modification']
         indexes = [
             models.Index(fields=['prospection']),
             models.Index(fields=['date_modification']),
@@ -240,11 +193,32 @@ class HistoriqueProspection(models.Model):
         ]
 
     def __str__(self):
-        return f"{self.date_modification.strftime('%d/%m/%Y %H:%M')} - {self.prospection.partenaire.nom} - {self.get_nouveau_statut_display()}"
+        return f"{self.date_modification.strftime('%d/%m/%Y')} - {self.get_nouveau_statut_display()}"
+
+    def clean(self):
+        if self.prochain_contact and self.prochain_contact < timezone.now().date():
+            raise ValidationError("La date de relance doit être dans le futur.")
 
     def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
-        logger.info(
-            f"🕓 Historique ajouté pour prospection {self.prospection.id} - "
-            f"{self.ancien_statut} → {self.nouveau_statut}"
-        )
+            """
+            💾 Sauvegarde avec validation et transaction sécurisée.
+            """
+            with transaction.atomic():
+                super().save(*args, **kwargs)
+            logger.info(f"🕓 Historique enregistré pour prospection {self.prospection.pk}")
+            
+    def get_absolute_url(self):
+        return reverse("historiqueprospection-detail", kwargs={"pk": self.pk})
+
+    def to_serializable_dict(self):
+        return {
+            "id": self.pk,
+            "prospection_id": self.prospection_id,
+            "type_contact": self.get_type_contact_display(),
+            "ancien_statut": self.get_ancien_statut_display(),
+            "nouveau_statut": self.get_nouveau_statut_display(),
+            "commentaire": self.commentaire,
+            "resultat": self.resultat,
+            "prochain_contact": self.prochain_contact.isoformat() if self.prochain_contact else None,
+            "date_modification": self.date_modification.strftime('%Y-%m-%d %H:%M'),
+        }

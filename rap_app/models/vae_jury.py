@@ -1,56 +1,57 @@
 from django.db import models
+from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 from django.core.validators import MinValueValidator
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 from django.db.models import Sum, Count, Case, When, F, Q
 from django.utils import timezone
 from django.core.exceptions import ValidationError
 import logging
+from django.db import transaction
+
 from .centres import Centre
 from .base import BaseModel 
 # Configuration du logger
 logger = logging.getLogger("application.vae")
 
-class PeriodeMixin(BaseModel):
+from datetime import date
+
+class PeriodeMixin(models.Model):
     """
     Classe abstraite pour les éléments liés à une période (mois/année) et un centre.
-    
-    Cette classe abstraite fournit les champs et métadonnées communes pour 
-    les modèles qui ont besoin de suivre des données par mois et par année
-    pour un centre spécifique.
-    
-    Attributes:
-        centre: Le centre auquel cette période est associée
-        annee: L'année de la période
-        mois: Le mois de la période (1-12)
     """
+
     MOIS_CHOICES = [
         (1, _("Janvier")), (2, _("Février")), (3, _("Mars")), (4, _("Avril")),
         (5, _("Mai")), (6, _("Juin")), (7, _("Juillet")), (8, _("Août")),
         (9, _("Septembre")), (10, _("Octobre")), (11, _("Novembre")), (12, _("Décembre")),
     ]
-    
+
     centre = models.ForeignKey(
         Centre, 
         on_delete=models.CASCADE,
         verbose_name=_("Centre")
     )
     annee = models.PositiveIntegerField(
+        default=date.today().year,
         validators=[MinValueValidator(2000)],
         verbose_name=_("Année"),
         help_text=_("Année au format YYYY (ex: 2024)")
     )
     mois = models.PositiveSmallIntegerField(
+        default=date.today().month,
         choices=MOIS_CHOICES,
         verbose_name=_("Mois"),
         help_text=_("Mois de l'année (1-12)")
     )
     
+    
     class Meta:
         abstract = True
         ordering = ['annee', 'mois', 'centre']
         indexes = [
-            models.Index(fields=['centre', 'annee', 'mois']),
+            models.Index(fields=['annee', 'mois']),  # Pour les analyses transversales
+            models.Index(fields=['centre', 'annee', 'mois']),  # Existant - à conserver
         ]
 
     def clean(self):
@@ -74,7 +75,7 @@ class PeriodeMixin(BaseModel):
         """
         return f"{self.get_mois_display()} {self.annee}"
 
-class SuiviJury(PeriodeMixin):
+class SuiviJury(BaseModel, PeriodeMixin):
     """
     Modèle pour le suivi des jurys par centre, par mois et par année.
     
@@ -104,6 +105,34 @@ class SuiviJury(PeriodeMixin):
         verbose_name=_("Pourcentage mensuel"),
         help_text=_("Pourcentage d'atteinte de l'objectif mensuel (calculé automatiquement)")
     )
+
+    def get_absolute_url(self):
+        """
+        Retourne l'URL absolue de détail pour cet objet.
+        
+        Returns:
+            str: URL de détail de l'instance
+        """
+        return reverse("suivijury-detail", kwargs={"pk": self.pk})
+    
+    def to_serializable_dict(self):
+        """
+        Retourne un dictionnaire des données de l'instance pour une sérialisation simple.
+        
+        Returns:
+            dict: Données sérialisées
+        """
+        return {
+            "id": self.id,
+            "centre_id": self.centre_id,
+            "centre_nom": str(self.centre),
+            "annee": self.annee,
+            "mois": self.mois,
+            "mois_libelle": self.get_mois_display(),
+            "periode": self.get_periode_display(),
+        }
+
+
 
     def get_objectif_auto(self):
         """
@@ -138,6 +167,10 @@ class SuiviJury(PeriodeMixin):
         unique_together = ('centre', 'annee', 'mois')
         verbose_name = _("Suivi des jurys")
         verbose_name_plural = _("Suivis des jurys")
+        indexes = PeriodeMixin.Meta.indexes + [
+            models.Index(fields=['pourcentage_mensuel']),
+            models.Index(fields=['objectif_jury', 'jurys_realises']),
+        ]
     
     def __str__(self):
         """
@@ -148,27 +181,59 @@ class SuiviJury(PeriodeMixin):
         """
         return f"Jurys {self.centre} - {self.get_mois_display()} {self.annee}"
     
+
     def save(self, *args, **kwargs):
         """
-        Personnalisation de la sauvegarde pour calculer le pourcentage.
+        Sauvegarde atomique du suivi jury avec calcul du pourcentage et journalisation.
         
         Args:
-            *args, **kwargs: Arguments à passer à la méthode save() de base
+            *args: Arguments positionnels
+            **kwargs: Arguments nommés pouvant contenir :
+                - user: Utilisateur effectuant l'action
+                - skip_validation: Booléen pour sauter la validation
         """
-        if self.objectif_jury > 0:
-            self.pourcentage_mensuel = round(Decimal(self.jurys_realises) / Decimal(self.objectif_jury) * 100, 2)
-        else:
-            self.pourcentage_mensuel = Decimal('0.00')
-            
-        # Journalisation
-        is_new = self.pk is None
-        if is_new:
-            logger.info(f"Création d'un nouveau suivi jury: {self}")
-        else:
-            logger.info(f"Mise à jour du suivi jury: {self}")
-            
-        super().save(*args, **kwargs)
-    
+        try:
+            with transaction.atomic():
+                # Calcul du pourcentage avec gestion des erreurs
+                try:
+                    if self.objectif_jury > 0:
+                        self.pourcentage_mensuel = Decimal(self.jurys_realises) / Decimal(self.objectif_jury) * 100
+                        self.pourcentage_mensuel = self.pourcentage_mensuel.quantize(Decimal('0.01'))
+                    else:
+                        self.pourcentage_mensuel = Decimal('0.00')
+                except (ZeroDivisionError, InvalidOperation) as e:
+                    logger.error(f"Erreur calcul pourcentage jury {self}: {str(e)}")
+                    self.pourcentage_mensuel = Decimal('0.00')
+
+                is_new = self.pk is None
+                user = kwargs.pop("user", None)
+
+                # Journalisation avant sauvegarde
+                log_msg = f"{'Création' if is_new else 'Mise à jour'} suivi jury {self}"
+                if user:
+                    log_msg += f" par {user.username}"
+                logger.info(log_msg)
+
+                # Validation optionnelle
+                if not kwargs.pop('skip_validation', False):
+                    self.full_clean()
+
+                # Sauvegarde parentale
+                super().save(*args, user=user, **kwargs)
+
+                # Post-save logging
+                logger.debug(f"Suivi jury {self.pk} sauvegardé avec succès")
+
+        except Exception as e:
+            logger.critical(
+                f"Échec sauvegarde suivi jury {getattr(self, 'pk', 'Nouveau')} | "
+                f"Centre: {getattr(self.centre, 'pk', None)} | "
+                f"Erreur: {str(e)}",
+                exc_info=True
+            )
+            raise  # Re-lève l'exception pour ne pas masquer l'erreur
+
+
     def ecart(self):
         """
         Calcule l'écart entre les jurys réalisés et l'objectif.
@@ -264,13 +329,7 @@ class VAE(BaseModel):
     )
     
 
-    
-    # Date de saisie dans le système
-    date_saisie = models.DateTimeField(
-        auto_now_add=True,
-        verbose_name=_("Date de saisie dans le système"),
-        help_text=_("Date et heure auxquelles la VAE a été saisie dans l'application")
-    )
+
     
     # Statut actuel
     statut = models.CharField(
@@ -294,9 +353,11 @@ class VAE(BaseModel):
         verbose_name_plural = _("VAEs")
         ordering = ['-created_at', 'centre']
         indexes = [
-            models.Index(fields=['centre', 'statut']),
-            models.Index(fields=['created_at']),
-            models.Index(fields=['reference']),
+            models.Index(fields=['statut']),  # Très important pour le filtrage
+            models.Index(fields=['created_at']),  # Existant - à conserver
+            models.Index(fields=['reference']),  # Existant - à conserver
+            models.Index(fields=['centre', 'statut']),  # Existant - à conserver
+            models.Index(fields=['centre', 'created_at']),  # Nouveau pour les analyses temporelles
         ]
     
     def __str__(self):
@@ -311,45 +372,41 @@ class VAE(BaseModel):
     
     def save(self, *args, **kwargs):
         """
-        Personnalisation de la sauvegarde pour générer la référence automatiquement.
-        
+        Personnalisation de la sauvegarde pour générer la référence automatiquement
+        et journaliser l'action.
+
         Args:
-            *args, **kwargs: Arguments à passer à la méthode save() de base
-            
-        Kwargs:
-            skip_validation (bool): Si True, ignore la validation complète
+            *args: Arguments positionnels
+            **kwargs: Arguments nommés, dont 'user' et 'skip_validation' optionnels
         """
         skip_validation = kwargs.pop('skip_validation', False)
+        user = kwargs.pop("user", None)
         is_new = self.pk is None
-        
-        # Si c'est une nouvelle VAE sans date de création spécifiée, utiliser la date du jour
-        if not self.created_at :
-            self.created_at = timezone.now().date()
-            
-        # Générer une référence automatique si non fournie
+
+        # Date de création explicite si non renseignée
+        if not self.created_at:
+            self.created_at = timezone.now()
+
+        # Référence automatique
         if not self.reference:
             prefix = "VAE"
             date_str = self.created_at.strftime('%Y%m%d')
-            centre_id = self.centre.id
-            
-            # S'il existe déjà des VAE pour ce jour et ce centre, trouver le prochain numéro
-            existing_refs = VAE.objects.filter(
-                reference__startswith=f"{prefix}-{date_str}-{centre_id}"
-            ).count()
-            
+            centre_id = self.centre.id if self.centre_id else "000"
+            existing_refs = VAE.objects.filter(reference__startswith=f"{prefix}-{date_str}-{centre_id}").count()
             self.reference = f"{prefix}-{date_str}-{centre_id}-{existing_refs + 1:03d}"
-        
-        # Validation complète sauf si désactivée
+
+        # Validation facultative
         if not skip_validation:
             self.full_clean()
-            
+
         # Journalisation
         if is_new:
-            logger.info(f"Création d'une nouvelle VAE: {self.reference or ''} - {self.get_statut_display()} pour le centre {self.centre}")
+            logger.info(f"🆕 Création VAE {self.reference} pour centre {self.centre}")
         else:
-            logger.info(f"Mise à jour de la VAE: {self.reference} - {self.get_statut_display()}")
-            
-        super().save(*args, **kwargs)
+            logger.info(f"✏️ Mise à jour VAE {self.reference} - Statut: {self.get_statut_display()}")
+
+        # Sauvegarde réelle
+        super().save(*args, user=user, **kwargs)
     
     @property
     def annee_creation(self):
@@ -407,7 +464,7 @@ class VAE(BaseModel):
         Returns:
             HistoriqueStatutVAE: Dernier historique de statut, ou None si aucun
         """
-        return self.historique_statuts.order_by('-date_changement_effectif', '-date_saisie').first()
+        return self.historique_statuts.order_by('-date_changement_effectif', '-created_at').first()
         
     def duree_statut_actuel(self):
         """
@@ -423,44 +480,47 @@ class VAE(BaseModel):
         return self.duree_jours
 
     @classmethod
-    def get_count_by_statut(cls, centre=None, annee=None, mois=None):
+    def get_count_by_statut_optimized(cls, centre=None, annee=None, mois=None):
         """
-        Retourne le nombre de VAE par statut pour les filtres donnés.
-        
-        Cette méthode de classe permet d'obtenir des statistiques sur les VAE
-        filtrées par centre, année et/ou mois.
-        
-        Args:
-            centre (Centre, optional): Centre pour filtrer les VAE
-            annee (int, optional): Année pour filtrer les VAE
-            mois (int, optional): Mois pour filtrer les VAE
-            
-        Returns:
-            dict: Dictionnaire avec les statuts comme clés et les comptages comme valeurs
+        Version optimisée avec annotation
         """
         queryset = cls.objects.all()
         
         if centre:
             queryset = queryset.filter(centre=centre)
-        
         if annee:
-            queryset = queryset.filter(created_at=annee)
-        
+            queryset = queryset.filter(created_at__year=annee)
         if mois:
-            queryset = queryset.filter(created_at=mois)
+            queryset = queryset.filter(created_at__month=mois)
         
-        result = {}
-        for statut, label in cls.STATUT_CHOICES:
-            result[statut] = queryset.filter(statut=statut).count()
+        return queryset.aggregate(
+            total=Count('id'),
+            en_cours=Count(Case(When(statut__in=cls.STATUTS_EN_COURS, then=1))),
+            terminees=Count(Case(When(statut='terminee', then=1))),
+            abandonnees=Count(Case(When(statut='abandonnee', then=1))),
+            **{statut: Count(Case(When(statut=statut, then=1))) for statut, _ in cls.STATUT_CHOICES}
+        )
+    
+    # Ajouter une méthode pour le changement de statut contrôlé
+    def changer_statut(self, nouveau_statut, date_effet=None, commentaire="", user=None):
+        """
+        Change le statut de manière contrôlée avec historique
+        """
+        if nouveau_statut not in dict(self.STATUT_CHOICES):
+            raise ValidationError(f"Statut invalide: {nouveau_statut}")
         
-        # Ajouter des totaux utiles
-        result['total'] = queryset.count()
-        result['en_cours'] = queryset.filter(statut__in=cls.STATUTS_EN_COURS).count()
-        result['terminees'] = queryset.filter(statut='terminee').count()
-        result['abandonnees'] = queryset.filter(statut='abandonnee').count()
+        date_effet = date_effet or timezone.now().date()
+        self.statut = nouveau_statut
+        self.save(user=user)
         
-        return result
-        
+        # Création de l'historique
+        HistoriqueStatutVAE.objects.create(
+            vae=self,
+            statut=nouveau_statut,
+            date_changement_effectif=date_effet,
+            commentaire=commentaire
+        )
+                
     @property
     def serializable_data(self):
         """
@@ -477,7 +537,6 @@ class VAE(BaseModel):
             'centre_id': self.centre_id,
             'centre_nom': str(self.centre),
             'created_at': self.created_at.isoformat(),
-            'date_saisie': self.date_saisie.isoformat(),
             'statut': self.statut,
             'statut_libelle': self.get_statut_display(),
             'date_modification': self.date_modification.isoformat(),
@@ -493,8 +552,22 @@ class VAE(BaseModel):
             'duree_statut_actuel': self.duree_statut_actuel(),
         }
 
+    def clean(self):
+        """Validation supplémentaire"""
+        super().clean()
+        
+        # Validation de la référence
+        if self.reference and not self.reference.startswith('VAE-'):
+            raise ValidationError({'reference': "La référence doit commencer par 'VAE-'"})
+        
+        # Validation des dates
+        if hasattr(self, 'date_modification') and self.date_modification:
+            if self.date_modification < self.created_at:
+                raise ValidationError({
+                    'date_modification': "La date de modification ne peut pas être antérieure à la création"
+                })
 
-class HistoriqueStatutVAE(models.Model):
+class HistoriqueStatutVAE(BaseModel, PeriodeMixin):
     """
     Modèle pour suivre l'historique des changements de statut d'une VAE.
     
@@ -506,7 +579,6 @@ class HistoriqueStatutVAE(models.Model):
         vae: La VAE concernée par ce changement de statut
         statut: Le nouveau statut
         date_changement_effectif: Date à laquelle le changement a eu lieu
-        date_saisie: Date à laquelle le changement a été enregistré dans le système
         commentaire: Notes supplémentaires sur ce changement
     """
     vae = models.ForeignKey(
@@ -529,13 +601,7 @@ class HistoriqueStatutVAE(models.Model):
         help_text=_("Date à laquelle le changement de statut a eu lieu (pas nécessairement aujourd'hui)")
     )
     
-    # Date à laquelle l'enregistrement a été saisi dans le système
-    date_saisie = models.DateTimeField(
-        auto_now_add=True,
-        verbose_name=_("Date de saisie dans le système"),
-        help_text=_("Date et heure auxquelles ce changement a été enregistré")
-    )
-    
+
     commentaire = models.TextField(
         blank=True,
         verbose_name=_("Commentaire"),
@@ -545,10 +611,11 @@ class HistoriqueStatutVAE(models.Model):
     class Meta:
         verbose_name = _("Historique de statut VAE")
         verbose_name_plural = _("Historiques de statuts VAE")
-        ordering = ['-date_changement_effectif', '-date_saisie']
+        ordering = ['-date_changement_effectif', '-created_at']
         indexes = [
-            models.Index(fields=['vae', 'statut']),
-            models.Index(fields=['date_changement_effectif']),
+            models.Index(fields=['vae', 'statut']),  # Existant - à conserver
+            models.Index(fields=['date_changement_effectif']),  # Existant - à conserver
+            models.Index(fields=['vae', 'date_changement_effectif']),  # Nouveau pour le suivi chronologique
         ]
     
     def __str__(self):
@@ -618,7 +685,6 @@ class HistoriqueStatutVAE(models.Model):
             'statut': self.statut,
             'statut_libelle': self.get_statut_display(),
             'date_changement_effectif': self.date_changement_effectif.isoformat(),
-            'date_saisie': self.date_saisie.isoformat(),
             'commentaire': self.commentaire,
         }
 

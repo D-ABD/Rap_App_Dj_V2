@@ -86,7 +86,14 @@ class Partenaire(BaseModel):
     description = models.TextField(blank=True, null=True, verbose_name="Description générale")
 
     # Slug & métadonnées
-    slug = models.SlugField(max_length=255, unique=True, blank=True, null=True)
+    slug = models.SlugField(
+        max_length=255,
+        unique=True,
+        blank=True,
+        null=True,
+        verbose_name="Slug",
+        help_text="Identifiant URL unique généré automatiquement à partir du nom"
+    )
     class Meta:
         verbose_name = "Partenaire"
         verbose_name_plural = "Partenaires"
@@ -108,13 +115,18 @@ class Partenaire(BaseModel):
         """
         return f"{self.nom} ({self.get_type_display()})"
 
-    def save(self, *args, **kwargs) -> None:
+    def save(self, *args, **kwargs):
         """
         Sauvegarde personnalisée :
         - Génère un slug unique automatiquement
         - Normalise l'email et l'URL du site web
         - Journalise la création ou la modification
+        - Transmet `user` à BaseModel via `self._user`
         """
+        user = kwargs.pop('user', None)
+        is_new = self.pk is None
+
+        # Génération du slug si nécessaire
         if not self.slug:
             base_slug = slugify(self.nom)
             slug = base_slug
@@ -124,15 +136,20 @@ class Partenaire(BaseModel):
                 counter += 1
             self.slug = slug
 
+        # Normalisation email et URL
         if self.contact_email:
             self.contact_email = self.contact_email.lower().strip()
 
         if self.website and not self.website.startswith(('http://', 'https://')):
             self.website = f"https://{self.website}"
 
-        is_new = not self.pk
-        logger.info(f"{'Création' if is_new else 'Modification'} de {self.get_type_display().lower()} : {self.nom}")
+        # Transmission de l'utilisateur à BaseModel
+        if user:
+            self._user = user
+
         super().save(*args, **kwargs)
+
+        logger.info(f"{'Création' if is_new else 'Modification'} du partenaire : {self.nom}")
 
     def get_absolute_url(self) -> str:
         """

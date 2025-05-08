@@ -2,18 +2,18 @@ import logging
 from django.db import models, transaction
 from django.utils import timezone
 from django.core.exceptions import ValidationError
-from django.db.models.signals import post_save, post_delete
-from django.dispatch import receiver
-from django.conf import settings
+from django.urls import reverse
 
 from .base import BaseModel
 from .formations import Formation
 
 logger = logging.getLogger("application.evenements")
 
-
 class Evenement(BaseModel):
-    """Modèle représentant un événement lié à une formation (job dating, forum, etc.)."""
+    """
+    📅 Modèle représentant un événement lié à une formation (job dating, forum, etc.).
+    Permet de suivre les types d'événements, leur date, lieu, et le nombre de participants.
+    """
 
     class TypeEvenement(models.TextChoices):
         INFO_PRESENTIEL = 'info_collective_presentiel', 'Information collective présentiel'
@@ -24,15 +24,67 @@ class Evenement(BaseModel):
         JPO = 'jpo', 'Journée Portes Ouvertes'
         AUTRE = 'autre', 'Autre'
 
-    formation = models.ForeignKey(Formation, on_delete=models.CASCADE, null=True, blank=True, related_name="evenements")
-    type_evenement = models.CharField(max_length=100, choices=TypeEvenement.choices, db_index=True)
-    description_autre = models.CharField(max_length=255, blank=True, null=True)
-    details = models.TextField(blank=True, null=True)
-    event_date = models.DateField(blank=True, null=True)
-    lieu = models.CharField(max_length=255, blank=True, null=True)
-    participants_prevus = models.PositiveIntegerField(blank=True, null=True)
-    participants_reels = models.PositiveIntegerField(blank=True, null=True)
-    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="evenements_crees")
+    formation = models.ForeignKey(
+        Formation,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="evenements",
+        verbose_name="Formation",
+        help_text="Formation associée à l'événement"
+    )
+
+    type_evenement = models.CharField(
+        max_length=100,
+        choices=TypeEvenement.choices,
+        db_index=True,
+        verbose_name="Type d'événement",
+        help_text="Catégorie de l'événement (ex : forum, job dating, etc.)"
+    )
+
+    description_autre = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        verbose_name="Description personnalisée",
+        help_text="Détail du type si 'Autre' est sélectionné"
+    )
+
+    details = models.TextField(
+        blank=True,
+        null=True,
+        verbose_name="Détails complémentaires",
+        help_text="Détails ou informations supplémentaires"
+    )
+
+    event_date = models.DateField(
+        blank=True,
+        null=True,
+        verbose_name="Date de l'événement",
+        help_text="Date prévue pour l'événement"
+    )
+
+    lieu = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        verbose_name="Lieu",
+        help_text="Lieu où se déroule l'événement"
+    )
+
+    participants_prevus = models.PositiveIntegerField(
+        blank=True,
+        null=True,
+        verbose_name="Participants prévus",
+        help_text="Nombre de personnes attendues"
+    )
+
+    participants_reels = models.PositiveIntegerField(
+        blank=True,
+        null=True,
+        verbose_name="Participants réels",
+        help_text="Nombre de participants présents"
+    )
 
     class Meta:
         verbose_name = "Événement"
@@ -49,6 +101,30 @@ class Evenement(BaseModel):
         date_str = self.event_date.strftime('%d/%m/%Y') if self.event_date else "Date inconnue"
         return f"{label} - {date_str} - {self.status_label}"
 
+    def get_absolute_url(self):
+        """
+        🔗 Retourne l'URL de détail de l'événement.
+        """
+        return reverse("evenement-detail", kwargs={"pk": self.pk})
+
+    def to_serializable_dict(self):
+        """
+        📦 Retourne une représentation API de l'événement.
+        """
+        return {
+            "id": self.pk,
+            "formation": self.formation.nom if self.formation else None,
+            "type_evenement": self.get_type_evenement_display(),
+            "description_autre": self.description_autre,
+            "details": self.details,
+            "event_date": self.event_date.strftime('%Y-%m-%d') if self.event_date else None,
+            "lieu": self.lieu,
+            "prevus": self.participants_prevus,
+            "reels": self.participants_reels,
+            "status": self.get_temporal_status(),
+            "url": self.get_absolute_url()
+        }
+
     def clean(self):
         today = timezone.now().date()
         if self.type_evenement == self.TypeEvenement.AUTRE and not self.description_autre:
@@ -60,18 +136,34 @@ class Evenement(BaseModel):
                 logger.warning(f"Participants réels dépassent les prévisions pour l'événement #{self.pk}")
 
     def save(self, *args, **kwargs):
-        is_new = not self.pk
-        original = Evenement.objects.filter(pk=self.pk).first() if not is_new else None
+        """
+        💾 Sauvegarde l'événement avec nettoyage, validation, et journalisation des modifications.
+
+        - Valide les champs (`full_clean`)
+        - Utilise `transaction.atomic` pour la cohérence
+        - Logue les différences si modification détectée
+        - Permet le suivi utilisateur via `user=...` dans `kwargs`
+        """
+        user = kwargs.pop("user", None)
+        is_new = self.pk is None
+        original = None if is_new else self.__class__.objects.filter(pk=self.pk).first()
+
         self.full_clean()
 
         with transaction.atomic():
-            super().save(*args, **kwargs)
+            super().save(*args, user=user, **kwargs)
             if is_new:
                 logger.info(f"Nouvel événement '{self}' créé.")
             elif original:
                 self._log_changes(original)
 
     def _log_changes(self, original):
+        """
+        📝 Enregistre les modifications détectées par comparaison avec l'instance originale.
+
+        Args:
+            original (Evenement): Ancienne version de l'objet avant modification.
+        """
         fields = ['type_evenement', 'event_date', 'formation', 'lieu', 'participants_prevus', 'participants_reels']
         changes = [
             f"{field}: '{getattr(original, field)}' → '{getattr(self, field)}'"
@@ -80,7 +172,12 @@ class Evenement(BaseModel):
         if changes:
             logger.info(f"Modification de l'événement #{self.pk} : {', '.join(changes)}")
 
+
+
     def get_temporal_status(self, days: int = 7) -> str:
+        """
+        🧭 Retourne le statut temporel de l'événement.
+        """
         if not self.event_date:
             return "unknown"
         today = timezone.now().date()
@@ -111,6 +208,9 @@ class Evenement(BaseModel):
         }.get(self.get_temporal_status(), "text-muted")
 
     def get_participation_rate(self) -> float | None:
+        """
+        📊 Calcule le taux de participation si possible.
+        """
         if self.participants_prevus and self.participants_reels and self.participants_prevus > 0:
             return round((self.participants_reels / self.participants_prevus) * 100, 1)
         return None

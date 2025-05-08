@@ -170,12 +170,12 @@ class Statut(BaseModel):
         🔁 Sauvegarde du statut :
         - Applique une couleur par défaut si vide
         - Journalise création ou modification
-        
-        Args:
-            *args: Arguments variables
-            **kwargs: Arguments nommés variables
+        - Gère la traçabilité utilisateur via BaseModel (user dans kwargs)
         """
         is_new = self.pk is None
+        user = kwargs.pop('user', None)
+        if user:
+            self._user = user  # transmis à BaseModel
 
         if not self.couleur:
             self.couleur = get_default_color(self.nom)
@@ -183,13 +183,13 @@ class Statut(BaseModel):
         # Possibilité de désactiver la validation complète avec skip_validation=True
         if not kwargs.pop('skip_validation', False):
             self.full_clean()
-            
+
         super().save(*args, **kwargs)
 
-        if is_new:
-            logger.info(f"🟢 Nouveau statut créé : {self.get_nom_display()} ({self.couleur})")
-        else:
-            logger.info(f"📝 Statut modifié : {self.get_nom_display()} ({self.couleur})")
+        logger.info(
+            f"{'🟢 Nouveau statut' if is_new else '📝 Statut modifié'} : "
+            f"{self.get_nom_display()} ({self.couleur})"
+        )
 
     def __str__(self):
         """
@@ -231,6 +231,11 @@ class Statut(BaseModel):
         verbose_name = "Statut"
         verbose_name_plural = "Statuts"
         ordering = ['nom']
+        indexes = [
+            models.Index(fields=['nom']),
+            models.Index(fields=['couleur']),
+        ]
+
 
 
 # 🔴 Signal pour journaliser la suppression d'un statut

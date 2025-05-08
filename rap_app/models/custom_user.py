@@ -2,21 +2,23 @@ import logging
 from django.contrib.auth.models import AbstractUser
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.urls import reverse
 from django.utils.timezone import now
 
 logger = logging.getLogger("application.customuser")
 
- 
+
 class CustomUser(AbstractUser):
     """
-    Utilisateur personnalisé combinant les champs de User et UserProfile.
-    
-    Remplace le modèle utilisateur standard de Django.
-    Utilise l’email comme identifiant unique et intègre des champs supplémentaires :
-    téléphone, avatar, biographie, rôle.
+    👤 Modèle utilisateur personnalisé basé sur AbstractUser.
+
+    Remplace le modèle utilisateur par défaut de Django.
+    Utilise l'email comme identifiant unique.
+    Ajoute des champs métier utiles :
+    - Téléphone, avatar, biographie
+    - Rôle d'accès avec permissions spécifiques
     """
 
-    # Utiliser l'email comme identifiant principal
     email = models.EmailField(
         unique=True,
         verbose_name="Adresse email",
@@ -44,7 +46,7 @@ class CustomUser(AbstractUser):
         help_text="Texte de présentation ou informations supplémentaires"
     )
 
-    # Définition des rôles personnalisés
+    # Rôles personnalisés
     ROLE_SUPERADMIN = 'superadmin'
     ROLE_ADMIN = 'admin'
     ROLE_STAGIAIRE = 'stagiaire'
@@ -67,9 +69,8 @@ class CustomUser(AbstractUser):
         help_text="Rôle ou niveau d'accès de l'utilisateur"
     )
 
-    # Configuration du modèle personnalisé
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['username']  # Peut aussi contenir ['first_name', 'last_name'] si besoin
+    REQUIRED_FIELDS = ['username']
 
     class Meta:
         verbose_name = "Utilisateur"
@@ -82,9 +83,9 @@ class CustomUser(AbstractUser):
 
     def clean(self):
         """
-        Validation personnalisée :
-        - Format du numéro de téléphone
-        - Restrictions sur le rôle superadmin
+        🧪 Validation personnalisée :
+        - Vérifie le format du numéro de téléphone
+        - S'assure que seul un superuser peut avoir le rôle 'superadmin'
         """
         super().clean()
 
@@ -100,9 +101,9 @@ class CustomUser(AbstractUser):
 
     def save(self, *args, **kwargs):
         """
-        Sauvegarde personnalisée :
-        - Normalisation du téléphone
-        - Logging
+        💾 Sauvegarde personnalisée :
+        - Normalise le numéro de téléphone
+        - Journalise la création ou mise à jour
         """
         is_new = self.pk is None
 
@@ -118,25 +119,53 @@ class CustomUser(AbstractUser):
             logger.info(f"Utilisateur mis à jour : {self.email}")
 
     def __str__(self):
+        """🔁 Représentation textuelle de l'utilisateur."""
         return f"{self.get_full_name()} ({self.email})"
 
     def get_full_name(self):
+        """
+        📛 Nom complet de l'utilisateur.
+
+        Returns:
+            str: Prénom + Nom ou username/email
+        """
         if self.first_name and self.last_name:
             return f"{self.first_name} {self.last_name}"
         return self.username or self.email
 
     def avatar_url(self):
         """
-        Retourne l'URL de l'avatar ou une image par défaut.
+        🖼️ Retourne l'URL de l'avatar ou une image par défaut.
         """
         if self.avatar and hasattr(self.avatar, 'url'):
             return self.avatar.url
         return '/static/images/default_avatar.png'
 
+    def get_absolute_url(self):
+        """
+        🔗 URL absolue vers le détail de l'utilisateur (API ou interface).
+
+        Returns:
+            str: URL de détail
+        """
+        return reverse("user-detail", kwargs={"pk": self.pk})
+
+    def to_serializable_dict(self):
+        """
+        📦 Alias de serializable_data pour compatibilité.
+
+        Returns:
+            dict: Données sérialisables
+        """
+        return self.serializable_data
+
     @property
     def serializable_data(self):
         """
-        Retourne un dictionnaire prêt pour la sérialisation API.
+        📦 Représentation sérialisable de l'utilisateur.
+
+        Returns:
+            dict: Données de l'utilisateur prêtes pour une API
         """
         return {
             'id': self.id,
@@ -156,10 +185,21 @@ class CustomUser(AbstractUser):
             'is_superuser': self.is_superuser,
         }
 
-    # Helpers pour les rôles
-    def is_admin(self): return self.role in [self.ROLE_ADMIN, self.ROLE_SUPERADMIN]
-    def is_staff_or_admin(self): return self.role in [self.ROLE_STAFF, self.ROLE_ADMIN, self.ROLE_SUPERADMIN]
-    def is_stagiaire(self): return self.role == self.ROLE_STAGIAIRE
-    def is_superadmin(self): return self.role == self.ROLE_SUPERADMIN
-    def is_staff_custom(self): return self.role == self.ROLE_STAFF
-    def is_test(self): return self.role == self.ROLE_TEST
+    # 🔐 Helpers de rôle
+    def is_admin(self):
+        return self.role in [self.ROLE_ADMIN, self.ROLE_SUPERADMIN]
+
+    def is_staff_or_admin(self):
+        return self.role in [self.ROLE_STAFF, self.ROLE_ADMIN, self.ROLE_SUPERADMIN]
+
+    def is_stagiaire(self):
+        return self.role == self.ROLE_STAGIAIRE
+
+    def is_superadmin(self):
+        return self.role == self.ROLE_SUPERADMIN
+
+    def is_staff_custom(self):
+        return self.role == self.ROLE_STAFF
+
+    def is_test(self):
+        return self.role == self.ROLE_TEST

@@ -80,3 +80,4 @@ def commentaire_post_delete(sender, instance, **kwargs):
     Signal post_delete pour les commentaires.
     """
     update_formation_stats_on_delete(instance)
+

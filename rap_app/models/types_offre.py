@@ -130,42 +130,33 @@ class TypeOffre(BaseModel):
         - Validation des données
         - Attribution automatique d'une couleur par défaut
         - Journalisation des actions
-        
-        Args:
-            *args, **kwargs: Arguments à passer à la méthode save() de base
-            
-        Kwargs:
-            skip_validation (bool): Si True, ignore la validation complète
+        - Passage explicite de l'utilisateur à BaseModel
         """
         is_new = self.pk is None
         old_instance = None
         skip_validation = kwargs.pop('skip_validation', False)
-        
-        # Si modification, récupérer l'instance avant les changements
+        user = kwargs.pop('user', None)
+        if user:
+            self._user = user  # ✅ Transmet à BaseModel
+
         if not is_new:
             try:
                 old_instance = TypeOffre.objects.get(pk=self.pk)
             except TypeOffre.DoesNotExist:
                 pass
-        
-        # Normalisation des données
+
         if self.autre:
             self.autre = self.autre.strip()
         self.couleur = self.couleur.lower() if self.couleur else '#6c757d'
-        
-        # Validation complète sauf si désactivée
+
         if not skip_validation:
             self.full_clean()
-        
-        # Attribution d'une couleur par défaut si nécessaire
+
         self.assign_default_color()
-        
-        # Utilisation d'une transaction pour garantir l'intégrité
+
         with transaction.atomic():
-            # Sauvegarde
             super().save(*args, **kwargs)
-            
-            # Journalisation
+
             if is_new:
                 logger.info(f"Création d'un nouveau type d'offre: {self}")
             elif old_instance:
@@ -176,7 +167,6 @@ class TypeOffre(BaseModel):
                     changes.append(f"autre: {old_instance.autre} → {self.autre}")
                 if old_instance.couleur != self.couleur:
                     changes.append(f"couleur: {old_instance.couleur} → {self.couleur}")
-                
                 if changes:
                     logger.info(f"Modification du type d'offre {self.pk}: {', '.join(changes)}")
 
@@ -301,3 +291,13 @@ class TypeOffre(BaseModel):
             models.Index(fields=['nom']),
             models.Index(fields=['autre']),
         ]
+
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+
+@receiver(post_save, sender=TypeOffre)
+def log_type_offre_saved(sender, instance, created, **kwargs):
+    if created:
+        logger.info(f"[Signal] Type d'offre créé : {instance}")
+    else:
+        logger.info(f"[Signal] Type d'offre modifié : {instance}")

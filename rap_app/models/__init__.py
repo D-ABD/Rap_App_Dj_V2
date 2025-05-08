@@ -19,6 +19,7 @@ from .custom_user import CustomUser
 
 __all__ = ['CustomUser']  # Important pour l'importation
 
+default_app_config = "rap_app.apps.RapAppConfig"
 
 
 # ✅ Import des fichiers contenant des signaux (obligatoire pour qu'ils soient déclenchés)
