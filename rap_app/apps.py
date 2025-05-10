@@ -9,6 +9,7 @@ class RapAppConfig(AppConfig):
 
 
     def ready(self):
+        import rap_app.signals.centres_signals
         import rap_app.signals.commentaire_signals
         import rap_app.signals.documents_signals
         import rap_app.signals.evenements_signals
@@ -17,3 +18,4 @@ class RapAppConfig(AppConfig):
         import rap_app.signals.prospections_signals
         import rap_app.signals.prepacomp_signals
         import rap_app.signals.logs_signals  
+        import rap_app.signals.statut_signals

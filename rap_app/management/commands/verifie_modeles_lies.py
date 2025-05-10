@@ -76,15 +76,15 @@ class Command(BaseCommand):
         properties = [n for n, o in getmembers(model, lambda o: isinstance(o, property))]
         if not properties:
             issues["info"].append("Aucune propriété calculée trouvée")
-        methods = [m for m, _ in getmembers(model, ismethod) if m.startswith('get_') and m not in ['get_absolute_url', 'get_FOO_display']]
+        methods = [m for m, _ in getmembers(model, ismethod) if m.startswith('get_') and m not in ['', 'get_FOO_display']]
         if not methods:
             issues["info"].append("Aucune méthode get_*() métier trouvée")
 
     def _check_api_compatibility(self, model, issues):
         if not any(hasattr(model, m) for m in ['to_serializable_dict', 'to_dict', 'serialize', 'to_json']):
             issues["warning"].append("Pas de méthode to_serializable_dict() ou équivalent")
-        if not hasattr(model, 'get_absolute_url'):
-            issues["warning"].append("Pas de méthode get_absolute_url() définie")
+        if not hasattr(model, ''):
+            issues["warning"].append("Pas de méthode () définie")
 
     def _check_indexation_performance(self, model, issues):
         indexes = getattr(model._meta, 'indexes', [])

@@ -4,14 +4,20 @@ from django.db import models, transaction
 from django.core.exceptions import ValidationError
 from django.utils.text import slugify
 from django.utils.html import format_html
+from django.urls import reverse
 from .base import BaseModel
 
 # Configuration du logger
 logger = logging.getLogger("application.typeoffre")
 
+# ----------------------------------------------------
+# Signaux déplacés dans un fichier signals/
+# ----------------------------------------------------
+
+
 class TypeOffre(BaseModel):
     """
-    Modèle représentant les types d'offres de formation.
+    📋 Modèle représentant les types d'offres de formation.
 
     Ce modèle définit les différents types d'offres disponibles dans l'application, 
     comme CRIF, Alternance, POEC, POEI, etc. Il permet également d'ajouter un type personnalisé 
@@ -78,14 +84,55 @@ class TypeOffre(BaseModel):
     
     couleur = models.CharField(
         max_length=7,
-        default='#6c757d',
+        blank=True,
+        null=True,
         verbose_name="Couleur associée (hexadécimal)",
         help_text="Code couleur hexadécimal (ex: #FF5733) pour l'affichage visuel"
     )
 
+
+    def to_csv_row(self) -> list[str]:
+        """
+        📤 Convertit le type d'offre en ligne pour export CSV.
+
+        Returns:
+            list: Valeurs ordonnées correspondant aux en-têtes CSV
+        """
+        return [
+            str(self.pk),
+            self.get_nom_display(),
+            self.nom,
+            self.autre or '',
+            self.couleur,
+            str(self.get_formations_count()),
+            self.created_at.strftime('%Y-%m-%d %H:%M:%S') if self.created_at else '',
+            self.updated_at.strftime('%Y-%m-%d %H:%M:%S') if self.updated_at else '',
+            self.created_by.username if self.created_by else 'Système',
+        ]
+
+    @classmethod
+    def get_csv_fields(cls) -> list[str]:
+        """
+        🗂️ Liste des champs exportables.
+
+        Returns:
+            list: Noms de champs (correspondant aux colonnes)
+        """
+        return ['id', 'libelle_affiche', 'nom_technique', 'autre', 'couleur', 'nb_formations', 'created_at', 'updated_at', 'created_by']
+
+    @classmethod
+    def get_csv_headers(cls) -> list[str]:
+        """
+        🏷️ En-têtes lisibles pour l’export CSV.
+
+        Returns:
+            list: En-têtes pour la première ligne du CSV
+        """
+        return ['ID', 'Libellé affiché', 'Nom technique', 'Autre (perso)', 'Couleur', 'Nb formations', 'Créé le', 'Modifié le', 'Créé par']
+
     def clean(self):
         """
-        Validation personnalisée des données avant sauvegarde.
+        🔍 Validation personnalisée des données avant sauvegarde.
         
         Vérifications:
         - Si le type d'offre est 'Autre', alors `autre` doit être rempli
@@ -126,53 +173,72 @@ class TypeOffre(BaseModel):
 
     def save(self, *args, **kwargs):
         """
-        Personnalisation de la sauvegarde:
-        - Validation des données
-        - Attribution automatique d'une couleur par défaut
-        - Journalisation des actions
-        - Passage explicite de l'utilisateur à BaseModel
+        💾 Sauvegarde personnalisée du modèle TypeOffre.
+
+        Gère :
+        - La validation conditionnelle via `skip_validation`
+        - L’attribution automatique d’une couleur par défaut
+        - La journalisation détaillée des changements
+        - La compatibilité avec le champ `user` de BaseModel
+
+        Args:
+            *args: Arguments positionnels transmis à `super().save()`
+            **kwargs:
+                - user (User): Utilisateur à l’origine de la modification
+                - skip_validation (bool): Si True, désactive la validation (`.full_clean()`)
         """
         is_new = self.pk is None
-        old_instance = None
-        skip_validation = kwargs.pop('skip_validation', False)
-        user = kwargs.pop('user', None)
+        user = kwargs.pop("user", None)
+        skip_validation = kwargs.pop("skip_validation", False)
+
         if user:
-            self._user = user  # ✅ Transmet à BaseModel
+            self._user = user  # transmis à BaseModel pour journalisation
 
-        if not is_new:
-            try:
-                old_instance = TypeOffre.objects.get(pk=self.pk)
-            except TypeOffre.DoesNotExist:
-                pass
-
+        # Nettoyage des champs
         if self.autre:
             self.autre = self.autre.strip()
-        self.couleur = self.couleur.lower() if self.couleur else '#6c757d'
 
+        if not self.couleur:
+            self.couleur = "#6c757d"
+        else:
+            self.couleur = self.couleur.lower()
+
+        # Affecter une couleur par défaut si nécessaire
+        self.assign_default_color()
+
+        # Appliquer la validation uniquement si non désactivée
         if not skip_validation:
             self.full_clean()
 
-        self.assign_default_color()
-
         with transaction.atomic():
-            super().save(*args, **kwargs)
+            old_instance = None
+            if not is_new:
+                try:
+                    old_instance = TypeOffre.objects.get(pk=self.pk)
+                except TypeOffre.DoesNotExist:
+                    pass
 
+            # Appel à BaseModel.save() avec les bons kwargs
+            super().save(*args, user=user, skip_validation=skip_validation, **kwargs)
+
+            # Logging
             if is_new:
-                logger.info(f"Création d'un nouveau type d'offre: {self}")
+                logger.info(f"🆕 Création du type d'offre : {self}")
             elif old_instance:
-                changes = []
+                modifications = []
                 if old_instance.nom != self.nom:
-                    changes.append(f"nom: {old_instance.get_nom_display()} → {self.get_nom_display()}")
+                    modifications.append(f"nom: {old_instance.nom} → {self.nom}")
                 if old_instance.autre != self.autre:
-                    changes.append(f"autre: {old_instance.autre} → {self.autre}")
+                    modifications.append(f"autre: {old_instance.autre} → {self.autre}")
                 if old_instance.couleur != self.couleur:
-                    changes.append(f"couleur: {old_instance.couleur} → {self.couleur}")
-                if changes:
-                    logger.info(f"Modification du type d'offre {self.pk}: {', '.join(changes)}")
+                    modifications.append(f"couleur: {old_instance.couleur} → {self.couleur}")
+
+                if modifications:
+                    logger.info(f"✏️ Modification du type d'offre #{self.pk} : " + ", ".join(modifications))
 
     def assign_default_color(self):
         """
-        Assigne une couleur par défaut selon le type d'offre si aucune 
+        🎨 Assigne une couleur par défaut selon le type d'offre si aucune 
         couleur personnalisée n'est définie.
         """
         # On affecte seulement si aucune couleur personnalisée ou si c'est la couleur grise par défaut
@@ -182,18 +248,29 @@ class TypeOffre(BaseModel):
 
     def __str__(self):
         """
-        Représentation textuelle du modèle dans l'admin Django et les logs.
-        
+        🔁 Représentation textuelle du modèle dans l'admin Django et les logs.
+
         Returns:
-            str: Nom personnalisé si le type est "Autre", sinon le nom standard
+            str: Nom personnalisé si le type est "Autre", sinon le nom standard ou clé brute
         """
         if self.nom == self.AUTRE and self.autre:
             return self.autre
-        return self.get_nom_display()
+        return dict(self.TYPE_OFFRE_CHOICES).get(self.nom, self.nom)
+
+    
+    def __repr__(self):
+        """
+        📝 Représentation technique pour le débogage.
+        
+        Returns:
+            str: Format technique détaillé
+        """
+        return f"<TypeOffre(id={self.pk}, nom='{self.nom}', autre='{self.autre if self.nom == self.AUTRE else ''}')>"
+    
     
     def is_personnalise(self):
         """
-        Vérifie si le type d'offre est personnalisé (Autre).
+        🔍 Vérifie si le type d'offre est personnalisé (Autre).
         
         Returns:
             bool: True si le type est "Autre", False sinon
@@ -202,7 +279,7 @@ class TypeOffre(BaseModel):
     
     def calculer_couleur_texte(self):
         """
-        Détermine la couleur de texte adaptée (blanc ou noir) en fonction de la couleur de fond.
+        🎨 Détermine la couleur de texte adaptée (blanc ou noir) en fonction de la couleur de fond.
         
         Utilise une heuristique simple: les couleurs claires (jaune) ont un texte noir,
         les autres ont un texte blanc pour assurer la lisibilité.
@@ -233,7 +310,7 @@ class TypeOffre(BaseModel):
     
     def get_badge_html(self):
         """
-        Génère le HTML pour afficher un badge avec la couleur du type d'offre.
+        🏷️ Génère le HTML pour afficher un badge avec la couleur du type d'offre.
         
         Returns:
             SafeString: Code HTML formaté pour le badge
@@ -248,32 +325,53 @@ class TypeOffre(BaseModel):
     
     def get_formations_count(self):
         """
-        Retourne le nombre de formations associées à ce type d'offre.
+        📊 Retourne le nombre de formations associées à ce type d'offre.
         
         Returns:
             int: Nombre de formations utilisant ce type d'offre
         """
         return self.formations.count()
     
-    @property
-    def serializable_data(self):
+    def to_serializable_dict(self, exclude=None):
         """
-        Retourne un dictionnaire des données du type d'offre pour sérialisation.
+        📦 Retourne un dictionnaire sérialisable du type d'offre.
         
-        Cette propriété facilite la création de serializers DRF.
-        
+        Args:
+            exclude (list[str], optional): Liste de champs à exclure
+            
         Returns:
-            dict: Données du type d'offre formatées pour sérialisation
+            dict: Données sérialisables du type d'offre
         """
-        return {
-            'id': self.id,
-            'nom': self.nom,
+        exclude = exclude or []
+        data = super().to_serializable_dict(exclude)
+        
+        # Ajouter des données spécifiques au type d'offre
+        data.update({
             'libelle': self.__str__(),
-            'couleur': self.couleur,
-            'autre': self.autre,
             'is_personnalise': self.is_personnalise(),
             'formations_count': self.get_formations_count(),
-        }
+            'badge_html': self.get_badge_html(),
+        })
+        
+        return data
+    
+    def invalidate_caches(self):
+        """
+        🔄 Invalide les caches associés à ce type d'offre.
+        """
+        super().invalidate_caches()
+        
+        # Invalider les caches spécifiques aux types d'offre
+        from django.core.cache import cache
+        cache_keys = [
+            f"typeoffre_{self.pk}",
+            f"typeoffre_liste",
+            f"typeoffre_{self.nom}",
+            f"formations_par_typeoffre_{self.pk}"
+        ]
+        
+        for key in cache_keys:
+            cache.delete(key)
 
     class Meta:
         verbose_name = "Type d'offre"
@@ -288,16 +386,6 @@ class TypeOffre(BaseModel):
         ]
         # Ajout d'index pour optimiser les requêtes fréquentes
         indexes = [
-            models.Index(fields=['nom']),
-            models.Index(fields=['autre']),
+            models.Index(fields=['nom'], name='typeoffre_nom_idx'),
+            models.Index(fields=['autre'], name='typeoffre_autre_idx'),
         ]
-
-from django.db.models.signals import post_save
-from django.dispatch import receiver
-
-@receiver(post_save, sender=TypeOffre)
-def log_type_offre_saved(sender, instance, created, **kwargs):
-    if created:
-        logger.info(f"[Signal] Type d'offre créé : {instance}")
-    else:
-        logger.info(f"[Signal] Type d'offre modifié : {instance}")

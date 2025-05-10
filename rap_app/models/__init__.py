@@ -16,6 +16,8 @@ from .prepacomp import Semaine, PrepaCompGlobal
 from .vae_jury import VAE, SuiviJury, HistoriqueStatutVAE
 from .logs import LogUtilisateur
 from .custom_user import CustomUser
+from .models_test import DummyModel
+
 
 __all__ = ['CustomUser']  # Important pour l'importation
 

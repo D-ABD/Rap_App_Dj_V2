@@ -2,15 +2,18 @@ import logging
 import re
 from django.db import models
 from django.core.exceptions import ValidationError
-from django.db.models.signals import post_delete
 from django.urls import reverse
 
-from django.dispatch import receiver
 from django.utils.html import format_html
 from .base import BaseModel
 
 # Logger configuré pour les statuts
 logger = logging.getLogger("application.statut")
+
+# ----------------------------------------------------
+# Signaux déplacés dans un fichier signals/
+# ----------------------------------------------------
+
 
 
 def get_default_color(statut_nom):
@@ -98,21 +101,23 @@ class Statut(BaseModel):
     nom = models.CharField(
         max_length=100,
         choices=STATUT_CHOICES,
-        verbose_name="Nom du statut"
+        verbose_name="Nom du statut",
+        help_text="Identifiant du statut parmi les choix prédéfinis"
     )
 
     couleur = models.CharField(
         max_length=7,
         blank=True,
         verbose_name="Couleur",
-        help_text="Couleur hexadécimale (#RRGGBB)."
+        help_text="Couleur hexadécimale (#RRGGBB) pour l'affichage visuel"
     )
 
     description_autre = models.CharField(
         max_length=255,
         blank=True,
         null=True,
-        verbose_name="Description personnalisée"
+        verbose_name="Description personnalisée",
+        help_text="Description détaillée requise quand le statut est 'Autre'"
     )
 
     def clean(self):
@@ -138,7 +143,7 @@ class Statut(BaseModel):
 
     def get_nom_display(self):
         """
-        Affiche le libellé du statut. Si 'Autre', retourne la description personnalisée.
+        📋 Affiche le libellé du statut. Si 'Autre', retourne la description personnalisée.
         
         Returns:
             str: Le libellé du statut à afficher
@@ -149,7 +154,7 @@ class Statut(BaseModel):
 
     def get_badge_html(self):
         """
-        Génère un badge HTML avec la couleur associée et un texte contrasté.
+        🏷️ Génère un badge HTML avec la couleur associée et un texte contrasté.
         
         Le texte sera en noir ou blanc selon la luminosité de la couleur de fond
         pour garantir une meilleure accessibilité.
@@ -164,6 +169,44 @@ class Statut(BaseModel):
             couleur_texte,
             self.get_nom_display()
         )
+    
+    def to_csv_row(self) -> list[str]:
+        """
+        📤 Convertit le statut en ligne pour export CSV.
+
+        Returns:
+            list: Valeurs ordonnées correspondant aux en-têtes CSV
+        """
+        return [
+            self.pk,
+            self.get_nom_display(),
+            self.nom,
+            self.couleur,
+            self.description_autre or '',
+            self.created_at.strftime('%Y-%m-%d %H:%M:%S') if self.created_at else '',
+            self.updated_at.strftime('%Y-%m-%d %H:%M:%S') if self.updated_at else '',
+            self.created_by.username if self.created_by else 'Système',
+        ]
+    
+    @classmethod
+    def get_csv_fields(cls) -> list[str]:
+        """
+        Décrit les champs exportables dans un fichier CSV.
+
+        Returns:
+            list: Liste des noms de champs pour export
+        """
+        return ['id', 'libelle', 'nom', 'couleur', 'description_autre', 'created_at', 'updated_at', 'created_by']
+
+    @classmethod
+    def get_csv_headers(cls) -> list[str]:
+        """
+        Noms lisibles à afficher en première ligne du CSV.
+
+        Returns:
+            list: Entêtes de colonnes CSV
+        """
+        return ['ID', 'Libellé affiché', 'Nom interne', 'Couleur', 'Description personnalisée', 'Créé le', 'Modifié le', 'Créé par']
 
     def save(self, *args, **kwargs):
         """
@@ -171,83 +214,96 @@ class Statut(BaseModel):
         - Applique une couleur par défaut si vide
         - Journalise création ou modification
         - Gère la traçabilité utilisateur via BaseModel (user dans kwargs)
+        
+        Args:
+            *args: Arguments positionnels
+            **kwargs: Arguments nommés (user, skip_validation)
         """
         is_new = self.pk is None
         user = kwargs.pop('user', None)
+        skip_validation = kwargs.pop('skip_validation', False)
+
         if user:
             self._user = user  # transmis à BaseModel
 
         if not self.couleur:
             self.couleur = get_default_color(self.nom)
 
-        # Possibilité de désactiver la validation complète avec skip_validation=True
-        if not kwargs.pop('skip_validation', False):
+        # ✅ Appliquer la validation seulement si non ignorée
+        if not skip_validation:
             self.full_clean()
 
-        super().save(*args, **kwargs)
+        super().save(*args, user=user, skip_validation=skip_validation, **kwargs)
 
         logger.info(
             f"{'🟢 Nouveau statut' if is_new else '📝 Statut modifié'} : "
             f"{self.get_nom_display()} ({self.couleur})"
         )
+        
+    def invalidate_caches(self):
+        """
+        🔄 Invalide les caches associés à ce statut.
+        """
+        super().invalidate_caches()
+        
+        # Invalider les caches spécifiques aux statuts
+        from django.core.cache import cache
+        cache_keys = [
+            f"statut_{self.pk}",
+            f"statut_liste",
+            f"statut_{self.nom}"
+        ]
+        
+        for key in cache_keys:
+            cache.delete(key)
 
     def __str__(self):
         """
-        Représentation textuelle du modèle.
+        🔁 Représentation textuelle du modèle.
         
         Returns:
             str: Le libellé du statut
         """
         return self.get_nom_display()
     
-    def get_absolute_url(self):
+    def __repr__(self):
         """
-        Retourne l'URL pour accéder à la vue détaillée de ce statut.
+        📝 Représentation technique pour le débogage.
         
         Returns:
-            str: URL absolue vers la page de détail du statut
+            str: Format technique détaillé
         """
-        return reverse("statut-detail", kwargs={"pk": self.pk})
+        return f"<Statut(id={self.pk}, nom='{self.nom}', couleur='{self.couleur}')>"
     
-    @property
-    def serializable_data(self):
+    
+    def to_serializable_dict(self, exclude=None):
         """
-        Retourne un dictionnaire des données du statut pour sérialisation.
+        📦 Retourne un dictionnaire sérialisable du statut.
         
-        Cette propriété facilite la création de serializers DRF.
-        
+        Args:
+            exclude (list[str], optional): Liste de champs à exclure
+            
         Returns:
-            dict: Données du statut formatées pour sérialisation
+            dict: Données sérialisables du statut
         """
-        return {
-            'id': self.id,
-            'nom': self.nom,
+        exclude = exclude or []
+        data = super().to_serializable_dict(exclude)
+        
+        # Ajouter des données spécifiques au statut
+        data.update({
             'libelle': self.get_nom_display(),
-            'couleur': self.couleur,
-            'description_autre': self.description_autre,
-        }
+            'badge_html': self.get_badge_html(),
+        })
+        
+        return data
 
     class Meta:
         verbose_name = "Statut"
         verbose_name_plural = "Statuts"
         ordering = ['nom']
         indexes = [
-            models.Index(fields=['nom']),
-            models.Index(fields=['couleur']),
+            models.Index(fields=['nom'], name='statut_nom_idx'),
+            models.Index(fields=['couleur'], name='statut_couleur_idx'),
         ]
 
-
-
-# 🔴 Signal pour journaliser la suppression d'un statut
-@receiver(post_delete, sender=Statut)
-def log_statut_deleted(sender, instance, **kwargs):
-    """
-    Signal déclenché lors de la suppression d'un statut.
-    Journalise l'information de suppression.
-    
-    Args:
-        sender: Le modèle qui a envoyé le signal
-        instance: L'instance du modèle qui a été supprimée
-        **kwargs: Arguments supplémentaires
-    """
-    logger.warning(f"❌ Statut supprimé : {instance.get_nom_display()} ({instance.couleur})")
+# Note: Le signal post_delete devrait être déplacé dans un fichier signals.py

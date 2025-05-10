@@ -170,7 +170,7 @@ class Command(BaseCommand):
         essential_methods = {
             "__str__": "Méthode __str__() pour représentation lisible",
             "clean": "Méthode clean() pour validations",
-            "get_absolute_url": "Méthode get_absolute_url() pour navigation"
+            "": "Méthode () pour navigation"
         }
         
         for method_name, description in essential_methods.items():
@@ -523,4 +523,4 @@ class Command(BaseCommand):
                 severity='warning',
                 model=model,
                 fix_suggestion="Ajouter une méthode clean() pour valider les contraintes entre champs"
-            )
+            ) 

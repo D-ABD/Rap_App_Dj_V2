@@ -1,0 +1,10 @@
+2025-05-10 12:40:23,577 | INFO | logs | User:Système | Action:création | Object:centre#1 | Nouvelle action utilisateur
+2025-05-10 12:40:23,616 | INFO | logs | User:testuser | Action:consultation | Object:formation#1 | Nouvelle action utilisateur
+2025-05-10 12:40:24,688 | INFO | logs | User:Système | Action:création | Object:centre#2 | Nouvelle action utilisateur
+2025-05-10 12:40:24,723 | INFO | logs | User:testuser | Action:consultation | Object:formation#2 | Nouvelle action utilisateur
+2025-05-10 12:40:24,729 | INFO | logs | User:testuser | Action:consultation | Object:formation#2 | Nouvelle action utilisateur
+2025-05-10 12:40:25,609 | INFO | logs | User:Système | Action:création | Object:centre#3 | Nouvelle action utilisateur
+2025-05-10 12:40:25,699 | INFO | logs | User:testuser | Action:modification | Object:formation#3 | Nouvelle action utilisateur
+2025-05-10 12:40:26,564 | INFO | logs | User:Système | Action:création | Object:centre#4 | Nouvelle action utilisateur
+2025-05-10 12:40:28,349 | INFO | logs | User:Système | Action:création | Object:centre#5 | Nouvelle action utilisateur
+2025-05-10 12:40:28,419 | INFO | logs | User:testuser | Action:modification | Object:formation#5 | Nouvelle action utilisateur
