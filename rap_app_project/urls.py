@@ -15,10 +15,9 @@ urlpatterns = [
     path('', include('rap_app.urls')),
 
         # Documentation de l'API
-    path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
-    path('api/docs/swagger/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
-    path('api/docs/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
-
+    path('api/schema/', SpectacularAPIView.as_view(), name='schema'),  # <-- JSON brut
+    path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),  # <-- UI Swagger
+    path('api/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),  # (facultatif)
     ]
 
 if settings.DEBUG:

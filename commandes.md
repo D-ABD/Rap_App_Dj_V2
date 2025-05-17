@@ -110,8 +110,8 @@ git push -u origin main
 # Créer un commit
 # Pousser les modifications
 git status                           
-git add .                             
-git commit -m "Amélioration models, signals, + 199 tests models ok"   
+git add .                            
+git commit -m "Serializers complets/viewsets/384 tests ok "   
 git push origin main                 
 
 # --------------------------

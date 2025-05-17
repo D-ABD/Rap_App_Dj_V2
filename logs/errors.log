@@ -2032,3 +2032,23 @@ Traceback (most recent call last):
   File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/base.py", line 1502, in full_clean
     raise ValidationError(errors)
 django.core.exceptions.ValidationError: {'centre': ['This field cannot be null.']}
+ERROR 2025-05-17 09:21:40,154 log 46825 123145342566400 Internal Server Error: /api/docs/
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/base.py", line 220, in _get_response
+    response = response.render()
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/response.py", line 114, in render
+    self.content = self.rendered_content
+                   ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/response.py", line 70, in rendered_content
+    ret = renderer.render(self.data, accepted_media_type, context)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/renderers.py", line 159, in render
+    template = self.resolve_template(template_names)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/renderers.py", line 169, in resolve_template
+    return loader.select_template(template_names)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/loader.py", line 47, in select_template
+    raise TemplateDoesNotExist(", ".join(template_name_list), chain=chain)
+django.template.exceptions.TemplateDoesNotExist: drf_spectacular/swagger_ui.html
+ERROR 2025-05-17 09:21:40,207 basehttp 46825 123145342566400 "GET /api/docs/ HTTP/1.1" 500 95550
