@@ -2,6 +2,7 @@ from rest_framework import viewsets, filters, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from drf_spectacular.utils import extend_schema_view, extend_schema, OpenApiResponse
+
 from ...models.logs import LogUtilisateur
 from ...api.serializers.logs_serializers import LogUtilisateurSerializer
 from ...api.permissions import IsStaffOrAbove
@@ -12,11 +13,13 @@ from ...api.paginations import RapAppPagination
     list=extend_schema(
         summary="Liste des logs utilisateur",
         description="Affiche tous les logs enregistrés (lecture seule, paginée).",
+        tags=["Logs"],
         responses={200: OpenApiResponse(response=LogUtilisateurSerializer)},
     ),
     retrieve=extend_schema(
         summary="Détail d’un log",
         description="Affiche les détails d’un log utilisateur.",
+        tags=["Logs"],
         responses={200: OpenApiResponse(response=LogUtilisateurSerializer)},
     ),
 )

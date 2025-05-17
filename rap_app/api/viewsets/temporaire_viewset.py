@@ -1,8 +1,7 @@
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from drf_spectacular.utils import extend_schema
-
+from drf_spectacular.utils import extend_schema, OpenApiResponse
 
 @extend_schema(
     tags=["🔐 Authentification"],
@@ -11,22 +10,25 @@ from drf_spectacular.utils import extend_schema
         Cette vue permet de vérifier si un token d’authentification (JWT ou DRF Token) est valide,
         et retourne les informations du compte utilisateur connecté, y compris son rôle.
 
-        🔒 Requiert un token d’authentification valide.
+        🔒 Requiert un token d’authentification valide dans l'en-tête `Authorization`.
     """,
     responses={
-        200: {
-            "type": "object",
-            "properties": {
-                "success": {"type": "boolean"},
-                "message": {"type": "string"},
-                "user_id": {"type": "integer"},
-                "username": {"type": "string"},
-                "email": {"type": "string"},
-                "role": {"type": "string"},
-                "is_staff": {"type": "boolean"},
-                "is_superuser": {"type": "boolean"},
+        200: OpenApiResponse(
+            description="Token valide et utilisateur authentifié",
+            response={
+                "type": "object",
+                "properties": {
+                    "success": {"type": "boolean", "example": True},
+                    "message": {"type": "string", "example": "Token valide ✅"},
+                    "user_id": {"type": "integer", "example": 1},
+                    "username": {"type": "string", "example": "johndoe"},
+                    "email": {"type": "string", "example": "john@example.com"},
+                    "role": {"type": "string", "example": "admin"},
+                    "is_staff": {"type": "boolean", "example": True},
+                    "is_superuser": {"type": "boolean", "example": False},
+                }
             }
-        }
+        )
     }
 )
 @api_view(['GET'])

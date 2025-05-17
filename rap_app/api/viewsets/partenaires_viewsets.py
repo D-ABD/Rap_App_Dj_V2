@@ -1,23 +1,40 @@
-# viewsets/partenaire_viewsets.py
-
 from rest_framework import viewsets, status, filters
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from drf_spectacular.utils import extend_schema, extend_schema_view, OpenApiResponse
 
 from ...api.permissions import IsOwnerOrStaffOrAbove
-
 from ...models.partenaires import Partenaire
 from ..serializers.partenaires_serializers import PartenaireSerializer
 from ...models.logs import LogUtilisateur
 
 
 @extend_schema_view(
-    list=extend_schema(summary="Lister les partenaires", responses={200: OpenApiResponse(response=PartenaireSerializer)}),
-    retrieve=extend_schema(summary="Détail d’un partenaire", responses={200: OpenApiResponse(response=PartenaireSerializer)}),
-    create=extend_schema(summary="Créer un partenaire", responses={201: OpenApiResponse(description="Création réussie")}),
-    update=extend_schema(summary="Modifier un partenaire", responses={200: OpenApiResponse(description="Mise à jour réussie")}),
-    destroy=extend_schema(summary="Supprimer un partenaire", responses={204: OpenApiResponse(description="Suppression réussie")}),
+    list=extend_schema(
+        summary="Lister les partenaires",
+        tags=["Partenaires"],
+        responses={200: OpenApiResponse(response=PartenaireSerializer)}
+    ),
+    retrieve=extend_schema(
+        summary="Détail d’un partenaire",
+        tags=["Partenaires"],
+        responses={200: OpenApiResponse(response=PartenaireSerializer)}
+    ),
+    create=extend_schema(
+        summary="Créer un partenaire",
+        tags=["Partenaires"],
+        responses={201: OpenApiResponse(description="Création réussie")}
+    ),
+    update=extend_schema(
+        summary="Modifier un partenaire",
+        tags=["Partenaires"],
+        responses={200: OpenApiResponse(description="Mise à jour réussie")}
+    ),
+    destroy=extend_schema(
+        summary="Supprimer un partenaire",
+        tags=["Partenaires"],
+        responses={204: OpenApiResponse(description="Suppression réussie")}
+    ),
 )
 class PartenaireViewSet(viewsets.ModelViewSet):
     """
@@ -57,7 +74,6 @@ class PartenaireViewSet(viewsets.ModelViewSet):
             "message": "Partenaire créé avec succès.",
             "data": instance.to_serializable_dict()
         }, status=status.HTTP_201_CREATED)
-
 
     def update(self, request, *args, **kwargs):
         partial = kwargs.pop("partial", False)

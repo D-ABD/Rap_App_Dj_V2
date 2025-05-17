@@ -11,6 +11,7 @@ from ..serializers.login_logout_serializers import LoginSerializer, UserSerializ
 
 
 @extend_schema(
+    methods=["post"],
     tags=["Authentification"],
     summary="Connexion",
     description="""
@@ -38,8 +39,8 @@ class LoginAPIView(APIView):
             'user': UserSerializer(user).data
         }, status=status.HTTP_200_OK)
 
-
 @extend_schema(
+    methods=["post"],
     tags=["Authentification"],
     summary="Déconnexion",
     description="""

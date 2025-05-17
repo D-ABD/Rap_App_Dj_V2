@@ -124,25 +124,17 @@ SIMPLE_JWT = {
 
 # === DJANGO SPECTACULAR ===
 SPECTACULAR_SETTINGS = {
-    'TITLE': 'MyEvol API',
-    'DESCRIPTION': "Documentation complète de l'API MyEvol pour l'application mobile et web.",
+    'TITLE': 'Rap_app',
+    'DESCRIPTION': "Documentation complète de l'API Rap_App pour l'application mobile et web.",
     'VERSION': '1.0.0',
     'SERVE_INCLUDE_SCHEMA': False,
     'COMPONENT_SPLIT_REQUEST': True,
-    'SCHEMA_PATH_PREFIX': r'/api/v[0-9]',
+    'SCHEMA_PATH_PREFIX': '/api/',
     'COMPONENT_NO_READ_ONLY_REQUIRED': True,
     'SCHEMA_PATH_PREFIX_TRIM': True,
-    'CONTACT': {'name': 'Équipe MyEvol', 'email': 'support@myevol.app'},
+    'CONTACT': {'name': 'Équipe Rap_app', 'email': 'support@rap_app.app'},
     'LICENSE': {'name': 'Propriétaire'},
-    'TAGS': [
-        {'name': 'Journal', 'description': 'Entrées de journal'},
-        {'name': 'Objectifs', 'description': 'Objectifs personnels'},
-        {'name': 'Badges', 'description': 'Système de progression'},
-        {'name': 'Statistiques', 'description': 'Analyses et tendances'},
-        {'name': 'Utilisateurs', 'description': 'Comptes et préférences'},
-        {'name': 'Notifications', 'description': 'Alertes et rappels'},
-        {'name': 'Challenges', 'description': 'Défis et compétitions'},
-    ],
+
 }
 
 

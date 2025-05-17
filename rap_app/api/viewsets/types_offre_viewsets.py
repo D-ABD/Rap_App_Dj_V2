@@ -17,26 +17,31 @@ from ..paginations import RapAppPagination
     list=extend_schema(
         summary="📄 Liste des types d'offres",
         description="Retourne la liste paginée des types d'offres disponibles.",
+        tags=["TypesOffre"],
         responses={200: OpenApiResponse(response=TypeOffreSerializer)},
     ),
     retrieve=extend_schema(
         summary="🔍 Détail d’un type d’offre",
         description="Retourne les informations détaillées pour un type d'offre.",
+        tags=["TypesOffre"],
         responses={200: OpenApiResponse(response=TypeOffreSerializer)},
     ),
     create=extend_schema(
         summary="➕ Créer un type d’offre",
         description="Ajoute un nouveau type d’offre, standard ou personnalisé.",
+        tags=["TypesOffre"],
         responses={201: OpenApiResponse(description="Création réussie.")},
     ),
     update=extend_schema(
         summary="✏️ Modifier un type d’offre",
         description="Met à jour les données d’un type d’offre existant.",
+        tags=["TypesOffre"],
         responses={200: OpenApiResponse(description="Mise à jour réussie.")},
     ),
     destroy=extend_schema(
         summary="🗑️ Supprimer un type d’offre",
         description="Suppression logique d’un type d’offre (désactivation).",
+        tags=["TypesOffre"],
         responses={204: OpenApiResponse(description="Suppression réussie.")},
     ),
 )

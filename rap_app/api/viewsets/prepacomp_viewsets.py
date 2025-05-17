@@ -11,11 +11,27 @@ from ...models.logs import LogUtilisateur
 
 
 @extend_schema_view(
-    list=extend_schema(summary="Lister les semaines", description="Retourne toutes les semaines avec pagination."),
-    retrieve=extend_schema(summary="Détail d'une semaine"),
-    create=extend_schema(summary="Créer une semaine"),
-    update=extend_schema(summary="Mettre à jour une semaine"),
-    destroy=extend_schema(summary="Supprimer une semaine"),
+    list=extend_schema(
+        summary="Lister les semaines",
+        description="Retourne toutes les semaines avec pagination.",
+        tags=["Semaine"]
+    ),
+    retrieve=extend_schema(
+        summary="Détail d'une semaine",
+        tags=["Semaine"]
+    ),
+    create=extend_schema(
+        summary="Créer une semaine",
+        tags=["Semaine"]
+    ),
+    update=extend_schema(
+        summary="Mettre à jour une semaine",
+        tags=["Semaine"]
+    ),
+    destroy=extend_schema(
+        summary="Supprimer une semaine",
+        tags=["Semaine"]
+    ),
 )
 class SemaineViewSet(viewsets.ModelViewSet):
     queryset = Semaine.objects.filter(is_active=True).select_related("centre")
@@ -83,6 +99,7 @@ class SemaineViewSet(viewsets.ModelViewSet):
     @extend_schema(
         summary="Semaine courante",
         description="Retourne la semaine en cours pour un centre donné.",
+        tags=["Semaine"],
         parameters=[
             OpenApiParameter(name="centre_id", required=True, type=int, location=OpenApiParameter.QUERY,
                              description="ID du centre concerné")
@@ -113,11 +130,26 @@ class SemaineViewSet(viewsets.ModelViewSet):
 
 
 @extend_schema_view(
-    list=extend_schema(summary="Lister les bilans globaux"),
-    retrieve=extend_schema(summary="Détail d’un bilan global"),
-    create=extend_schema(summary="Créer un bilan global"),
-    update=extend_schema(summary="Modifier un bilan global"),
-    destroy=extend_schema(summary="Supprimer un bilan global")
+    list=extend_schema(
+        summary="Lister les bilans globaux",
+        tags=["PrepaCompGlobal"]
+    ),
+    retrieve=extend_schema(
+        summary="Détail d’un bilan global",
+        tags=["PrepaCompGlobal"]
+    ),
+    create=extend_schema(
+        summary="Créer un bilan global",
+        tags=["PrepaCompGlobal"]
+    ),
+    update=extend_schema(
+        summary="Modifier un bilan global",
+        tags=["PrepaCompGlobal"]
+    ),
+    destroy=extend_schema(
+        summary="Supprimer un bilan global",
+        tags=["PrepaCompGlobal"]
+    )
 )
 class PrepaCompGlobalViewSet(viewsets.ModelViewSet):
     queryset = PrepaCompGlobal.objects.filter(is_active=True).select_related("centre")
@@ -184,6 +216,7 @@ class PrepaCompGlobalViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=["get"], url_path="par-centre")
     @extend_schema(
         summary="Filtrer les bilans par centre et année",
+        tags=["PrepaCompGlobal"],
         parameters=[
             OpenApiParameter(name="centre_id", required=True, type=int, location=OpenApiParameter.QUERY),
             OpenApiParameter(name="annee", required=False, type=int, location=OpenApiParameter.QUERY),

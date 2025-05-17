@@ -1,5 +1,3 @@
-# rap_app/api/viewsets/commentaires_viewsets.py
-
 from rest_framework import viewsets, status, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -13,6 +11,10 @@ from ...api.permissions import IsOwnerOrStaffOrAbove
 
 
 @extend_schema(tags=["Commentaires"])
+@extend_schema(
+    summary="",
+    responses={200: CommentaireSerializer},
+)
 class CommentaireViewSet(viewsets.ModelViewSet):
     queryset = Commentaire.objects.select_related("formation", "created_by").all()
     serializer_class = CommentaireSerializer
@@ -22,13 +24,15 @@ class CommentaireViewSet(viewsets.ModelViewSet):
     search_fields = ["contenu", "formation__nom", "created_by__username"]
     ordering = ["-created_at"]
 
-    def get_queryset(self):
-        queryset = super().get_queryset()
-        formation_id = self.request.query_params.get("formation_id")
-        if formation_id:
-            queryset = queryset.filter(formation_id=formation_id)
-        return queryset.filter(is_active=True)
+    @extend_schema(summary="Lister les commentaires actifs")
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
 
+    @extend_schema(summary="Récupérer un commentaire")
+    def retrieve(self, request, *args, **kwargs):
+        return super().retrieve(request, *args, **kwargs)
+
+    @extend_schema(summary="Créer un commentaire")
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -47,6 +51,7 @@ class CommentaireViewSet(viewsets.ModelViewSet):
             "data": commentaire.to_serializable_dict(include_full_content=True)
         }, status=status.HTTP_201_CREATED)
 
+    @extend_schema(summary="Mettre à jour un commentaire")
     def update(self, request, *args, **kwargs):
         partial = kwargs.pop("partial", False)
         instance = self.get_object()
@@ -67,6 +72,7 @@ class CommentaireViewSet(viewsets.ModelViewSet):
             "data": commentaire.to_serializable_dict(include_full_content=True)
         }, status=status.HTTP_200_OK)
 
+    @extend_schema(summary="Supprimer un commentaire")
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
         instance.delete()
@@ -84,6 +90,15 @@ class CommentaireViewSet(viewsets.ModelViewSet):
             "data": None
         }, status=status.HTTP_204_NO_CONTENT)
 
+    @extend_schema(
+        summary="Récupérer les statistiques de saturation des commentaires",
+        responses={
+            200: OpenApiResponse(
+                description="Données de saturation pour une formation",
+                response=None  # ou un serializer custom si tu veux
+            )
+        }
+    )
     @action(detail=False, methods=["get"], url_path="saturation-stats")
     def saturation_stats(self, request):
         formation_id = request.query_params.get("formation_id")

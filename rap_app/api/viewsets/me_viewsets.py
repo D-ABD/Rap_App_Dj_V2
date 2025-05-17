@@ -14,6 +14,7 @@ class MeAPIView(APIView):
 
     @extend_schema(
         summary="Afficher son profil",
+        tags=["Utilisateur"],
         responses={200: CustomUserSerializer}
     )
     def get(self, request):
@@ -26,6 +27,7 @@ class MeAPIView(APIView):
 
     @extend_schema(
         summary="Mettre à jour son profil",
+        tags=["Utilisateur"],
         request=CustomUserSerializer,
         responses={200: CustomUserSerializer}
     )

@@ -19,7 +19,7 @@ from ...api.serializers.vae_jury_serializers import (
     VAESerializer, SuiviJurySerializer,
     HistoriqueStatutVAESerializer, ChangerStatutVAESerializer
 )
-
+@extend_schema(tags=["Suivi Jury"])
 class SuiviJuryViewSet(viewsets.ModelViewSet):
     queryset = SuiviJury.objects.filter(is_active=True)
     serializer_class = SuiviJurySerializer
@@ -97,7 +97,7 @@ class SuiviJuryViewSet(viewsets.ModelViewSet):
         instance.save()
 
 
-
+@extend_schema(tags=["VAE"])
 class VAEViewSet(viewsets.ModelViewSet):
     """
     📝 ViewSet principal pour la gestion des VAE individuelles.
@@ -182,6 +182,8 @@ class VAEViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=["post"], url_path="changer-statut")
     @extend_schema(
+        summary="Changer le statut d’une VAE",
+        tags=["VAE"],
         request=ChangerStatutVAESerializer,
         responses={200: OpenApiResponse(description="Statut changé avec succès.")}
     )
@@ -215,8 +217,9 @@ class VAEViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=["get"], url_path="historiques")
     @extend_schema(
-        responses={200: HistoriqueStatutVAESerializer(many=True)},
-        summary="Récupère l'historique de statut de cette VAE"
+        summary="Récupérer l’historique des statuts d’une VAE",
+        tags=["VAE"],
+        responses={200: HistoriqueStatutVAESerializer(many=True)}
     )
     def historiques(self, request, pk=None):
         """
@@ -231,7 +234,7 @@ class VAEViewSet(viewsets.ModelViewSet):
             "data": serializer.data
         })
     
-
+@extend_schema(tags=["VAE - Historique Statut"])
 class HistoriqueStatutVAEViewSet(viewsets.ReadOnlyModelViewSet):
     """
     📘 ViewSet en lecture seule pour l’historique des statuts de VAE.

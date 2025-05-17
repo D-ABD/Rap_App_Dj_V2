@@ -13,26 +13,31 @@ from ...models.logs import LogUtilisateur
     list=extend_schema(
         summary="Liste des utilisateurs",
         description="Récupère tous les utilisateurs actifs, avec filtrage, recherche et tri.",
+        tags=["Utilisateurs"],
         responses={200: OpenApiResponse(response=CustomUserSerializer)},
     ),
     retrieve=extend_schema(
         summary="Détail d'un utilisateur",
         description="Récupère les informations détaillées d’un utilisateur par ID.",
+        tags=["Utilisateurs"],
         responses={200: OpenApiResponse(response=CustomUserSerializer)},
     ),
     create=extend_schema(
         summary="Créer un utilisateur",
         description="Crée un nouvel utilisateur avec un rôle, un email et d'autres champs.",
+        tags=["Utilisateurs"],
         responses={201: OpenApiResponse(description="Utilisateur créé avec succès.")},
     ),
     update=extend_schema(
         summary="Mettre à jour un utilisateur",
         description="Modifie les champs d’un utilisateur existant.",
+        tags=["Utilisateurs"],
         responses={200: OpenApiResponse(description="Utilisateur mis à jour avec succès.")},
     ),
     destroy=extend_schema(
         summary="Supprimer un utilisateur",
         description="Supprime logiquement un utilisateur (is_active = False).",
+        tags=["Utilisateurs"],
         responses={204: OpenApiResponse(description="Utilisateur supprimé avec succès.")},
     ),
 )
@@ -104,6 +109,12 @@ class CustomUserViewSet(viewsets.ModelViewSet):
         return Response(result, status=status.HTTP_200_OK)
 
     @action(detail=False, methods=["get"], url_path="me", permission_classes=[permissions.IsAuthenticated])
+    @extend_schema(
+        summary="Mon profil utilisateur",
+        description="Retourne les informations complètes de l’utilisateur actuellement connecté.",
+        tags=["Utilisateurs"],
+        responses={200: OpenApiResponse(response=CustomUserSerializer)}
+    )
     def me(self, request):
         user = request.user
         return Response({
@@ -116,6 +127,7 @@ class CustomUserViewSet(viewsets.ModelViewSet):
     @extend_schema(
         summary="Liste des rôles utilisateurs",
         description="Retourne tous les rôles disponibles dans l'application, sous forme clé/valeur.",
+        tags=["Utilisateurs"],
         responses={200: OpenApiResponse(
             response=dict,
             description="Rôles disponibles pour la création ou modification d’un utilisateur.",

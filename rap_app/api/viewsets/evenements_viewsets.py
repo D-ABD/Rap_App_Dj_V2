@@ -32,6 +32,7 @@ class EvenementViewSet(viewsets.ModelViewSet):
 
     @extend_schema(
         summary="📚 Lister les événements",
+        tags=["Événements"],
         parameters=[
             OpenApiParameter("formation", int, description="ID de la formation"),
             OpenApiParameter("type_evenement", str, description="Type d'événement"),
@@ -60,13 +61,35 @@ class EvenementViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(page or queryset, many=True)
         return self.get_paginated_response(serializer.data) if page else Response(serializer.data)
 
-    @extend_schema(summary="🧾 Exporter les événements au format CSV")
+    @extend_schema(
+        summary="🧾 Exporter les événements au format CSV",
+        tags=["Événements"],
+        responses={
+            200: OpenApiResponse(
+                description="Fichier CSV contenant les événements",
+                response="application/csv"
+            )
+        }
+    )
     @action(detail=False, methods=["get"], url_path="export-csv")
     def export_csv(self, request):
         response = csv_export_evenements(self.queryset)
         return response
 
-    @extend_schema(summary="📊 Statistiques par type d'événement")
+    @extend_schema(
+        summary="📊 Statistiques par type d'événement",
+        tags=["Événements"],
+        parameters=[
+            OpenApiParameter("start", str, required=False, description="Date de début (YYYY-MM-DD)"),
+            OpenApiParameter("end", str, required=False, description="Date de fin (YYYY-MM-DD)"),
+        ],
+        responses={
+            200: OpenApiResponse(
+                description="Dictionnaire des types d'événements avec leurs occurrences",
+                response=None  # ou un serializer spécifique si tu veux
+            )
+        }
+    )
     @action(detail=False, methods=["get"], url_path="stats-par-type")
     def stats_par_type(self, request):
         start_date = request.query_params.get("start")

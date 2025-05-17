@@ -13,26 +13,31 @@ from ...models.logs import LogUtilisateur
     list=extend_schema(
         summary="📊 Liste des rapports",
         description="Affiche la liste paginée des rapports générés.",
+        tags=["Rapports"],
         responses={200: OpenApiResponse(response=RapportSerializer)},
     ),
     retrieve=extend_schema(
         summary="📄 Détail d’un rapport",
         description="Récupère les détails complets d’un rapport.",
+        tags=["Rapports"],
         responses={200: OpenApiResponse(response=RapportSerializer)},
     ),
     create=extend_schema(
         summary="➕ Créer un rapport",
         description="Crée un nouveau rapport système ou manuel.",
+        tags=["Rapports"],
         responses={201: OpenApiResponse(description="Rapport créé avec succès.")},
     ),
     update=extend_schema(
         summary="✏️ Modifier un rapport",
         description="Met à jour les champs d’un rapport existant.",
+        tags=["Rapports"],
         responses={200: OpenApiResponse(description="Rapport mis à jour avec succès.")},
     ),
     destroy=extend_schema(
         summary="🗑️ Supprimer un rapport",
         description="Supprime logiquement un rapport (désactivation).",
+        tags=["Rapports"],
         responses={204: OpenApiResponse(description="Rapport supprimé avec succès.")},
     ),
 )

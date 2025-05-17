@@ -5,7 +5,6 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiResponse
 
 from ...models.formations import Formation
@@ -31,6 +30,7 @@ class FormationViewSet(viewsets.ModelViewSet):
     @extend_schema(
         summary="Lister les formations",
         description="Retourne une liste paginée des formations avec filtres disponibles.",
+        tags=["Formations"],
         parameters=[
             OpenApiParameter("texte", str, description="Recherche texte libre (nom, commentaire...)"),
             OpenApiParameter("type_offre", str, description="ID du type d'offre"),
@@ -63,6 +63,7 @@ class FormationViewSet(viewsets.ModelViewSet):
 
     @extend_schema(
         summary="Détail d'une formation",
+        tags=["Formations"],
         responses={200: OpenApiResponse(response=FormationSerializer)}
     )
     def retrieve(self, request, *args, **kwargs):
@@ -70,6 +71,7 @@ class FormationViewSet(viewsets.ModelViewSet):
 
     @extend_schema(
         summary="Créer une formation",
+        tags=["Formations"],
         request=FormationSerializer,
         responses={201: FormationSerializer}
     )
@@ -97,6 +99,7 @@ class FormationViewSet(viewsets.ModelViewSet):
 
     @extend_schema(
         summary="Mettre à jour une formation",
+        tags=["Formations"],
         request=FormationSerializer,
         responses={200: FormationSerializer}
     )
@@ -123,19 +126,19 @@ class FormationViewSet(viewsets.ModelViewSet):
             status=status.HTTP_400_BAD_REQUEST
         )
 
-    @extend_schema(summary="Obtenir l'historique d'une formation")
+    @extend_schema(summary="Obtenir l'historique d'une formation", tags=["Formations"])
     @action(detail=True, methods=["get"])
     def historique(self, request, pk=None):
         data = [h.to_serializable_dict() for h in self.get_object().get_historique()]
         return Response({"success": True, "data": data})
 
-    @extend_schema(summary="Lister les partenaires d'une formation")
+    @extend_schema(summary="Lister les partenaires d'une formation", tags=["Formations"])
     @action(detail=True, methods=["get"])
     def partenaires(self, request, pk=None):
         data = [p.to_serializable_dict() for p in self.get_object().get_partenaires()]
         return Response({"success": True, "data": data})
 
-    @extend_schema(summary="Lister les commentaires d'une formation")
+    @extend_schema(summary="Lister les commentaires d'une formation", tags=["Formations"])
     @action(detail=True, methods=["get"])
     def commentaires(self, request, pk=None):
         f = self.get_object()
@@ -144,7 +147,7 @@ class FormationViewSet(viewsets.ModelViewSet):
         qs = f.get_commentaires(include_saturation=with_saturation, limit=int(limit) if limit else None)
         return Response({"success": True, "data": [c.to_serializable_dict() for c in qs]})
 
-    @extend_schema(summary="Lister les documents d'une formation")
+    @extend_schema(summary="Lister les documents d'une formation", tags=["Formations"])
     @action(detail=True, methods=["get"])
     def documents(self, request, pk=None):
         est_public = request.query_params.get("est_public")
@@ -152,13 +155,13 @@ class FormationViewSet(viewsets.ModelViewSet):
         docs = self.get_object().get_documents(est_public)
         return Response({"success": True, "data": [d.to_serializable_dict() for d in docs]})
 
-    @extend_schema(summary="Lister les prospections liées à une formation")
+    @extend_schema(summary="Lister les prospections liées à une formation", tags=["Formations"])
     @action(detail=True, methods=["get"])
     def prospections(self, request, pk=None):
         prosps = self.get_object().get_prospections()
         return Response({"success": True, "data": [p.to_serializable_dict() for p in prosps]})
 
-    @extend_schema(summary="Ajouter un commentaire à une formation")
+    @extend_schema(summary="Ajouter un commentaire à une formation", tags=["Formations"])
     @action(detail=True, methods=["post"])
     def ajouter_commentaire(self, request, pk=None):
         try:
@@ -172,7 +175,7 @@ class FormationViewSet(viewsets.ModelViewSet):
             logger.exception("Ajout commentaire échoué")
             return Response({"success": False, "message": str(e)}, status=400)
 
-    @extend_schema(summary="Ajouter un événement à une formation")
+    @extend_schema(summary="Ajouter un événement à une formation", tags=["Formations"])
     @action(detail=True, methods=["post"])
     def ajouter_evenement(self, request, pk=None):
         try:
@@ -188,7 +191,7 @@ class FormationViewSet(viewsets.ModelViewSet):
             logger.exception("Ajout événement échoué")
             return Response({"success": False, "message": str(e)}, status=400)
 
-    @extend_schema(summary="Ajouter un document à une formation")
+    @extend_schema(summary="Ajouter un document à une formation", tags=["Formations"])
     @action(detail=True, methods=["post"])
     def ajouter_document(self, request, pk=None):
         try:
@@ -203,7 +206,7 @@ class FormationViewSet(viewsets.ModelViewSet):
             logger.exception("Ajout document échoué")
             return Response({"success": False, "message": str(e)}, status=400)
 
-    @extend_schema(summary="Dupliquer une formation")
+    @extend_schema(summary="Dupliquer une formation", tags=["Formations"])
     @action(detail=True, methods=["post"])
     def dupliquer(self, request, pk=None):
         try:
@@ -213,7 +216,7 @@ class FormationViewSet(viewsets.ModelViewSet):
             logger.exception("Duplication échouée")
             return Response({"success": False, "message": str(e)}, status=400)
 
-    @extend_schema(summary="Exporter les formations au format CSV")
+    @extend_schema(summary="Exporter les formations au format CSV", tags=["Formations"])
     @action(detail=False, methods=["get"])
     def export_csv(self, request):
         formations = Formation.objects.all()
@@ -225,7 +228,7 @@ class FormationViewSet(viewsets.ModelViewSet):
             writer.writerow(f.to_csv_row())
         return response
 
-    @extend_schema(summary="Statistiques mensuelles des formations")
+    @extend_schema(summary="Statistiques mensuelles des formations", tags=["Formations"])
     @action(detail=False, methods=["get"])
     def stats_par_mois(self, request):
         annee = request.query_params.get("annee")

@@ -25,6 +25,7 @@ from ...models.logs import LogUtilisateur
 @extend_schema_view(
     list=extend_schema(
         summary="Liste des prospections",
+        tags=["Prospections"],
         parameters=[
             OpenApiParameter(name="statut", type=str, description="Filtrer par statut"),
             OpenApiParameter(name="formation", type=int, description="ID de la formation"),
@@ -33,11 +34,12 @@ from ...models.logs import LogUtilisateur
         ],
         responses={200: OpenApiResponse(response=ProspectionSerializer)}
     ),
-    retrieve=extend_schema(summary="Détail d'une prospection"),
-    create=extend_schema(summary="Créer une prospection"),
-    update=extend_schema(summary="Mettre à jour une prospection"),
-    destroy=extend_schema(summary="Annuler une prospection")
+    retrieve=extend_schema(summary="Détail d'une prospection", tags=["Prospections"]),
+    create=extend_schema(summary="Créer une prospection", tags=["Prospections"]),
+    update=extend_schema(summary="Mettre à jour une prospection", tags=["Prospections"]),
+    destroy=extend_schema(summary="Annuler une prospection", tags=["Prospections"])
 )
+
 class ProspectionViewSet(viewsets.ModelViewSet):
     queryset = Prospection.objects.select_related("partenaire", "formation")
     serializer_class = ProspectionSerializer
@@ -108,6 +110,12 @@ class ProspectionViewSet(viewsets.ModelViewSet):
         })
 
     @action(detail=True, methods=["post"], url_path="changer-statut")
+    @extend_schema(
+        summary="Changer le statut d’une prospection",
+        tags=["Prospections"],
+        request=ChangerStatutSerializer,
+        responses={200: OpenApiResponse(response=ProspectionSerializer)}
+    )
     def changer_statut(self, request, pk=None):
         serializer = ChangerStatutSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -142,6 +150,11 @@ class ProspectionViewSet(viewsets.ModelViewSet):
         })
 
     @action(detail=True, methods=["get"], url_path="historiques")
+    @extend_schema(
+        summary="Lister l’historique d’une prospection",
+        tags=["Prospections"],
+        responses={200: OpenApiResponse(response=HistoriqueProspectionSerializer(many=True))}
+    )
     def historiques(self, request, pk=None):
         instance = self.get_object()
         historiques = instance.historiques.order_by("-date_modification")
@@ -154,8 +167,16 @@ class ProspectionViewSet(viewsets.ModelViewSet):
 
 
 @extend_schema_view(
-    list=extend_schema(summary="Lister les historiques de prospection"),
-    retrieve=extend_schema(summary="Détail d’un historique")
+    list=extend_schema(
+        summary="Lister les historiques de prospection",
+        tags=["HistoriquesProspection"],
+        responses={200: OpenApiResponse(response=HistoriqueProspectionSerializer(many=True))}
+    ),
+    retrieve=extend_schema(
+        summary="Détail d’un historique de prospection",
+        tags=["HistoriquesProspection"],
+        responses={200: OpenApiResponse(response=HistoriqueProspectionSerializer)}
+    )
 )
 class HistoriqueProspectionViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = HistoriqueProspectionSerializer

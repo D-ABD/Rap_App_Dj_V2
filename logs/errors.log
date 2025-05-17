@@ -2052,3 +2052,51 @@ Traceback (most recent call last):
     raise TemplateDoesNotExist(", ".join(template_name_list), chain=chain)
 django.template.exceptions.TemplateDoesNotExist: drf_spectacular/swagger_ui.html
 ERROR 2025-05-17 09:21:40,207 basehttp 46825 123145342566400 "GET /api/docs/ HTTP/1.1" 500 95550
+ERROR 2025-05-17 10:26:43,562 log 98717 4487427584 Internal Server Error: /api/vaes/17/historiques/
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/views/decorators/csrf.py", line 56, in wrapper_view
+    return view_func(*args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/api/viewsets/vae_jury_viewsets.py", line 230, in historiques
+    serializer = HistoriqueStsatutVAESerializer(historiques, many=True)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+NameError: name 'HistoriqueStsatutVAESerializer' is not defined. Did you mean: 'HistoriqueStatutVAESerializer'?
+ERROR 2025-05-17 10:34:22,962 log 12640 4582417920 Internal Server Error: /api/vaes/4/historiques/
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/views/decorators/csrf.py", line 56, in wrapper_view
+    return view_func(*args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/api/viewsets/vae_jury_viewsets.py", line 230, in historiques
+    serializer = HistoriqueStsatutVAESerializer(historiques, many=True)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+NameError: name 'HistoriqueStsatutVAESerializer' is not defined. Did you mean: 'HistoriqueStatutVAESerializer'?

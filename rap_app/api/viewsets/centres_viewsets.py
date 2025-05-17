@@ -1,5 +1,3 @@
-# rap_app/api/viewsets/centre_viewsets.py
-
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
@@ -15,12 +13,12 @@ from ...models.logs import LogUtilisateur
 
 
 @extend_schema_view(
-    list=extend_schema(summary="Lister les centres"),
-    retrieve=extend_schema(summary="Récupérer un centre"),
-    create=extend_schema(summary="Créer un centre"),
-    update=extend_schema(summary="Mettre à jour un centre"),
-    partial_update=extend_schema(summary="Mettre à jour partiellement un centre"),
-    destroy=extend_schema(summary="Supprimer (logiquement) un centre"),
+    list=extend_schema(summary="Lister les centres", tags=["Centres"]),
+    retrieve=extend_schema(summary="Récupérer un centre", tags=["Centres"]),
+    create=extend_schema(summary="Créer un centre", tags=["Centres"]),
+    update=extend_schema(summary="Mettre à jour un centre", tags=["Centres"]),
+    partial_update=extend_schema(summary="Mettre à jour partiellement un centre", tags=["Centres"]),
+    destroy=extend_schema(summary="Supprimer (logiquement) un centre", tags=["Centres"]),
 )
 class CentreViewSet(viewsets.ModelViewSet):
     queryset = Centre.objects.all().order_by("nom")

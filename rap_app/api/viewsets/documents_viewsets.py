@@ -5,6 +5,7 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from drf_spectacular.utils import OpenApiTypes
 
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiResponse
 
@@ -160,7 +161,15 @@ class DocumentViewSet(viewsets.ModelViewSet):
             "data": serializer.data
         })
 
-    @extend_schema(summary="🧾 Exporter tous les documents au format CSV")
+    @extend_schema(
+        summary="🧾 Exporter tous les documents au format CSV",
+        responses={
+            200: OpenApiResponse(
+                description="Fichier CSV contenant la liste des documents",
+                response=OpenApiTypes.BINARY
+            )
+        }
+    )
     @action(detail=False, methods=["get"], url_path="export-csv")
     def export_csv(self, request):
         response = HttpResponse(content_type='text/csv')

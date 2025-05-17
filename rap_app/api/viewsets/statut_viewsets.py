@@ -4,38 +4,43 @@ from rest_framework.response import Response
 from drf_spectacular.utils import extend_schema, extend_schema_view, OpenApiResponse
 
 from ...api.permissions import ReadOnlyOrAdmin
-
 from ...models.statut import Statut
 from ..serializers.statut_serializers import StatutSerializer
 
 logger = logging.getLogger("application.statut")
 
+
 @extend_schema_view(
     list=extend_schema(
         summary="Liste des statuts",
         description="Récupère tous les statuts actifs avec libellés, couleurs et badges HTML.",
+        tags=["Statuts"],
         responses={200: OpenApiResponse(response=StatutSerializer)}
     ),
     retrieve=extend_schema(
         summary="Détail d’un statut",
         description="Retourne les détails d’un statut par ID.",
+        tags=["Statuts"],
         responses={200: OpenApiResponse(response=StatutSerializer)}
     ),
     create=extend_schema(
         summary="Créer un statut",
         description="Crée un nouveau statut avec validation stricte des couleurs et du champ 'autre'.",
+        tags=["Statuts"],
         request=StatutSerializer,
         responses={201: OpenApiResponse(response=StatutSerializer)}
     ),
     update=extend_schema(
         summary="Mettre à jour un statut",
         description="Met à jour un statut existant (partiellement ou complètement).",
+        tags=["Statuts"],
         request=StatutSerializer,
         responses={200: OpenApiResponse(response=StatutSerializer)}
     ),
     destroy=extend_schema(
         summary="Supprimer un statut",
         description="Supprime logiquement un statut en le désactivant (is_active = False).",
+        tags=["Statuts"],
         responses={204: OpenApiResponse(description="Suppression réussie")}
     ),
 )
