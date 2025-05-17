@@ -10,7 +10,7 @@ class IsSuperAdminOnly(BasePermission):
     def has_permission(self, request, view):
         return (
             request.user.is_authenticated and
-            request.user.profile.role == 'superadmin'
+            request.user.role == 'superadmin'
         )
 
 
@@ -23,7 +23,7 @@ class IsAdmin(BasePermission):
     def has_permission(self, request, view):
         return (
             request.user.is_authenticated and
-            request.user.profile.role in ['staff', 'admin', 'superadmin']
+            request.user.role in ['staff', 'admin', 'superadmin']
         )
 
 
@@ -40,7 +40,7 @@ class ReadWriteAdminReadStaff(BasePermission):
             self.message = "Authentification requise."
             return False
 
-        role = getattr(user.profile, 'role', None)
+        role = getattr(user, 'role', None)
 
         if request.method in SAFE_METHODS:
             if role in ['staff', 'admin', 'superadmin']:
@@ -64,7 +64,7 @@ class IsStaffOrAbove(BasePermission):
     def has_permission(self, request, view):
         return (
             request.user.is_authenticated and
-            request.user.profile.role in ['staff', 'admin', 'superadmin']
+            request.user.role in ['staff', 'admin', 'superadmin']
         )
 
 
@@ -79,8 +79,10 @@ class ReadOnlyOrAdmin(BasePermission):
             return True
         return (
             request.user.is_authenticated and
-            request.user.profile.role in ['admin', 'superadmin']
+            request.user.role in ['admin', 'superadmin']
         )
+
+
 class IsOwnerOrSuperAdmin(BasePermission):
     """
     Autorise l'accès si l'utilisateur est le propriétaire OU superadmin.
@@ -93,12 +95,13 @@ class IsOwnerOrSuperAdmin(BasePermission):
             self.message = "Authentification requise."
             return False
 
-        if getattr(user.profile, 'role', '') == 'superadmin':
+        if getattr(user, 'role', '') == 'superadmin':
             return True
 
         return getattr(obj, 'user', None) == user or getattr(obj, 'owner', None) == user
 
-class IsOwnerOrStaffOrAbove(BasePermission): 
+
+class IsOwnerOrStaffOrAbove(BasePermission):
     """
     Autorise l'accès si l'utilisateur est le propriétaire OU staff/admin/superadmin.
     """
@@ -110,7 +113,8 @@ class IsOwnerOrStaffOrAbove(BasePermission):
             self.message = "Authentification requise."
             return False
 
-        if getattr(user.profile, 'role', '') in ['staff', 'admin', 'superadmin']:
+        if getattr(user, 'role', '') in ['staff', 'admin', 'superadmin']:
             return True
 
         return getattr(obj, 'user', None) == user or getattr(obj, 'owner', None) == user
+ 

@@ -111,7 +111,7 @@ git push -u origin main
 # Pousser les modifications
 git status                           
 git add .                             
-git commit -m "Amélioration models, signals, serialyze_dict"   
+git commit -m "Amélioration models, signals, + 199 tests models ok"   
 git push origin main                 
 
 # --------------------------
@@ -172,6 +172,68 @@ python3 manage.py test rap_app.tests.test_model
 #Models
 # --------------------------
 Commande: python3 manage.py verifie_modeles
+
+
+
+Je souhaite que tu m’aides à écrire des serializers et des viewsets ultra complets pour mon application Django.
+⚠️ Les tests des modèles sont déjà faits et validés.
+
+Pour chaque modèle que je vais t’envoyer :
+
+🔹 Serializers :
+Expose tous les champs du modèle, y compris :
+
+Les champs standards,
+
+Les méthodes @property utiles au frontend,
+
+Les listes de choix (choices) avec un affichage clair dans Swagger (clé + libellé).
+
+Ajoute des messages d'erreur personnalisés pour chaque champ requis ou mal renseigné.
+Exemple : "Création de la formation échouée : vous devez renseigner le statut."
+
+Ajoute des messages de succès exploitables côté frontend.
+Exemple : "Formation créée avec succès."
+
+Utilise @extend_schema pour que Swagger/OpenAPI :
+
+Affiche les paramètres attendus,
+
+Montre les formats des requêtes et des réponses,
+
+Propose des exemples concrets testables dans l’interface Swagger.
+
+🔹 ViewSets :
+Complet, avec :
+
+Permissions,
+
+Filtres personnalisés (filterset_class),
+
+Recherche (search_fields) et tri (ordering_fields).
+
+🔹 Tests :
+Tests unitaires des serializers :
+
+Cas de succès,
+
+Cas d’échec (avec vérification des messages d'erreurs).
+
+Tests unitaires des viewsets :
+
+Lecture,
+
+Création (si autorisée),
+
+Filtres, recherche, tri.
+
+🔐 L’objectif est de protéger le frontend, développé par une personne débutante qui n’aura pas accès aux modèles Django.
+Tous les comportements doivent donc être clairs, testables et sans ambiguïté via Swagger.
+
+👉 Je vais t’envoyer les modèles un par un.
+Dans un premier temps, contente-toi de les enregistrer en mémoire.
+Quand je te dirai "GO", tu pourras commencer à générer le code.
+
 
 
 
@@ -274,4 +336,43 @@ Commande: python3 manage.py verifie_modeles
   - Tests de validation pour les méthodes personnalisées
   - Tests de comportement pour les signaux
   - Tests d'intégration pour les interactions entre modèles
+
+
+
+
+
+🔹 1. Modèles fondamentaux (peu ou pas de dépendances) :
+statut.py ✅ (déjà traité)
+
+types_offre.py ✅ (déjà traité)
+
+base.py (abstrait, pas besoin de serializer dédié)
+
+🔹 2. Référentiels et entités simples :
+centres.py (nécessaire pour formations)
+
+custom_user.py (utilisé partout comme created_by, updated_by)
+
+logs.py (utile pour audit, mais souvent read-only)
+
+🔹 3. Entités secondaires liées aux formations :
+partenaires.py
+
+commentaires.py
+
+documents.py
+
+evenements.py
+
+🔹 4. Entité centrale :
+formations.py (le cœur du projet, dépend de statut, type_offre, centre, etc.)
+
+🔹 5. Entités métier complémentaires :
+prospection.py + historique_prospection (dépendent de partenaire)
+
+rapports.py (souvent basé sur des exports ou des vues)
+
+prepacomp.py (liée à centre et semaine)
+
+vae_jury.py (liée à user, centre, statut, etc.)
 

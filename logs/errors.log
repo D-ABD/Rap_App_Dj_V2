@@ -1,0 +1,2034 @@
+ERROR 2025-05-11 10:03:00,868 log 29326 4730209792 Internal Server Error: /api/users/
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/views/decorators/csrf.py", line 56, in wrapper_view
+    return view_func(*args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 497, in dispatch
+    self.initial(request, *args, **kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 415, in initial
+    self.check_permissions(request)
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 332, in check_permissions
+    if not permission.has_permission(request, self):
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/api/permissions.py", line 43, in has_permission
+    role = getattr(user.profile, 'role', None)
+                   ^^^^^^^^^^^^
+AttributeError: 'CustomUser' object has no attribute 'profile'
+ERROR 2025-05-11 10:03:01,576 log 29326 4730209792 Internal Server Error: /api/users/2/
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/views/decorators/csrf.py", line 56, in wrapper_view
+    return view_func(*args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 497, in dispatch
+    self.initial(request, *args, **kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 415, in initial
+    self.check_permissions(request)
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 332, in check_permissions
+    if not permission.has_permission(request, self):
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/api/permissions.py", line 43, in has_permission
+    role = getattr(user.profile, 'role', None)
+                   ^^^^^^^^^^^^
+AttributeError: 'CustomUser' object has no attribute 'profile'
+ERROR 2025-05-11 10:03:02,213 log 29326 4730209792 Internal Server Error: /api/users/
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/views/decorators/csrf.py", line 56, in wrapper_view
+    return view_func(*args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 497, in dispatch
+    self.initial(request, *args, **kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 415, in initial
+    self.check_permissions(request)
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 332, in check_permissions
+    if not permission.has_permission(request, self):
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/api/permissions.py", line 43, in has_permission
+    role = getattr(user.profile, 'role', None)
+                   ^^^^^^^^^^^^
+AttributeError: 'CustomUser' object has no attribute 'profile'
+ERROR 2025-05-11 10:03:03,307 log 29326 4730209792 Internal Server Error: /api/users/5/
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/views/decorators/csrf.py", line 56, in wrapper_view
+    return view_func(*args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 497, in dispatch
+    self.initial(request, *args, **kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 415, in initial
+    self.check_permissions(request)
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 332, in check_permissions
+    if not permission.has_permission(request, self):
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/api/permissions.py", line 43, in has_permission
+    role = getattr(user.profile, 'role', None)
+                   ^^^^^^^^^^^^
+AttributeError: 'CustomUser' object has no attribute 'profile'
+ERROR 2025-05-11 10:03:04,237 log 29326 4730209792 Internal Server Error: /api/users/7/
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/views/decorators/csrf.py", line 56, in wrapper_view
+    return view_func(*args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 497, in dispatch
+    self.initial(request, *args, **kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 415, in initial
+    self.check_permissions(request)
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 332, in check_permissions
+    if not permission.has_permission(request, self):
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/api/permissions.py", line 43, in has_permission
+    role = getattr(user.profile, 'role', None)
+                   ^^^^^^^^^^^^
+AttributeError: 'CustomUser' object has no attribute 'profile'
+ERROR 2025-05-11 10:30:39,047 log 49588 4662101504 Internal Server Error: /api/users/me/profile/
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/views/decorators/csrf.py", line 56, in wrapper_view
+    return view_func(*args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/views/generic/base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/api/viewsets/me_viewsets.py", line 42, in patch
+    "data": serializer.data
+            ^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/serializers.py", line 555, in data
+    ret = super().data
+          ^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/serializers.py", line 253, in data
+    self._data = self.to_representation(self.instance)
+                 ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/api/serializers/user_profil_serializers.py", line 89, in to_representation
+    "data": instance.to_serializable_dict(include_sensitive=True),
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'dict' object has no attribute 'to_serializable_dict'
+ERROR 2025-05-11 10:54:24,866 log 84881 4724614656 Internal Server Error: /api/users/
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/views/decorators/csrf.py", line 56, in wrapper_view
+    return view_func(*args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/api/viewsets/user_viewsets.py", line 75, in create
+    instance = CustomUser.objects.get(pk=result.get("id"))
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/query.py", line 637, in get
+    raise self.model.DoesNotExist(
+        "%s matching query does not exist." % self.model._meta.object_name
+    )
+rap_app.models.custom_user.CustomUser.DoesNotExist: CustomUser matching query does not exist.
+ERROR 2025-05-11 10:59:56,749 log 93071 4576450048 Internal Server Error: /api/users/
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/views/decorators/csrf.py", line 56, in wrapper_view
+    return view_func(*args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/api/viewsets/user_viewsets.py", line 89, in create
+    "data": instance.to_serializable_dict(include_sensitive=True)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'dict' object has no attribute 'to_serializable_dict'
+ERROR 2025-05-11 11:07:25,697 log 5058 4617336320 Internal Server Error: /api/centres/
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/views/decorators/csrf.py", line 56, in wrapper_view
+    return view_func(*args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/api/viewsets/centres_viewsets.py", line 39, in create
+    LogUtilisateur.log_action(centre, LogUtilisateur.ACTION_CREATE, request.user)
+    ^^^^^^^^^^^^^^
+NameError: name 'LogUtilisateur' is not defined
+ERROR 2025-05-11 11:07:26,269 log 5058 4617336320 Internal Server Error: /api/centres/2/
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/views/decorators/csrf.py", line 56, in wrapper_view
+    return view_func(*args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/api/viewsets/centres_viewsets.py", line 72, in destroy
+    LogUtilisateur.log_action(instance, LogUtilisateur.ACTION_DELETE, request.user)
+    ^^^^^^^^^^^^^^
+NameError: name 'LogUtilisateur' is not defined
+ERROR 2025-05-11 11:07:27,321 log 5058 4617336320 Internal Server Error: /api/centres/5/
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/views/decorators/csrf.py", line 56, in wrapper_view
+    return view_func(*args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/api/viewsets/centres_viewsets.py", line 51, in update
+    LogUtilisateur.log_action(instance, LogUtilisateur.ACTION_UPDATE, request.user)
+    ^^^^^^^^^^^^^^
+NameError: name 'LogUtilisateur' is not defined
+ERROR 2025-05-11 21:31:35,910 log 85888 4707644928 Internal Server Error: /api/commentaires/
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/backends/utils.py", line 89, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+psycopg2.errors.NotNullViolation: null value in column "formation_id" of relation "rap_app_commentaire" violates not-null constraint
+DETAIL:  Failing row contains (4, 2025-05-11 21:31:35.886514+00, 2025-05-11 21:31:35.886532+00, t, Contenu de test, 85, null, null, null).
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/views/decorators/csrf.py", line 56, in wrapper_view
+    return view_func(*args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/mixins.py", line 19, in create
+    self.perform_create(serializer)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/mixins.py", line 24, in perform_create
+    serializer.save()
+    ~~~~~~~~~~~~~~~^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/serializers.py", line 212, in save
+    self.instance = self.create(validated_data)
+                    ~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/serializers.py", line 962, in create
+    instance = ModelClass._default_manager.create(**validated_data)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/query.py", line 658, in create
+    obj.save(force_insert=True, using=self.db)
+    ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/models/commentaires.py", line 220, in save
+    super().save(*args, **kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/models/base.py", line 227, in save
+    super().save(*args, **kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/base.py", line 814, in save
+    self.save_base(
+    ~~~~~~~~~~~~~~^
+        using=using,
+        ^^^^^^^^^^^^
+    ...<2 lines>...
+        update_fields=update_fields,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/base.py", line 877, in save_base
+    updated = self._save_table(
+        raw,
+    ...<4 lines>...
+        update_fields,
+    )
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/base.py", line 1020, in _save_table
+    results = self._do_insert(
+        cls._base_manager, using, fields, returning_fields, raw
+    )
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/base.py", line 1061, in _do_insert
+    return manager._insert(
+           ~~~~~~~~~~~~~~~^
+        [self],
+        ^^^^^^^
+    ...<3 lines>...
+        raw=raw,
+        ^^^^^^^^
+    )
+    ^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/query.py", line 1805, in _insert
+    return query.get_compiler(using=using).execute_sql(returning_fields)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/sql/compiler.py", line 1822, in execute_sql
+    cursor.execute(sql, params)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/backends/utils.py", line 67, in execute
+    return self._execute_with_wrappers(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        sql, params, many=False, executor=self._execute
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/backends/utils.py", line 80, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/backends/utils.py", line 84, in _execute
+    with self.db.wrap_database_errors:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/backends/utils.py", line 89, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+django.db.utils.IntegrityError: null value in column "formation_id" of relation "rap_app_commentaire" violates not-null constraint
+DETAIL:  Failing row contains (4, 2025-05-11 21:31:35.886514+00, 2025-05-11 21:31:35.886532+00, t, Contenu de test, 85, null, null, null).
+
+ERROR 2025-05-11 21:44:09,985 log 4562 4556555776 Internal Server Error: /api/commentaires/
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/backends/utils.py", line 89, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+psycopg2.errors.NotNullViolation: null value in column "formation_id" of relation "rap_app_commentaire" violates not-null constraint
+DETAIL:  Failing row contains (4, 2025-05-11 21:44:09.969104+00, 2025-05-11 21:44:09.969123+00, t, Nouveau commentaire, 70, null, null, null).
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/views/decorators/csrf.py", line 56, in wrapper_view
+    return view_func(*args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/mixins.py", line 19, in create
+    self.perform_create(serializer)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/mixins.py", line 24, in perform_create
+    serializer.save()
+    ~~~~~~~~~~~~~~~^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/serializers.py", line 212, in save
+    self.instance = self.create(validated_data)
+                    ~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/serializers.py", line 962, in create
+    instance = ModelClass._default_manager.create(**validated_data)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/query.py", line 658, in create
+    obj.save(force_insert=True, using=self.db)
+    ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/models/commentaires.py", line 220, in save
+    super().save(*args, **kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/models/base.py", line 227, in save
+    super().save(*args, **kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/base.py", line 814, in save
+    self.save_base(
+    ~~~~~~~~~~~~~~^
+        using=using,
+        ^^^^^^^^^^^^
+    ...<2 lines>...
+        update_fields=update_fields,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/base.py", line 877, in save_base
+    updated = self._save_table(
+        raw,
+    ...<4 lines>...
+        update_fields,
+    )
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/base.py", line 1020, in _save_table
+    results = self._do_insert(
+        cls._base_manager, using, fields, returning_fields, raw
+    )
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/base.py", line 1061, in _do_insert
+    return manager._insert(
+           ~~~~~~~~~~~~~~~^
+        [self],
+        ^^^^^^^
+    ...<3 lines>...
+        raw=raw,
+        ^^^^^^^^
+    )
+    ^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/query.py", line 1805, in _insert
+    return query.get_compiler(using=using).execute_sql(returning_fields)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/sql/compiler.py", line 1822, in execute_sql
+    cursor.execute(sql, params)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/backends/utils.py", line 67, in execute
+    return self._execute_with_wrappers(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        sql, params, many=False, executor=self._execute
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/backends/utils.py", line 80, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/backends/utils.py", line 84, in _execute
+    with self.db.wrap_database_errors:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/backends/utils.py", line 89, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+django.db.utils.IntegrityError: null value in column "formation_id" of relation "rap_app_commentaire" violates not-null constraint
+DETAIL:  Failing row contains (4, 2025-05-11 21:44:09.969104+00, 2025-05-11 21:44:09.969123+00, t, Nouveau commentaire, 70, null, null, null).
+
+ERROR 2025-05-12 17:05:28,612 log 56909 4427929088 Internal Server Error: /api/commentaires/
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/backends/utils.py", line 89, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+psycopg2.errors.NotNullViolation: null value in column "formation_id" of relation "rap_app_commentaire" violates not-null constraint
+DETAIL:  Failing row contains (4, 2025-05-12 17:05:28.595527+00, 2025-05-12 17:05:28.595545+00, t, Nouveau commentaire, 70, null, null, null).
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/views/decorators/csrf.py", line 56, in wrapper_view
+    return view_func(*args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/mixins.py", line 19, in create
+    self.perform_create(serializer)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/mixins.py", line 24, in perform_create
+    serializer.save()
+    ~~~~~~~~~~~~~~~^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/serializers.py", line 212, in save
+    self.instance = self.create(validated_data)
+                    ~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/serializers.py", line 962, in create
+    instance = ModelClass._default_manager.create(**validated_data)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/query.py", line 658, in create
+    obj.save(force_insert=True, using=self.db)
+    ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/models/commentaires.py", line 220, in save
+    super().save(*args, **kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/models/base.py", line 227, in save
+    super().save(*args, **kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/base.py", line 814, in save
+    self.save_base(
+    ~~~~~~~~~~~~~~^
+        using=using,
+        ^^^^^^^^^^^^
+    ...<2 lines>...
+        update_fields=update_fields,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/base.py", line 877, in save_base
+    updated = self._save_table(
+        raw,
+    ...<4 lines>...
+        update_fields,
+    )
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/base.py", line 1020, in _save_table
+    results = self._do_insert(
+        cls._base_manager, using, fields, returning_fields, raw
+    )
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/base.py", line 1061, in _do_insert
+    return manager._insert(
+           ~~~~~~~~~~~~~~~^
+        [self],
+        ^^^^^^^
+    ...<3 lines>...
+        raw=raw,
+        ^^^^^^^^
+    )
+    ^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/query.py", line 1805, in _insert
+    return query.get_compiler(using=using).execute_sql(returning_fields)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/sql/compiler.py", line 1822, in execute_sql
+    cursor.execute(sql, params)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/backends/utils.py", line 67, in execute
+    return self._execute_with_wrappers(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        sql, params, many=False, executor=self._execute
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/backends/utils.py", line 80, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/backends/utils.py", line 84, in _execute
+    with self.db.wrap_database_errors:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/backends/utils.py", line 89, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+django.db.utils.IntegrityError: null value in column "formation_id" of relation "rap_app_commentaire" violates not-null constraint
+DETAIL:  Failing row contains (4, 2025-05-12 17:05:28.595527+00, 2025-05-12 17:05:28.595545+00, t, Nouveau commentaire, 70, null, null, null).
+
+ERROR 2025-05-12 21:46:53,916 log 91115 4598932992 Internal Server Error: /api/commentaires/11/
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/views/decorators/csrf.py", line 56, in wrapper_view
+    return view_func(*args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/api/viewsets/commentaires_viewsets.py", line 69, in update
+    return super().update(request, *args, **kwargs)
+           ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/mixins.py", line 75, in update
+    return Response(serializer.data)
+                    ^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/serializers.py", line 555, in data
+    ret = super().data
+          ^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/serializers.py", line 253, in data
+    self._data = self.to_representation(self.instance)
+                 ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/api/serializers/commentaires_serializers.py", line 98, in to_representation
+    "data": instance.to_serializable_dict(include_full_content=True)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'dict' object has no attribute 'to_serializable_dict'
+ERROR 2025-05-13 10:35:45,894 log 38041 4404942336 Internal Server Error: /api/documents/
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/views/decorators/csrf.py", line 56, in wrapper_view
+    return view_func(*args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/api/viewsets/documents_viewsets.py", line 63, in create
+    document = serializer.save(created_by=request.user)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/serializers.py", line 212, in save
+    self.instance = self.create(validated_data)
+                    ~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/serializers.py", line 962, in create
+    instance = ModelClass._default_manager.create(**validated_data)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/query.py", line 658, in create
+    obj.save(force_insert=True, using=self.db)
+    ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/Cellar/python@3.13/3.13.2/Frameworks/Python.framework/Versions/3.13/lib/python3.13/contextlib.py", line 85, in inner
+    return func(*args, **kwds)
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/models/documents.py", line 420, in save
+    self.full_clean()
+    ~~~~~~~~~~~~~~~^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/base.py", line 1502, in full_clean
+    raise ValidationError(errors)
+django.core.exceptions.ValidationError: {'formation': ['This field cannot be null.']}
+ERROR 2025-05-13 10:39:47,158 log 44093 4644218368 Internal Server Error: /api/documents/
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/views/decorators/csrf.py", line 56, in wrapper_view
+    return view_func(*args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/api/viewsets/documents_viewsets.py", line 63, in create
+    document = serializer.save(created_by=request.user)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/serializers.py", line 212, in save
+    self.instance = self.create(validated_data)
+                    ~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/serializers.py", line 962, in create
+    instance = ModelClass._default_manager.create(**validated_data)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/query.py", line 658, in create
+    obj.save(force_insert=True, using=self.db)
+    ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/Cellar/python@3.13/3.13.2/Frameworks/Python.framework/Versions/3.13/lib/python3.13/contextlib.py", line 85, in inner
+    return func(*args, **kwds)
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/models/documents.py", line 420, in save
+    self.full_clean()
+    ~~~~~~~~~~~~~~~^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/base.py", line 1502, in full_clean
+    raise ValidationError(errors)
+django.core.exceptions.ValidationError: {'formation': ['This field cannot be null.']}
+ERROR 2025-05-13 19:35:38,259 log 78697 4508239360 Internal Server Error: /api/prospections/6/
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/views/decorators/csrf.py", line 56, in wrapper_view
+    return view_func(*args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/api/viewsets/prospection_viewsets.py", line 65, in destroy
+    instance.is_active = False
+    ^^^^^^^^^^^^^^^^^^
+AttributeError: property 'is_active' of 'Prospection' object has no setter
+ERROR 2025-05-13 20:59:13,612 log 27232 4575573504 Internal Server Error: /api/prospections/5/historiques/
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/views/decorators/csrf.py", line 56, in wrapper_view
+    return view_func(*args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/api/viewsets/prospection_viewsets.py", line 148, in historiques
+    "data": [h["data"] for h in serializer.data]
+             ~^^^^^^^^
+KeyError: 'data'
+ERROR 2025-05-13 20:59:51,574 log 28331 4466644480 Internal Server Error: /api/prospections/5/historiques/
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/views/decorators/csrf.py", line 56, in wrapper_view
+    return view_func(*args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/api/viewsets/prospection_viewsets.py", line 148, in historiques
+    "data": [h["data"] for h in serializer.data]
+             ~^^^^^^^^
+KeyError: 'data'
+ERROR 2025-05-13 21:02:53,641 log 32730 4489762304 Internal Server Error: /api/prospections/1/changer-statut/
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/views/decorators/csrf.py", line 56, in wrapper_view
+    return view_func(*args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/api/viewsets/prospection_viewsets.py", line 133, in changer_statut
+    "data": serializer.data
+            ^^^^^^^^^^
+NameError: name 'serializer' is not defined. Did you mean: 'serializers'?
+ERROR 2025-05-13 21:02:57,513 log 32730 4489762304 Internal Server Error: /api/prospections/5/historiques/
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/views/decorators/csrf.py", line 56, in wrapper_view
+    return view_func(*args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/api/viewsets/prospection_viewsets.py", line 148, in historiques
+    "data": [h["data"] for h in serializer.data]
+             ~^^^^^^^^
+KeyError: 'data'
+ERROR 2025-05-13 21:23:29,500 log 57790 4707321344 Internal Server Error: /api/prospections/5/historiques/
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/views/decorators/csrf.py", line 56, in wrapper_view
+    return view_func(*args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 511, in dispatch
+    self.response = self.finalize_response(request, response, *args, **kwargs)
+                    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 423, in finalize_response
+    assert isinstance(response, HttpResponseBase), (
+           ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Expected a `Response`, `HttpResponse` or `HttpStreamingResponse` to be returned from the view, but received a `<class 'NoneType'>`
+ERROR 2025-05-13 23:12:09,617 log 4982 4456842752 Internal Server Error: /api/historiques-prospection/
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/views/decorators/csrf.py", line 56, in wrapper_view
+    return view_func(*args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/api/viewsets/prospection_viewsets.py", line 223, in list
+    "data": response.data
+            ^^^^^^^^
+NameError: name 'response' is not defined. Did you mean: 'Response'?
+ERROR 2025-05-13 23:12:10,365 log 4982 4456842752 Internal Server Error: /api/historiques-prospection/
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/views/decorators/csrf.py", line 56, in wrapper_view
+    return view_func(*args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/api/viewsets/prospection_viewsets.py", line 223, in list
+    "data": response.data
+            ^^^^^^^^
+NameError: name 'response' is not defined. Did you mean: 'Response'?
+ERROR 2025-05-13 23:12:11,222 log 4982 4456842752 Internal Server Error: /api/historiques-prospection/
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/views/decorators/csrf.py", line 56, in wrapper_view
+    return view_func(*args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/api/viewsets/prospection_viewsets.py", line 223, in list
+    "data": response.data
+            ^^^^^^^^
+NameError: name 'response' is not defined. Did you mean: 'Response'?
+ERROR 2025-05-13 23:12:12,187 log 4982 4456842752 Internal Server Error: /api/historiques-prospection/9/
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/views/decorators/csrf.py", line 56, in wrapper_view
+    return view_func(*args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/api/viewsets/prospection_viewsets.py", line 233, in retrieve
+    "data": response.data
+            ^^^^^^^^
+NameError: name 'response' is not defined. Did you mean: 'Response'?
+ERROR 2025-05-13 23:12:12,643 log 4982 4456842752 Internal Server Error: /api/historiques-prospection/
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/views/decorators/csrf.py", line 56, in wrapper_view
+    return view_func(*args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/api/viewsets/prospection_viewsets.py", line 223, in list
+    "data": response.data
+            ^^^^^^^^
+NameError: name 'response' is not defined. Did you mean: 'Response'?
+ERROR 2025-05-13 23:13:04,549 log 6405 4588402176 Internal Server Error: /api/historiques-prospection/
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/views/decorators/csrf.py", line 56, in wrapper_view
+    return view_func(*args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/api/viewsets/prospection_viewsets.py", line 223, in list
+    "data": response.data
+            ^^^^^^^^
+NameError: name 'response' is not defined. Did you mean: 'Response'?
+ERROR 2025-05-13 23:13:05,221 log 6405 4588402176 Internal Server Error: /api/historiques-prospection/
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/views/decorators/csrf.py", line 56, in wrapper_view
+    return view_func(*args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/api/viewsets/prospection_viewsets.py", line 223, in list
+    "data": response.data
+            ^^^^^^^^
+NameError: name 'response' is not defined. Did you mean: 'Response'?
+ERROR 2025-05-13 23:13:06,336 log 6405 4588402176 Internal Server Error: /api/historiques-prospection/
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/views/decorators/csrf.py", line 56, in wrapper_view
+    return view_func(*args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/api/viewsets/prospection_viewsets.py", line 223, in list
+    "data": response.data
+            ^^^^^^^^
+NameError: name 'response' is not defined. Did you mean: 'Response'?
+ERROR 2025-05-13 23:13:07,061 log 6405 4588402176 Internal Server Error: /api/historiques-prospection/9/
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/views/decorators/csrf.py", line 56, in wrapper_view
+    return view_func(*args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/api/viewsets/prospection_viewsets.py", line 233, in retrieve
+    "data": response.data
+            ^^^^^^^^
+NameError: name 'response' is not defined. Did you mean: 'Response'?
+ERROR 2025-05-13 23:13:07,564 log 6405 4588402176 Internal Server Error: /api/historiques-prospection/
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/views/decorators/csrf.py", line 56, in wrapper_view
+    return view_func(*args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/api/viewsets/prospection_viewsets.py", line 223, in list
+    "data": response.data
+            ^^^^^^^^
+NameError: name 'response' is not defined. Did you mean: 'Response'?
+ERROR 2025-05-13 23:15:13,438 log 9460 4462097920 Internal Server Error: /api/historiques-prospection/9/
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/views/decorators/csrf.py", line 56, in wrapper_view
+    return view_func(*args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/api/viewsets/prospection_viewsets.py", line 233, in retrieve
+    "data": response.data
+            ^^^^^^^^
+NameError: name 'response' is not defined. Did you mean: 'Response'?
+ERROR 2025-05-14 18:10:35,012 log 38303 4492842496 Internal Server Error: /api/prospections/
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/fields.py", line 446, in get_attribute
+    return get_attribute(instance, self.source_attrs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/fields.py", line 94, in get_attribute
+    instance = instance[attr]
+               ~~~~~~~~^^^^^^
+KeyError: 'partenaire'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/views/decorators/csrf.py", line 56, in wrapper_view
+    return view_func(*args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/drf_spectacular/drainage.py", line 207, in wrapped_method
+    return method(self, request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/mixins.py", line 20, in create
+    headers = self.get_success_headers(serializer.data)
+                                       ^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/serializers.py", line 555, in data
+    ret = super().data
+          ^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/serializers.py", line 253, in data
+    self._data = self.to_representation(self.instance)
+                 ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/api/serializers/prospection_serializers.py", line 105, in to_representation
+    "data": super().to_representation(instance)
+            ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/serializers.py", line 509, in to_representation
+    attribute = field.get_attribute(instance)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/relations.py", line 190, in get_attribute
+    return super().get_attribute(instance)
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/fields.py", line 479, in get_attribute
+    raise type(exc)(msg)
+KeyError: "Got KeyError when attempting to get a value for field `partenaire` on serializer `ProspectionSerializer`.\nThe serializer field might be named incorrectly and not match any attribute or key on the `dict` instance.\nOriginal exception text was: 'partenaire'."
+ERROR 2025-05-14 18:22:44,119 log 55488 4613875200 Internal Server Error: /api/prospections/
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/fields.py", line 446, in get_attribute
+    return get_attribute(instance, self.source_attrs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/fields.py", line 94, in get_attribute
+    instance = instance[attr]
+               ~~~~~~~~^^^^^^
+KeyError: 'partenaire'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/views/decorators/csrf.py", line 56, in wrapper_view
+    return view_func(*args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/drf_spectacular/drainage.py", line 207, in wrapped_method
+    return method(self, request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/mixins.py", line 20, in create
+    headers = self.get_success_headers(serializer.data)
+                                       ^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/serializers.py", line 555, in data
+    ret = super().data
+          ^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/serializers.py", line 253, in data
+    self._data = self.to_representation(self.instance)
+                 ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/serializers.py", line 509, in to_representation
+    attribute = field.get_attribute(instance)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/relations.py", line 190, in get_attribute
+    return super().get_attribute(instance)
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/fields.py", line 479, in get_attribute
+    raise type(exc)(msg)
+KeyError: "Got KeyError when attempting to get a value for field `partenaire` on serializer `ProspectionSerializer`.\nThe serializer field might be named incorrectly and not match any attribute or key on the `dict` instance.\nOriginal exception text was: 'partenaire'."
+ERROR 2025-05-14 18:28:36,280 log 63993 4731532800 Internal Server Error: /api/prospections/
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/fields.py", line 446, in get_attribute
+    return get_attribute(instance, self.source_attrs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/fields.py", line 94, in get_attribute
+    instance = instance[attr]
+               ~~~~~~~~^^^^^^
+KeyError: 'partenaire'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/views/decorators/csrf.py", line 56, in wrapper_view
+    return view_func(*args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/drf_spectacular/drainage.py", line 207, in wrapped_method
+    return method(self, request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/mixins.py", line 20, in create
+    headers = self.get_success_headers(serializer.data)
+                                       ^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/serializers.py", line 555, in data
+    ret = super().data
+          ^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/serializers.py", line 253, in data
+    self._data = self.to_representation(self.instance)
+                 ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/serializers.py", line 509, in to_representation
+    attribute = field.get_attribute(instance)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/relations.py", line 190, in get_attribute
+    return super().get_attribute(instance)
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/fields.py", line 479, in get_attribute
+    raise type(exc)(msg)
+KeyError: "Got KeyError when attempting to get a value for field `partenaire` on serializer `ProspectionSerializer`.\nThe serializer field might be named incorrectly and not match any attribute or key on the `dict` instance.\nOriginal exception text was: 'partenaire'."
+ERROR 2025-05-14 18:31:29,722 log 67918 4569978368 Internal Server Error: /api/prospections/
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/fields.py", line 446, in get_attribute
+    return get_attribute(instance, self.source_attrs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/fields.py", line 94, in get_attribute
+    instance = instance[attr]
+               ~~~~~~~~^^^^^^
+KeyError: 'partenaire'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/views/decorators/csrf.py", line 56, in wrapper_view
+    return view_func(*args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/drf_spectacular/drainage.py", line 207, in wrapped_method
+    return method(self, request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/mixins.py", line 20, in create
+    headers = self.get_success_headers(serializer.data)
+                                       ^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/serializers.py", line 555, in data
+    ret = super().data
+          ^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/serializers.py", line 253, in data
+    self._data = self.to_representation(self.instance)
+                 ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/serializers.py", line 509, in to_representation
+    attribute = field.get_attribute(instance)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/relations.py", line 190, in get_attribute
+    return super().get_attribute(instance)
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/fields.py", line 479, in get_attribute
+    raise type(exc)(msg)
+KeyError: "Got KeyError when attempting to get a value for field `partenaire` on serializer `ProspectionSerializer`.\nThe serializer field might be named incorrectly and not match any attribute or key on the `dict` instance.\nOriginal exception text was: 'partenaire'."
+ERROR 2025-05-16 16:14:09,230 log 83007 4650112512 Internal Server Error: /api/suivis-jury/
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/models/vae_jury.py", line 136, in save
+    log_msg = f"{'Création' if is_new else 'Mise à jour'} suivi jury {self}"
+                                                                     ^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/models/vae_jury.py", line 112, in __str__
+    return f"Jurys {self.centre} - {self.get_mois_display()} {self.annee}"
+                    ^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/fields/related_descriptors.py", line 246, in __get__
+    raise self.RelatedObjectDoesNotExist(
+        "%s has no %s." % (self.field.model.__name__, self.field.name)
+    )
+rap_app.models.vae_jury.SuiviJury.centre.RelatedObjectDoesNotExist: SuiviJury has no centre.. Did you mean: 'centre_id'?
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/views/decorators/csrf.py", line 56, in wrapper_view
+    return view_func(*args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/api/viewsets/vae_jury_viewsets.py", line 27, in create
+    instance = serializer.save()
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/serializers.py", line 212, in save
+    self.instance = self.create(validated_data)
+                    ~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/serializers.py", line 962, in create
+    instance = ModelClass._default_manager.create(**validated_data)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/query.py", line 658, in create
+    obj.save(force_insert=True, using=self.db)
+    ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/models/vae_jury.py", line 151, in save
+    f"Centre: {getattr(self.centre, 'pk', None)} | "
+                       ^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/fields/related_descriptors.py", line 246, in __get__
+    raise self.RelatedObjectDoesNotExist(
+        "%s has no %s." % (self.field.model.__name__, self.field.name)
+    )
+rap_app.models.vae_jury.SuiviJury.centre.RelatedObjectDoesNotExist: SuiviJury has no centre.. Did you mean: 'centre_id'?
+ERROR 2025-05-16 16:14:11,076 log 83007 4650112512 Internal Server Error: /api/vaes/
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/views/decorators/csrf.py", line 56, in wrapper_view
+    return view_func(*args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/api/viewsets/vae_jury_viewsets.py", line 130, in create
+    instance = serializer.save()
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/serializers.py", line 212, in save
+    self.instance = self.create(validated_data)
+                    ~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/serializers.py", line 962, in create
+    instance = ModelClass._default_manager.create(**validated_data)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/query.py", line 658, in create
+    obj.save(force_insert=True, using=self.db)
+    ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/models/vae_jury.py", line 318, in save
+    self.full_clean()
+    ~~~~~~~~~~~~~~~^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/base.py", line 1502, in full_clean
+    raise ValidationError(errors)
+django.core.exceptions.ValidationError: {'centre': ['This field cannot be null.']}
+ERROR 2025-05-16 17:08:44,666 log 34674 4712375808 Internal Server Error: /api/suivis-jury/
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/models/vae_jury.py", line 136, in save
+    log_msg = f"{'Création' if is_new else 'Mise à jour'} suivi jury {self}"
+                                                                     ^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/models/vae_jury.py", line 112, in __str__
+    return f"Jurys {self.centre} - {self.get_mois_display()} {self.annee}"
+                    ^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/fields/related_descriptors.py", line 246, in __get__
+    raise self.RelatedObjectDoesNotExist(
+        "%s has no %s." % (self.field.model.__name__, self.field.name)
+    )
+rap_app.models.vae_jury.SuiviJury.centre.RelatedObjectDoesNotExist: SuiviJury has no centre.. Did you mean: 'centre_id'?
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/views/decorators/csrf.py", line 56, in wrapper_view
+    return view_func(*args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/api/viewsets/vae_jury_viewsets.py", line 27, in create
+    instance = serializer.save()
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/serializers.py", line 212, in save
+    self.instance = self.create(validated_data)
+                    ~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/serializers.py", line 962, in create
+    instance = ModelClass._default_manager.create(**validated_data)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/query.py", line 658, in create
+    obj.save(force_insert=True, using=self.db)
+    ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/models/vae_jury.py", line 151, in save
+    f"Centre: {getattr(self.centre, 'pk', None)} | "
+                       ^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/fields/related_descriptors.py", line 246, in __get__
+    raise self.RelatedObjectDoesNotExist(
+        "%s has no %s." % (self.field.model.__name__, self.field.name)
+    )
+rap_app.models.vae_jury.SuiviJury.centre.RelatedObjectDoesNotExist: SuiviJury has no centre.. Did you mean: 'centre_id'?
+ERROR 2025-05-16 17:08:46,505 log 34674 4712375808 Internal Server Error: /api/vaes/
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/views/decorators/csrf.py", line 56, in wrapper_view
+    return view_func(*args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/api/viewsets/vae_jury_viewsets.py", line 130, in create
+    instance = serializer.save()
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/serializers.py", line 212, in save
+    self.instance = self.create(validated_data)
+                    ~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/serializers.py", line 962, in create
+    instance = ModelClass._default_manager.create(**validated_data)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/query.py", line 658, in create
+    obj.save(force_insert=True, using=self.db)
+    ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/models/vae_jury.py", line 318, in save
+    self.full_clean()
+    ~~~~~~~~~~~~~~~^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/base.py", line 1502, in full_clean
+    raise ValidationError(errors)
+django.core.exceptions.ValidationError: {'centre': ['This field cannot be null.']}
+ERROR 2025-05-16 17:15:53,419 log 41170 4520822272 Internal Server Error: /api/suivis-jury/
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/models/vae_jury.py", line 136, in save
+    log_msg = f"{'Création' if is_new else 'Mise à jour'} suivi jury {self}"
+                                                                     ^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/models/vae_jury.py", line 112, in __str__
+    return f"Jurys {self.centre} - {self.get_mois_display()} {self.annee}"
+                    ^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/fields/related_descriptors.py", line 246, in __get__
+    raise self.RelatedObjectDoesNotExist(
+        "%s has no %s." % (self.field.model.__name__, self.field.name)
+    )
+rap_app.models.vae_jury.SuiviJury.centre.RelatedObjectDoesNotExist: SuiviJury has no centre.. Did you mean: 'centre_id'?
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/views/decorators/csrf.py", line 56, in wrapper_view
+    return view_func(*args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/api/viewsets/vae_jury_viewsets.py", line 27, in create
+    instance = serializer.save()
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/serializers.py", line 212, in save
+    self.instance = self.create(validated_data)
+                    ~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/serializers.py", line 962, in create
+    instance = ModelClass._default_manager.create(**validated_data)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/query.py", line 658, in create
+    obj.save(force_insert=True, using=self.db)
+    ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/models/vae_jury.py", line 151, in save
+    f"Centre: {getattr(self.centre, 'pk', None)} | "
+                       ^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/fields/related_descriptors.py", line 246, in __get__
+    raise self.RelatedObjectDoesNotExist(
+        "%s has no %s." % (self.field.model.__name__, self.field.name)
+    )
+rap_app.models.vae_jury.SuiviJury.centre.RelatedObjectDoesNotExist: SuiviJury has no centre.. Did you mean: 'centre_id'?
+ERROR 2025-05-16 17:15:55,543 log 41170 4520822272 Internal Server Error: /api/vaes/
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/views/decorators/csrf.py", line 56, in wrapper_view
+    return view_func(*args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/api/viewsets/vae_jury_viewsets.py", line 130, in create
+    instance = serializer.save()
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/serializers.py", line 212, in save
+    self.instance = self.create(validated_data)
+                    ~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/serializers.py", line 962, in create
+    instance = ModelClass._default_manager.create(**validated_data)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/query.py", line 658, in create
+    obj.save(force_insert=True, using=self.db)
+    ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/models/vae_jury.py", line 318, in save
+    self.full_clean()
+    ~~~~~~~~~~~~~~~^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/base.py", line 1502, in full_clean
+    raise ValidationError(errors)
+django.core.exceptions.ValidationError: {'centre': ['This field cannot be null.']}
+ERROR 2025-05-16 17:30:33,034 log 54316 4642252288 Internal Server Error: /api/suivis-jury/
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/models/vae_jury.py", line 136, in save
+    log_msg = f"{'Création' if is_new else 'Mise à jour'} suivi jury {self}"
+                                                                     ^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/models/vae_jury.py", line 112, in __str__
+    return f"Jurys {self.centre} - {self.get_mois_display()} {self.annee}"
+                    ^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/fields/related_descriptors.py", line 246, in __get__
+    raise self.RelatedObjectDoesNotExist(
+        "%s has no %s." % (self.field.model.__name__, self.field.name)
+    )
+rap_app.models.vae_jury.SuiviJury.centre.RelatedObjectDoesNotExist: SuiviJury has no centre.. Did you mean: 'centre_id'?
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/views/decorators/csrf.py", line 56, in wrapper_view
+    return view_func(*args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/api/viewsets/vae_jury_viewsets.py", line 27, in create
+    instance = serializer.save()
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/serializers.py", line 212, in save
+    self.instance = self.create(validated_data)
+                    ~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/serializers.py", line 962, in create
+    instance = ModelClass._default_manager.create(**validated_data)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/query.py", line 658, in create
+    obj.save(force_insert=True, using=self.db)
+    ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/models/vae_jury.py", line 151, in save
+    f"Centre: {getattr(self.centre, 'pk', None)} | "
+                       ^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/fields/related_descriptors.py", line 246, in __get__
+    raise self.RelatedObjectDoesNotExist(
+        "%s has no %s." % (self.field.model.__name__, self.field.name)
+    )
+rap_app.models.vae_jury.SuiviJury.centre.RelatedObjectDoesNotExist: SuiviJury has no centre.. Did you mean: 'centre_id'?
+ERROR 2025-05-16 17:30:35,381 log 54316 4642252288 Internal Server Error: /api/vaes/
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/views/decorators/csrf.py", line 56, in wrapper_view
+    return view_func(*args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/api/viewsets/vae_jury_viewsets.py", line 130, in create
+    instance = serializer.save()
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/serializers.py", line 212, in save
+    self.instance = self.create(validated_data)
+                    ~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/serializers.py", line 962, in create
+    instance = ModelClass._default_manager.create(**validated_data)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/query.py", line 658, in create
+    obj.save(force_insert=True, using=self.db)
+    ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/models/vae_jury.py", line 318, in save
+    self.full_clean()
+    ~~~~~~~~~~~~~~~^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/base.py", line 1502, in full_clean
+    raise ValidationError(errors)
+django.core.exceptions.ValidationError: {'centre': ['This field cannot be null.']}
+ERROR 2025-05-16 17:32:49,470 log 56483 4547073536 Internal Server Error: /api/suivis-jury/
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/models/vae_jury.py", line 136, in save
+    log_msg = f"{'Création' if is_new else 'Mise à jour'} suivi jury {self}"
+                                                                     ^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/models/vae_jury.py", line 112, in __str__
+    return f"Jurys {self.centre} - {self.get_mois_display()} {self.annee}"
+                    ^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/fields/related_descriptors.py", line 246, in __get__
+    raise self.RelatedObjectDoesNotExist(
+        "%s has no %s." % (self.field.model.__name__, self.field.name)
+    )
+rap_app.models.vae_jury.SuiviJury.centre.RelatedObjectDoesNotExist: SuiviJury has no centre.. Did you mean: 'centre_id'?
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/views/decorators/csrf.py", line 56, in wrapper_view
+    return view_func(*args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/api/viewsets/vae_jury_viewsets.py", line 27, in create
+    instance = serializer.save()
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/serializers.py", line 212, in save
+    self.instance = self.create(validated_data)
+                    ~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/serializers.py", line 962, in create
+    instance = ModelClass._default_manager.create(**validated_data)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/query.py", line 658, in create
+    obj.save(force_insert=True, using=self.db)
+    ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/models/vae_jury.py", line 151, in save
+    f"Centre: {getattr(self.centre, 'pk', None)} | "
+                       ^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/fields/related_descriptors.py", line 246, in __get__
+    raise self.RelatedObjectDoesNotExist(
+        "%s has no %s." % (self.field.model.__name__, self.field.name)
+    )
+rap_app.models.vae_jury.SuiviJury.centre.RelatedObjectDoesNotExist: SuiviJury has no centre.. Did you mean: 'centre_id'?
+ERROR 2025-05-16 17:32:51,560 log 56483 4547073536 Internal Server Error: /api/vaes/
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/views/decorators/csrf.py", line 56, in wrapper_view
+    return view_func(*args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/api/viewsets/vae_jury_viewsets.py", line 130, in create
+    instance = serializer.save()
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/serializers.py", line 212, in save
+    self.instance = self.create(validated_data)
+                    ~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/serializers.py", line 962, in create
+    instance = ModelClass._default_manager.create(**validated_data)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/query.py", line 658, in create
+    obj.save(force_insert=True, using=self.db)
+    ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/models/vae_jury.py", line 318, in save
+    self.full_clean()
+    ~~~~~~~~~~~~~~~^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/base.py", line 1502, in full_clean
+    raise ValidationError(errors)
+django.core.exceptions.ValidationError: {'centre': ['This field cannot be null.']}
+ERROR 2025-05-16 17:37:12,519 log 60600 4641072640 Internal Server Error: /api/suivis-jury/
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/models/vae_jury.py", line 136, in save
+    log_msg = f"{'Création' if is_new else 'Mise à jour'} suivi jury {self}"
+                                                                     ^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/models/vae_jury.py", line 112, in __str__
+    return f"Jurys {self.centre} - {self.get_mois_display()} {self.annee}"
+                    ^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/fields/related_descriptors.py", line 246, in __get__
+    raise self.RelatedObjectDoesNotExist(
+        "%s has no %s." % (self.field.model.__name__, self.field.name)
+    )
+rap_app.models.vae_jury.SuiviJury.centre.RelatedObjectDoesNotExist: SuiviJury has no centre.. Did you mean: 'centre_id'?
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/views/decorators/csrf.py", line 56, in wrapper_view
+    return view_func(*args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/api/viewsets/vae_jury_viewsets.py", line 36, in create
+    instance = serializer.save()
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/serializers.py", line 212, in save
+    self.instance = self.create(validated_data)
+                    ~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/serializers.py", line 962, in create
+    instance = ModelClass._default_manager.create(**validated_data)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/query.py", line 658, in create
+    obj.save(force_insert=True, using=self.db)
+    ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/models/vae_jury.py", line 151, in save
+    f"Centre: {getattr(self.centre, 'pk', None)} | "
+                       ^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/fields/related_descriptors.py", line 246, in __get__
+    raise self.RelatedObjectDoesNotExist(
+        "%s has no %s." % (self.field.model.__name__, self.field.name)
+    )
+rap_app.models.vae_jury.SuiviJury.centre.RelatedObjectDoesNotExist: SuiviJury has no centre.. Did you mean: 'centre_id'?
+ERROR 2025-05-16 17:37:15,177 log 60600 4641072640 Internal Server Error: /api/vaes/
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/views/decorators/csrf.py", line 56, in wrapper_view
+    return view_func(*args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/api/viewsets/vae_jury_viewsets.py", line 106, in create
+    instance = serializer.save()
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/serializers.py", line 212, in save
+    self.instance = self.create(validated_data)
+                    ~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/serializers.py", line 962, in create
+    instance = ModelClass._default_manager.create(**validated_data)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/query.py", line 658, in create
+    obj.save(force_insert=True, using=self.db)
+    ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/models/vae_jury.py", line 318, in save
+    self.full_clean()
+    ~~~~~~~~~~~~~~~^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/base.py", line 1502, in full_clean
+    raise ValidationError(errors)
+django.core.exceptions.ValidationError: {'centre': ['This field cannot be null.']}
+ERROR 2025-05-16 17:39:23,493 log 62680 4520494592 Internal Server Error: /api/suivis-jury/
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/models/vae_jury.py", line 136, in save
+    log_msg = f"{'Création' if is_new else 'Mise à jour'} suivi jury {self}"
+                                                                     ^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/models/vae_jury.py", line 112, in __str__
+    return f"Jurys {self.centre} - {self.get_mois_display()} {self.annee}"
+                    ^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/fields/related_descriptors.py", line 246, in __get__
+    raise self.RelatedObjectDoesNotExist(
+        "%s has no %s." % (self.field.model.__name__, self.field.name)
+    )
+rap_app.models.vae_jury.SuiviJury.centre.RelatedObjectDoesNotExist: SuiviJury has no centre.. Did you mean: 'centre_id'?
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/views/decorators/csrf.py", line 56, in wrapper_view
+    return view_func(*args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/api/viewsets/vae_jury_viewsets.py", line 36, in create
+    instance = serializer.save()
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/serializers.py", line 212, in save
+    self.instance = self.create(validated_data)
+                    ~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/serializers.py", line 962, in create
+    instance = ModelClass._default_manager.create(**validated_data)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/query.py", line 658, in create
+    obj.save(force_insert=True, using=self.db)
+    ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/models/vae_jury.py", line 151, in save
+    f"Centre: {getattr(self.centre, 'pk', None)} | "
+                       ^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/fields/related_descriptors.py", line 246, in __get__
+    raise self.RelatedObjectDoesNotExist(
+        "%s has no %s." % (self.field.model.__name__, self.field.name)
+    )
+rap_app.models.vae_jury.SuiviJury.centre.RelatedObjectDoesNotExist: SuiviJury has no centre.. Did you mean: 'centre_id'?
+ERROR 2025-05-16 17:39:25,391 log 62680 4520494592 Internal Server Error: /api/vaes/
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/views/decorators/csrf.py", line 56, in wrapper_view
+    return view_func(*args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/api/viewsets/vae_jury_viewsets.py", line 106, in create
+    instance = serializer.save()
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/serializers.py", line 212, in save
+    self.instance = self.create(validated_data)
+                    ~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/serializers.py", line 962, in create
+    instance = ModelClass._default_manager.create(**validated_data)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/query.py", line 658, in create
+    obj.save(force_insert=True, using=self.db)
+    ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/models/vae_jury.py", line 318, in save
+    self.full_clean()
+    ~~~~~~~~~~~~~~~^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/base.py", line 1502, in full_clean
+    raise ValidationError(errors)
+django.core.exceptions.ValidationError: {'centre': ['This field cannot be null.']}

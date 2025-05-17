@@ -1,58 +1,64 @@
-# IsSuperAdminOnly
-
-from rest_framework import viewsets, filters
+from rest_framework import viewsets, filters, status
 from rest_framework.permissions import IsAuthenticated
-from drf_spectacular.utils import extend_schema
-from django_filters.rest_framework import DjangoFilterBackend, FilterSet, DateTimeFilter
-
-from ..serializers.logs_serializers import LogUtilisateurSerializer
+from rest_framework.response import Response
+from drf_spectacular.utils import extend_schema_view, extend_schema, OpenApiResponse
 from ...models.logs import LogUtilisateur
-from ..permissions import IsSuperAdminOnly
+from ...api.serializers.logs_serializers import LogUtilisateurSerializer
+from ...api.permissions import IsStaffOrAbove
+from ...api.paginations import RapAppPagination
 
 
-class LogUtilisateurFilter(FilterSet):
-    """
-    Filtres personnalisés pour les logs :
-    - date_min : logs après cette date
-    - date_max : logs avant cette date
-    """
-
-    date_min = DateTimeFilter(field_name="date", lookup_expr="gte")
-    date_max = DateTimeFilter(field_name="date", lookup_expr="lte")
-
-    class Meta:
-        model = LogUtilisateur
-        fields = ['utilisateur', 'modele', 'action']
-
-
-@extend_schema(
-    tags=["Logs"],
-    summary="Historique des actions utilisateur",
-    description="""
-        Affiche les logs détaillés des actions effectuées par les utilisateurs.
-
-        🔐 Accessible uniquement aux `superadmins`.
-
-        Fonctionnalités :
-        - Recherche : action, modèle, utilisateur
-        - Filtres : utilisateur, modèle, action, date_min, date_max
-        - Tri : par date ou modèle
-    """
+@extend_schema_view(
+    list=extend_schema(
+        summary="Liste des logs utilisateur",
+        description="Affiche tous les logs enregistrés (lecture seule, paginée).",
+        responses={200: OpenApiResponse(response=LogUtilisateurSerializer)},
+    ),
+    retrieve=extend_schema(
+        summary="Détail d’un log",
+        description="Affiche les détails d’un log utilisateur.",
+        responses={200: OpenApiResponse(response=LogUtilisateurSerializer)},
+    ),
 )
 class LogUtilisateurViewSet(viewsets.ReadOnlyModelViewSet):
     """
-    API ReadOnly pour consulter les logs utilisateurs.
-
-    🔒 Permission : superadmin uniquement
-    ✅ Filtres et recherche avancés
+    📚 ViewSet en lecture seule pour consulter les logs utilisateur.
+    Accès réservé aux membres du staff ou supérieur.
     """
-
-    queryset = LogUtilisateur.objects.select_related('utilisateur').all()
+    queryset = LogUtilisateur.objects.all()
     serializer_class = LogUtilisateurSerializer
-    permission_classes = [IsAuthenticated, IsSuperAdminOnly]
+    permission_classes = [IsAuthenticated, IsStaffOrAbove]
+    pagination_class = RapAppPagination
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    search_fields = ["action", "details", "created_by__username"]
+    ordering_fields = ["created_at", "action"]
+    ordering = ["-created_at"]
 
-    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filterset_class = LogUtilisateurFilter
-    search_fields = ['utilisateur__username', 'utilisateur__email', 'action', 'modele']
-    ordering_fields = ['date', 'modele']
-    ordering = ['-date']
+    def list(self, request, *args, **kwargs):
+        """
+        📄 Liste paginée des logs utilisateur
+        """
+        queryset = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response({
+            "success": True,
+            "message": "Liste des logs utilisateur.",
+            "data": serializer.data
+        }, status=status.HTTP_200_OK)
+
+    def retrieve(self, request, *args, **kwargs):
+        """
+        📄 Détail d’un log utilisateur
+        """
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        return Response({
+            "success": True,
+            "message": "Log utilisateur récupéré avec succès.",
+            "data": serializer.data
+        }, status=status.HTTP_200_OK)

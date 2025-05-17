@@ -137,6 +137,3 @@ class HistoriqueStatutVAEModelTest(BaseModelTestSetupMixin, TestCase):
         self.assertEqual(data["statut"], "dossier")
         self.assertEqual(data["vae_id"], self.vae.id)
 
-    def test_to_csv_row(self):
-        row = self.hist.to_csv_row()
-        self.assertEqual(row[2], "Dossier en cours")

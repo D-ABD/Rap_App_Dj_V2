@@ -255,24 +255,27 @@ class Rapport(BaseModel):
         
     def to_serializable_dict(self, exclude=None):
         """
-        📦 Retourne un dictionnaire sérialisable du rapport.
-        
+        📦 Retourne un dictionnaire sérialisable du rapport enrichi.
+
         Args:
             exclude (list[str], optional): Liste de champs à exclure
-            
+
         Returns:
             dict: Données sérialisables du rapport
         """
         exclude = exclude or []
         data = super().to_serializable_dict(exclude)
-        
-        # Ajouter les valeurs d'affichage pour les champs avec des choix
+
         data.update({
-            'type_rapport_display': self.get_type_rapport_display(),
-            'periode_display': self.get_periode_display(),
-            'format_display': self.get_format_display(),
+            "type_rapport_display": self.get_type_rapport_display(),
+            "periode_display": self.get_periode_display(),
+            "format_display": self.get_format_display(),
+            "centre_nom": self.centre.nom if self.centre else None,
+            "type_offre_nom": self.type_offre.nom if self.type_offre else None,
+            "statut_nom": self.statut.nom if self.statut else None,
+            "formation_nom": self.formation.nom if self.formation else None,
         })
-        
+
         return data
         
     def invalidate_caches(self):

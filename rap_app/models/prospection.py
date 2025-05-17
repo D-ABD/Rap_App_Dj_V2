@@ -957,4 +957,4 @@ class HistoriqueProspection(BaseModel):
         ).select_related(
             'prospection', 
             'prospection__partenaire'
-        ).order_by('prochain_contact')
+        ).order_by('prochain_contact') 
