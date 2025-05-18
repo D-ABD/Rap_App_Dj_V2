@@ -38,7 +38,7 @@ def test_token_view(request):
     ✅ Teste si le token est valide et renvoie les informations utilisateur, y compris le rôle.
     """
     user = request.user
-    role = getattr(user.profile, 'role', 'inconnu')  # évite une erreur si profil absent
+    role = getattr(user, 'role', 'inconnu')  # ✅ accès direct au champ `role`
 
     return Response({
         'success': True,

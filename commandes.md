@@ -2,6 +2,8 @@
 # GESTION DE PROJET DJANGO - CHEAT SHEET (Python3/Pip3)
 # ========================================================
 
+python3 manage.py runserver 0.0.0.0:8000
+
 -- Étape 1 : Se connecter à la base postgres par défaut
 -- Vous devez exécuter ce script en étant connecté à la base "postgres"
 
@@ -111,7 +113,7 @@ git push -u origin main
 # Pousser les modifications
 git status                           
 git add .                            
-git commit -m "Serializers complets/viewsets/384 tests ok "   
+git commit -m "préparation pour front/ mise en place des fichiers admin"   
 git push origin main                 
 
 # --------------------------

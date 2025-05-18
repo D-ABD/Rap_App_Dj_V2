@@ -2100,3 +2100,968 @@ Traceback (most recent call last):
     serializer = HistoriqueStsatutVAESerializer(historiques, many=True)
                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 NameError: name 'HistoriqueStsatutVAESerializer' is not defined. Did you mean: 'HistoriqueStatutVAESerializer'?
+ERROR 2025-05-17 14:45:05,492 basehttp 88253 123145588502528 You're accessing the development server over HTTPS, but it only supports HTTP.
+ERROR 2025-05-17 14:45:05,542 basehttp 88253 123145588502528 You're accessing the development server over HTTPS, but it only supports HTTP.
+ERROR 2025-05-17 14:45:05,555 basehttp 88253 123145588502528 You're accessing the development server over HTTPS, but it only supports HTTP.
+ERROR 2025-05-17 14:45:05,560 basehttp 88253 123145588502528 You're accessing the development server over HTTPS, but it only supports HTTP.
+ERROR 2025-05-17 14:45:05,576 basehttp 88253 123145588502528 You're accessing the development server over HTTPS, but it only supports HTTP.
+ERROR 2025-05-17 14:45:05,591 basehttp 88253 123145588502528 You're accessing the development server over HTTPS, but it only supports HTTP.
+ERROR 2025-05-17 14:50:05,242 basehttp 94739 123145606975488 You're accessing the development server over HTTPS, but it only supports HTTP.
+ERROR 2025-05-17 14:50:05,245 basehttp 94739 123145606975488 You're accessing the development server over HTTPS, but it only supports HTTP.
+ERROR 2025-05-17 14:50:05,272 basehttp 94739 123145606975488 You're accessing the development server over HTTPS, but it only supports HTTP.
+ERROR 2025-05-17 14:50:05,282 basehttp 94739 123145606975488 You're accessing the development server over HTTPS, but it only supports HTTP.
+ERROR 2025-05-17 14:50:05,329 basehttp 94739 123145606975488 You're accessing the development server over HTTPS, but it only supports HTTP.
+ERROR 2025-05-17 14:50:05,350 basehttp 94739 123145606975488 You're accessing the development server over HTTPS, but it only supports HTTP.
+ERROR 2025-05-17 15:22:00,730 exception 11193 123145502048256 Invalid HTTP_HOST header: '192.168.1.25:8000'. You may need to add '192.168.1.25' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/utils/deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/middleware/common.py", line 48, in process_request
+    host = request.get_host()
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/http/request.py", line 150, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: '192.168.1.25:8000'. You may need to add '192.168.1.25' to ALLOWED_HOSTS.
+ERROR 2025-05-17 15:51:15,778 exception 58649 123145384214528 Invalid HTTP_HOST header: '192.168.1.25:8000'. You may need to add '192.168.1.25' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/utils/deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/middleware/common.py", line 48, in process_request
+    host = request.get_host()
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/http/request.py", line 150, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: '192.168.1.25:8000'. You may need to add '192.168.1.25' to ALLOWED_HOSTS.
+ERROR 2025-05-17 15:57:40,639 exception 65646 123145503522816 Invalid HTTP_HOST header: '192.168.1.25:8000'. You may need to add '192.168.1.25' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/utils/deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/middleware/common.py", line 48, in process_request
+    host = request.get_host()
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/http/request.py", line 150, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: '192.168.1.25:8000'. You may need to add '192.168.1.25' to ALLOWED_HOSTS.
+ERROR 2025-05-17 15:57:50,967 exception 65646 123145503522816 Invalid HTTP_HOST header: '192.168.1.25:8000'. You may need to add '192.168.1.25' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/utils/deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/middleware/common.py", line 48, in process_request
+    host = request.get_host()
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/http/request.py", line 150, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: '192.168.1.25:8000'. You may need to add '192.168.1.25' to ALLOWED_HOSTS.
+ERROR 2025-05-17 15:58:17,130 exception 65646 123145520312320 Invalid HTTP_HOST header: '192.168.1.25:8000'. You may need to add '192.168.1.25' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/utils/deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/middleware/common.py", line 48, in process_request
+    host = request.get_host()
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/http/request.py", line 150, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: '192.168.1.25:8000'. You may need to add '192.168.1.25' to ALLOWED_HOSTS.
+ERROR 2025-05-17 15:58:26,060 exception 65646 123145503522816 Invalid HTTP_HOST header: '192.168.1.25:8000'. You may need to add '192.168.1.25' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/utils/deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/middleware/common.py", line 48, in process_request
+    host = request.get_host()
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/http/request.py", line 150, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: '192.168.1.25:8000'. You may need to add '192.168.1.25' to ALLOWED_HOSTS.
+ERROR 2025-05-17 16:01:46,750 exception 69074 123145515511808 Invalid HTTP_HOST header: '192.168.1.25:8000'. You may need to add '192.168.1.25' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/utils/deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/middleware/common.py", line 48, in process_request
+    host = request.get_host()
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/http/request.py", line 150, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: '192.168.1.25:8000'. You may need to add '192.168.1.25' to ALLOWED_HOSTS.
+ERROR 2025-05-17 16:03:12,329 exception 71745 123145381662720 Invalid HTTP_HOST header: '192.168.1.25:8000'. You may need to add '192.168.1.25' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/utils/deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/middleware/common.py", line 48, in process_request
+    host = request.get_host()
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/http/request.py", line 150, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: '192.168.1.25:8000'. You may need to add '192.168.1.25' to ALLOWED_HOSTS.
+ERROR 2025-05-17 16:27:57,828 log 74549 123145563033600 Internal Server Error: /api/test-token/
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/views/decorators/csrf.py", line 56, in wrapper_view
+    return view_func(*args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/views/generic/base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/decorators.py", line 50, in handler
+    return func(*args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/api/viewsets/temporaire_viewset.py", line 41, in test_token_view
+    role = getattr(user.profile, 'role', 'inconnu')  # évite une erreur si profil absent
+                   ^^^^^^^^^^^^
+AttributeError: 'CustomUser' object has no attribute 'profile'
+ERROR 2025-05-17 16:27:58,081 basehttp 74549 123145563033600 "GET /api/test-token/ HTTP/1.1" 500 101644
+ERROR 2025-05-17 16:30:58,860 log 74549 123145529454592 Internal Server Error: /api/test-token/
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/views/decorators/csrf.py", line 56, in wrapper_view
+    return view_func(*args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/views/generic/base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/decorators.py", line 50, in handler
+    return func(*args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/api/viewsets/temporaire_viewset.py", line 41, in test_token_view
+    role = getattr(user.profile, 'role', 'inconnu')  # évite une erreur si profil absent
+                   ^^^^^^^^^^^^
+AttributeError: 'CustomUser' object has no attribute 'profile'
+ERROR 2025-05-17 16:30:58,865 basehttp 74549 123145529454592 "GET /api/test-token/ HTTP/1.1" 500 101644
+ERROR 2025-05-17 19:43:37,820 log 68113 123145455239168 Internal Server Error: /admin/rap_app/centre/
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/options.py", line 688, in wrapper
+    return self.admin_site.admin_view(view)(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/utils/decorators.py", line 134, in _wrapper_view
+    response = view_func(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/views/decorators/cache.py", line 62, in _wrapper_view_func
+    response = view_func(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/sites.py", line 242, in inner
+    return view(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/utils/decorators.py", line 46, in _wrapper
+    return bound_method(*args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/utils/decorators.py", line 134, in _wrapper_view
+    response = view_func(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/options.py", line 1926, in changelist_view
+    cl = self.get_changelist_instance(request)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/options.py", line 836, in get_changelist_instance
+    return ChangeList(
+        request,
+    ...<12 lines>...
+        self.search_help_text,
+    )
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/views/main.py", line 77, in __init__
+    self.root_queryset = model_admin.get_queryset(request)
+                         ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/admin/centres_admin.py", line 85, in get_queryset
+    return qs.annotate(prepa_count=models.Count('prepacompglobal'))
+                                   ^^^^^^^^^^^^
+AttributeError: module 'rap_app.models' has no attribute 'Count'
+ERROR 2025-05-17 19:43:37,831 basehttp 68113 123145455239168 "GET /admin/rap_app/centre/ HTTP/1.1" 500 115484
+ERROR 2025-05-17 19:45:03,477 log 69735 123145475104768 Internal Server Error: /admin/rap_app/centre/
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/options.py", line 688, in wrapper
+    return self.admin_site.admin_view(view)(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/utils/decorators.py", line 134, in _wrapper_view
+    response = view_func(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/views/decorators/cache.py", line 62, in _wrapper_view_func
+    response = view_func(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/sites.py", line 242, in inner
+    return view(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/utils/decorators.py", line 46, in _wrapper
+    return bound_method(*args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/utils/decorators.py", line 134, in _wrapper_view
+    response = view_func(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/options.py", line 1926, in changelist_view
+    cl = self.get_changelist_instance(request)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/options.py", line 836, in get_changelist_instance
+    return ChangeList(
+        request,
+    ...<12 lines>...
+        self.search_help_text,
+    )
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/views/main.py", line 77, in __init__
+    self.root_queryset = model_admin.get_queryset(request)
+                         ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/admin/centres_admin.py", line 85, in get_queryset
+    return qs.annotate(prepa_count=models.Count('prepacompglobal'))
+                                   ^^^^^^^^^^^^
+AttributeError: module 'rap_app.models' has no attribute 'Count'
+ERROR 2025-05-17 19:45:03,483 basehttp 69735 123145475104768 "GET /admin/rap_app/centre/ HTTP/1.1" 500 115484
+ERROR 2025-05-17 19:46:44,877 log 71432 123145492365312 Internal Server Error: /admin/rap_app/centre/
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/options.py", line 688, in wrapper
+    return self.admin_site.admin_view(view)(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/utils/decorators.py", line 134, in _wrapper_view
+    response = view_func(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/views/decorators/cache.py", line 62, in _wrapper_view_func
+    response = view_func(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/sites.py", line 242, in inner
+    return view(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/utils/decorators.py", line 46, in _wrapper
+    return bound_method(*args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/utils/decorators.py", line 134, in _wrapper_view
+    response = view_func(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/options.py", line 1926, in changelist_view
+    cl = self.get_changelist_instance(request)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/options.py", line 836, in get_changelist_instance
+    return ChangeList(
+        request,
+    ...<12 lines>...
+        self.search_help_text,
+    )
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/views/main.py", line 77, in __init__
+    self.root_queryset = model_admin.get_queryset(request)
+                         ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/admin/centres_admin.py", line 85, in get_queryset
+    return qs.annotate(prepa_count=models.Count('prepacompglobal'))
+                                   ^^^^^^^^^^^^
+AttributeError: module 'rap_app.models' has no attribute 'Count'
+ERROR 2025-05-17 19:46:44,884 basehttp 71432 123145492365312 "GET /admin/rap_app/centre/ HTTP/1.1" 500 115484
+ERROR 2025-05-17 19:47:27,288 log 72281 123145526996992 Internal Server Error: /admin/rap_app/centre/
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/options.py", line 688, in wrapper
+    return self.admin_site.admin_view(view)(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/utils/decorators.py", line 134, in _wrapper_view
+    response = view_func(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/views/decorators/cache.py", line 62, in _wrapper_view_func
+    response = view_func(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/sites.py", line 242, in inner
+    return view(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/utils/decorators.py", line 46, in _wrapper
+    return bound_method(*args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/utils/decorators.py", line 134, in _wrapper_view
+    response = view_func(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/options.py", line 1926, in changelist_view
+    cl = self.get_changelist_instance(request)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/options.py", line 836, in get_changelist_instance
+    return ChangeList(
+        request,
+    ...<12 lines>...
+        self.search_help_text,
+    )
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/views/main.py", line 77, in __init__
+    self.root_queryset = model_admin.get_queryset(request)
+                         ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/admin/centres_admin.py", line 85, in get_queryset
+    return qs.annotate(prepa_count=Count('prepacompglobal'))
+           ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/query.py", line 1590, in annotate
+    return self._annotate(args, kwargs, select=True)
+           ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/query.py", line 1638, in _annotate
+    clone.query.add_annotation(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        annotation,
+        ^^^^^^^^^^^
+        alias,
+        ^^^^^^
+        select=select,
+        ^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/sql/query.py", line 1133, in add_annotation
+    annotation = annotation.resolve_expression(self, allow_joins=True, reuse=None)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/aggregates.py", line 64, in resolve_expression
+    c = super().resolve_expression(query, allow_joins, reuse, summarize)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/expressions.py", line 950, in resolve_expression
+    c.source_expressions[pos] = arg.resolve_expression(
+                                ~~~~~~~~~~~~~~~~~~~~~~^
+        query, allow_joins, reuse, summarize, for_save
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/expressions.py", line 829, in resolve_expression
+    return query.resolve_ref(self.name, allow_joins, reuse, summarize)
+           ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/sql/query.py", line 1976, in resolve_ref
+    join_info = self.setup_joins(
+        field_list, self.get_meta(), self.get_initial_alias(), can_reuse=reuse
+    )
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/sql/query.py", line 1823, in setup_joins
+    path, final_field, targets, rest = self.names_to_path(
+                                       ~~~~~~~~~~~~~~~~~~^
+        names[:pivot],
+        ^^^^^^^^^^^^^^
+    ...<2 lines>...
+        fail_on_missing=True,
+        ^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/sql/query.py", line 1724, in names_to_path
+    raise FieldError(
+    ...<2 lines>...
+    )
+django.core.exceptions.FieldError: Cannot resolve keyword 'prepacompglobal' into field. Choices are: code_postal, created_at, created_by, created_by_id, formations, id, is_active, nom, prepa_globaux, rapport, semaines, suivijury, updated_at, updated_by, updated_by_id, vaes
+ERROR 2025-05-17 19:47:27,301 basehttp 72281 123145526996992 "GET /admin/rap_app/centre/ HTTP/1.1" 500 160687
+ERROR 2025-05-17 19:47:29,513 log 72281 123145526996992 Internal Server Error: /admin/rap_app/centre/
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/options.py", line 688, in wrapper
+    return self.admin_site.admin_view(view)(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/utils/decorators.py", line 134, in _wrapper_view
+    response = view_func(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/views/decorators/cache.py", line 62, in _wrapper_view_func
+    response = view_func(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/sites.py", line 242, in inner
+    return view(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/utils/decorators.py", line 46, in _wrapper
+    return bound_method(*args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/utils/decorators.py", line 134, in _wrapper_view
+    response = view_func(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/options.py", line 1926, in changelist_view
+    cl = self.get_changelist_instance(request)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/options.py", line 836, in get_changelist_instance
+    return ChangeList(
+        request,
+    ...<12 lines>...
+        self.search_help_text,
+    )
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/views/main.py", line 77, in __init__
+    self.root_queryset = model_admin.get_queryset(request)
+                         ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/admin/centres_admin.py", line 85, in get_queryset
+    return qs.annotate(prepa_count=Count('prepacompglobal'))
+           ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/query.py", line 1590, in annotate
+    return self._annotate(args, kwargs, select=True)
+           ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/query.py", line 1638, in _annotate
+    clone.query.add_annotation(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        annotation,
+        ^^^^^^^^^^^
+        alias,
+        ^^^^^^
+        select=select,
+        ^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/sql/query.py", line 1133, in add_annotation
+    annotation = annotation.resolve_expression(self, allow_joins=True, reuse=None)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/aggregates.py", line 64, in resolve_expression
+    c = super().resolve_expression(query, allow_joins, reuse, summarize)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/expressions.py", line 950, in resolve_expression
+    c.source_expressions[pos] = arg.resolve_expression(
+                                ~~~~~~~~~~~~~~~~~~~~~~^
+        query, allow_joins, reuse, summarize, for_save
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/expressions.py", line 829, in resolve_expression
+    return query.resolve_ref(self.name, allow_joins, reuse, summarize)
+           ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/sql/query.py", line 1976, in resolve_ref
+    join_info = self.setup_joins(
+        field_list, self.get_meta(), self.get_initial_alias(), can_reuse=reuse
+    )
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/sql/query.py", line 1823, in setup_joins
+    path, final_field, targets, rest = self.names_to_path(
+                                       ~~~~~~~~~~~~~~~~~~^
+        names[:pivot],
+        ^^^^^^^^^^^^^^
+    ...<2 lines>...
+        fail_on_missing=True,
+        ^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/sql/query.py", line 1724, in names_to_path
+    raise FieldError(
+    ...<2 lines>...
+    )
+django.core.exceptions.FieldError: Cannot resolve keyword 'prepacompglobal' into field. Choices are: code_postal, created_at, created_by, created_by_id, formations, id, is_active, nom, prepa_globaux, rapport, semaines, suivijury, updated_at, updated_by, updated_by_id, vaes
+ERROR 2025-05-17 19:47:29,518 basehttp 72281 123145526996992 "GET /admin/rap_app/centre/ HTTP/1.1" 500 160687
+ERROR 2025-05-17 19:48:37,785 log 73146 123145601175552 Internal Server Error: /admin/rap_app/centre/
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/options.py", line 688, in wrapper
+    return self.admin_site.admin_view(view)(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/utils/decorators.py", line 134, in _wrapper_view
+    response = view_func(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/views/decorators/cache.py", line 62, in _wrapper_view_func
+    response = view_func(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/sites.py", line 242, in inner
+    return view(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/utils/decorators.py", line 46, in _wrapper
+    return bound_method(*args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/utils/decorators.py", line 134, in _wrapper_view
+    response = view_func(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/options.py", line 1926, in changelist_view
+    cl = self.get_changelist_instance(request)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/options.py", line 836, in get_changelist_instance
+    return ChangeList(
+        request,
+    ...<12 lines>...
+        self.search_help_text,
+    )
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/views/main.py", line 77, in __init__
+    self.root_queryset = model_admin.get_queryset(request)
+                         ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/admin/centres_admin.py", line 85, in get_queryset
+    return qs.annotate(prepa_count=Count('prepacompglobal'))
+           ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/query.py", line 1590, in annotate
+    return self._annotate(args, kwargs, select=True)
+           ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/query.py", line 1638, in _annotate
+    clone.query.add_annotation(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        annotation,
+        ^^^^^^^^^^^
+        alias,
+        ^^^^^^
+        select=select,
+        ^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/sql/query.py", line 1133, in add_annotation
+    annotation = annotation.resolve_expression(self, allow_joins=True, reuse=None)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/aggregates.py", line 64, in resolve_expression
+    c = super().resolve_expression(query, allow_joins, reuse, summarize)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/expressions.py", line 950, in resolve_expression
+    c.source_expressions[pos] = arg.resolve_expression(
+                                ~~~~~~~~~~~~~~~~~~~~~~^
+        query, allow_joins, reuse, summarize, for_save
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/expressions.py", line 829, in resolve_expression
+    return query.resolve_ref(self.name, allow_joins, reuse, summarize)
+           ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/sql/query.py", line 1976, in resolve_ref
+    join_info = self.setup_joins(
+        field_list, self.get_meta(), self.get_initial_alias(), can_reuse=reuse
+    )
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/sql/query.py", line 1823, in setup_joins
+    path, final_field, targets, rest = self.names_to_path(
+                                       ~~~~~~~~~~~~~~~~~~^
+        names[:pivot],
+        ^^^^^^^^^^^^^^
+    ...<2 lines>...
+        fail_on_missing=True,
+        ^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/sql/query.py", line 1724, in names_to_path
+    raise FieldError(
+    ...<2 lines>...
+    )
+django.core.exceptions.FieldError: Cannot resolve keyword 'prepacompglobal' into field. Choices are: code_postal, created_at, created_by, created_by_id, formations, id, is_active, nom, prepa_globaux, rapport, semaines, suivijury, updated_at, updated_by, updated_by_id, vaes
+ERROR 2025-05-17 19:48:37,797 basehttp 73146 123145601175552 "GET /admin/rap_app/centre/ HTTP/1.1" 500 160687
+ERROR 2025-05-17 19:48:39,484 log 73146 123145601175552 Internal Server Error: /admin/rap_app/centre/
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/options.py", line 688, in wrapper
+    return self.admin_site.admin_view(view)(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/utils/decorators.py", line 134, in _wrapper_view
+    response = view_func(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/views/decorators/cache.py", line 62, in _wrapper_view_func
+    response = view_func(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/sites.py", line 242, in inner
+    return view(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/utils/decorators.py", line 46, in _wrapper
+    return bound_method(*args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/utils/decorators.py", line 134, in _wrapper_view
+    response = view_func(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/options.py", line 1926, in changelist_view
+    cl = self.get_changelist_instance(request)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/options.py", line 836, in get_changelist_instance
+    return ChangeList(
+        request,
+    ...<12 lines>...
+        self.search_help_text,
+    )
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/views/main.py", line 77, in __init__
+    self.root_queryset = model_admin.get_queryset(request)
+                         ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/admin/centres_admin.py", line 85, in get_queryset
+    return qs.annotate(prepa_count=Count('prepacompglobal'))
+           ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/query.py", line 1590, in annotate
+    return self._annotate(args, kwargs, select=True)
+           ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/query.py", line 1638, in _annotate
+    clone.query.add_annotation(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        annotation,
+        ^^^^^^^^^^^
+        alias,
+        ^^^^^^
+        select=select,
+        ^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/sql/query.py", line 1133, in add_annotation
+    annotation = annotation.resolve_expression(self, allow_joins=True, reuse=None)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/aggregates.py", line 64, in resolve_expression
+    c = super().resolve_expression(query, allow_joins, reuse, summarize)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/expressions.py", line 950, in resolve_expression
+    c.source_expressions[pos] = arg.resolve_expression(
+                                ~~~~~~~~~~~~~~~~~~~~~~^
+        query, allow_joins, reuse, summarize, for_save
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/expressions.py", line 829, in resolve_expression
+    return query.resolve_ref(self.name, allow_joins, reuse, summarize)
+           ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/sql/query.py", line 1976, in resolve_ref
+    join_info = self.setup_joins(
+        field_list, self.get_meta(), self.get_initial_alias(), can_reuse=reuse
+    )
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/sql/query.py", line 1823, in setup_joins
+    path, final_field, targets, rest = self.names_to_path(
+                                       ~~~~~~~~~~~~~~~~~~^
+        names[:pivot],
+        ^^^^^^^^^^^^^^
+    ...<2 lines>...
+        fail_on_missing=True,
+        ^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/sql/query.py", line 1724, in names_to_path
+    raise FieldError(
+    ...<2 lines>...
+    )
+django.core.exceptions.FieldError: Cannot resolve keyword 'prepacompglobal' into field. Choices are: code_postal, created_at, created_by, created_by_id, formations, id, is_active, nom, prepa_globaux, rapport, semaines, suivijury, updated_at, updated_by, updated_by_id, vaes
+ERROR 2025-05-17 19:48:39,502 basehttp 73146 123145601175552 "GET /admin/rap_app/centre/ HTTP/1.1" 500 160687
+ERROR 2025-05-17 19:50:04,350 log 75092 123145591169024 Internal Server Error: /admin/rap_app/centre/
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/options.py", line 688, in wrapper
+    return self.admin_site.admin_view(view)(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/utils/decorators.py", line 134, in _wrapper_view
+    response = view_func(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/views/decorators/cache.py", line 62, in _wrapper_view_func
+    response = view_func(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/sites.py", line 242, in inner
+    return view(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/utils/decorators.py", line 46, in _wrapper
+    return bound_method(*args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/utils/decorators.py", line 134, in _wrapper_view
+    response = view_func(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/options.py", line 1926, in changelist_view
+    cl = self.get_changelist_instance(request)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/options.py", line 836, in get_changelist_instance
+    return ChangeList(
+        request,
+    ...<12 lines>...
+        self.search_help_text,
+    )
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/views/main.py", line 77, in __init__
+    self.root_queryset = model_admin.get_queryset(request)
+                         ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/admin/centres_admin.py", line 85, in get_queryset
+    return qs.annotate(prepa_count=Count('prepa_comp_globaux'))
+           ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/query.py", line 1590, in annotate
+    return self._annotate(args, kwargs, select=True)
+           ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/query.py", line 1638, in _annotate
+    clone.query.add_annotation(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        annotation,
+        ^^^^^^^^^^^
+        alias,
+        ^^^^^^
+        select=select,
+        ^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/sql/query.py", line 1133, in add_annotation
+    annotation = annotation.resolve_expression(self, allow_joins=True, reuse=None)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/aggregates.py", line 64, in resolve_expression
+    c = super().resolve_expression(query, allow_joins, reuse, summarize)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/expressions.py", line 950, in resolve_expression
+    c.source_expressions[pos] = arg.resolve_expression(
+                                ~~~~~~~~~~~~~~~~~~~~~~^
+        query, allow_joins, reuse, summarize, for_save
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/expressions.py", line 829, in resolve_expression
+    return query.resolve_ref(self.name, allow_joins, reuse, summarize)
+           ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/sql/query.py", line 1976, in resolve_ref
+    join_info = self.setup_joins(
+        field_list, self.get_meta(), self.get_initial_alias(), can_reuse=reuse
+    )
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/sql/query.py", line 1823, in setup_joins
+    path, final_field, targets, rest = self.names_to_path(
+                                       ~~~~~~~~~~~~~~~~~~^
+        names[:pivot],
+        ^^^^^^^^^^^^^^
+    ...<2 lines>...
+        fail_on_missing=True,
+        ^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/sql/query.py", line 1724, in names_to_path
+    raise FieldError(
+    ...<2 lines>...
+    )
+django.core.exceptions.FieldError: Cannot resolve keyword 'prepa_comp_globaux' into field. Choices are: code_postal, created_at, created_by, created_by_id, formations, id, is_active, nom, prepa_globaux, rapport, semaines, suivijury, updated_at, updated_by, updated_by_id, vaes
+ERROR 2025-05-17 19:50:04,360 basehttp 75092 123145591169024 "GET /admin/rap_app/centre/ HTTP/1.1" 500 160758
+ERROR 2025-05-17 19:50:05,676 log 75092 123145591169024 Internal Server Error: /admin/rap_app/centre/
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/options.py", line 688, in wrapper
+    return self.admin_site.admin_view(view)(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/utils/decorators.py", line 134, in _wrapper_view
+    response = view_func(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/views/decorators/cache.py", line 62, in _wrapper_view_func
+    response = view_func(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/sites.py", line 242, in inner
+    return view(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/utils/decorators.py", line 46, in _wrapper
+    return bound_method(*args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/utils/decorators.py", line 134, in _wrapper_view
+    response = view_func(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/options.py", line 1926, in changelist_view
+    cl = self.get_changelist_instance(request)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/options.py", line 836, in get_changelist_instance
+    return ChangeList(
+        request,
+    ...<12 lines>...
+        self.search_help_text,
+    )
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/views/main.py", line 77, in __init__
+    self.root_queryset = model_admin.get_queryset(request)
+                         ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/admin/centres_admin.py", line 85, in get_queryset
+    return qs.annotate(prepa_count=Count('prepa_comp_globaux'))
+           ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/query.py", line 1590, in annotate
+    return self._annotate(args, kwargs, select=True)
+           ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/query.py", line 1638, in _annotate
+    clone.query.add_annotation(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        annotation,
+        ^^^^^^^^^^^
+        alias,
+        ^^^^^^
+        select=select,
+        ^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/sql/query.py", line 1133, in add_annotation
+    annotation = annotation.resolve_expression(self, allow_joins=True, reuse=None)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/aggregates.py", line 64, in resolve_expression
+    c = super().resolve_expression(query, allow_joins, reuse, summarize)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/expressions.py", line 950, in resolve_expression
+    c.source_expressions[pos] = arg.resolve_expression(
+                                ~~~~~~~~~~~~~~~~~~~~~~^
+        query, allow_joins, reuse, summarize, for_save
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/expressions.py", line 829, in resolve_expression
+    return query.resolve_ref(self.name, allow_joins, reuse, summarize)
+           ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/sql/query.py", line 1976, in resolve_ref
+    join_info = self.setup_joins(
+        field_list, self.get_meta(), self.get_initial_alias(), can_reuse=reuse
+    )
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/sql/query.py", line 1823, in setup_joins
+    path, final_field, targets, rest = self.names_to_path(
+                                       ~~~~~~~~~~~~~~~~~~^
+        names[:pivot],
+        ^^^^^^^^^^^^^^
+    ...<2 lines>...
+        fail_on_missing=True,
+        ^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/sql/query.py", line 1724, in names_to_path
+    raise FieldError(
+    ...<2 lines>...
+    )
+django.core.exceptions.FieldError: Cannot resolve keyword 'prepa_comp_globaux' into field. Choices are: code_postal, created_at, created_by, created_by_id, formations, id, is_active, nom, prepa_globaux, rapport, semaines, suivijury, updated_at, updated_by, updated_by_id, vaes
+ERROR 2025-05-17 19:50:05,691 basehttp 75092 123145591169024 "GET /admin/rap_app/centre/ HTTP/1.1" 500 160758
+ERROR 2025-05-17 19:54:03,099 log 76869 123145426161664 Internal Server Error: /admin/rap_app/typeoffre/add/
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/options.py", line 809, in get_form
+    return modelform_factory(self.model, **defaults)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/forms/models.py", line 642, in modelform_factory
+    return type(form)(class_name, (form,), form_class_attrs)
+           ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/forms/models.py", line 300, in __new__
+    fields = fields_for_model(
+        opts.model,
+    ...<10 lines>...
+        apply_limit_choices_to=False,
+    )
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/forms/models.py", line 198, in fields_for_model
+    raise FieldError(
+    ...<2 lines>...
+    )
+django.core.exceptions.FieldError: 'created_by' cannot be specified for TypeOffre model form as it is a non-editable field
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/options.py", line 688, in wrapper
+    return self.admin_site.admin_view(view)(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/utils/decorators.py", line 134, in _wrapper_view
+    response = view_func(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/views/decorators/cache.py", line 62, in _wrapper_view_func
+    response = view_func(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/sites.py", line 242, in inner
+    return view(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/options.py", line 1886, in add_view
+    return self.changeform_view(request, None, form_url, extra_context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/utils/decorators.py", line 46, in _wrapper
+    return bound_method(*args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/utils/decorators.py", line 134, in _wrapper_view
+    response = view_func(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/options.py", line 1747, in changeform_view
+    return self._changeform_view(request, object_id, form_url, extra_context)
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/options.py", line 1782, in _changeform_view
+    ModelForm = self.get_form(
+        request, obj, change=not add, fields=flatten_fieldsets(fieldsets)
+    )
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/options.py", line 811, in get_form
+    raise FieldError(
+    ...<2 lines>...
+    )
+django.core.exceptions.FieldError: 'created_by' cannot be specified for TypeOffre model form as it is a non-editable field. Check fields/fieldsets/exclude attributes of class TypeOffreAdmin.
+ERROR 2025-05-17 19:54:03,130 basehttp 76869 123145426161664 "GET /admin/rap_app/typeoffre/add/?_to_field=id&_popup=1 HTTP/1.1" 500 144048
+ERROR 2025-05-17 19:55:41,892 log 80736 123145552273408 Internal Server Error: /admin/rap_app/typeoffre/add/
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/options.py", line 809, in get_form
+    return modelform_factory(self.model, **defaults)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/forms/models.py", line 642, in modelform_factory
+    return type(form)(class_name, (form,), form_class_attrs)
+           ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/forms/models.py", line 300, in __new__
+    fields = fields_for_model(
+        opts.model,
+    ...<10 lines>...
+        apply_limit_choices_to=False,
+    )
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/forms/models.py", line 198, in fields_for_model
+    raise FieldError(
+    ...<2 lines>...
+    )
+django.core.exceptions.FieldError: 'created_by' cannot be specified for TypeOffre model form as it is a non-editable field
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/options.py", line 688, in wrapper
+    return self.admin_site.admin_view(view)(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/utils/decorators.py", line 134, in _wrapper_view
+    response = view_func(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/views/decorators/cache.py", line 62, in _wrapper_view_func
+    response = view_func(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/sites.py", line 242, in inner
+    return view(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/options.py", line 1886, in add_view
+    return self.changeform_view(request, None, form_url, extra_context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/utils/decorators.py", line 46, in _wrapper
+    return bound_method(*args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/utils/decorators.py", line 134, in _wrapper_view
+    response = view_func(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/options.py", line 1747, in changeform_view
+    return self._changeform_view(request, object_id, form_url, extra_context)
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/options.py", line 1782, in _changeform_view
+    ModelForm = self.get_form(
+        request, obj, change=not add, fields=flatten_fieldsets(fieldsets)
+    )
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/options.py", line 811, in get_form
+    raise FieldError(
+    ...<2 lines>...
+    )
+django.core.exceptions.FieldError: 'created_by' cannot be specified for TypeOffre model form as it is a non-editable field. Check fields/fieldsets/exclude attributes of class TypeOffreAdmin.
+ERROR 2025-05-17 19:55:41,907 basehttp 80736 123145552273408 "GET /admin/rap_app/typeoffre/add/?_to_field=id&_popup=1 HTTP/1.1" 500 144048
+ERROR 2025-05-17 19:55:54,424 log 80736 123145552273408 Internal Server Error: /admin/rap_app/typeoffre/add/
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/options.py", line 809, in get_form
+    return modelform_factory(self.model, **defaults)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/forms/models.py", line 642, in modelform_factory
+    return type(form)(class_name, (form,), form_class_attrs)
+           ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/forms/models.py", line 300, in __new__
+    fields = fields_for_model(
+        opts.model,
+    ...<10 lines>...
+        apply_limit_choices_to=False,
+    )
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/forms/models.py", line 198, in fields_for_model
+    raise FieldError(
+    ...<2 lines>...
+    )
+django.core.exceptions.FieldError: 'created_by' cannot be specified for TypeOffre model form as it is a non-editable field
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/options.py", line 688, in wrapper
+    return self.admin_site.admin_view(view)(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/utils/decorators.py", line 134, in _wrapper_view
+    response = view_func(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/views/decorators/cache.py", line 62, in _wrapper_view_func
+    response = view_func(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/sites.py", line 242, in inner
+    return view(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/options.py", line 1886, in add_view
+    return self.changeform_view(request, None, form_url, extra_context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/utils/decorators.py", line 46, in _wrapper
+    return bound_method(*args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/utils/decorators.py", line 134, in _wrapper_view
+    response = view_func(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/options.py", line 1747, in changeform_view
+    return self._changeform_view(request, object_id, form_url, extra_context)
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/options.py", line 1782, in _changeform_view
+    ModelForm = self.get_form(
+        request, obj, change=not add, fields=flatten_fieldsets(fieldsets)
+    )
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/options.py", line 811, in get_form
+    raise FieldError(
+    ...<2 lines>...
+    )
+django.core.exceptions.FieldError: 'created_by' cannot be specified for TypeOffre model form as it is a non-editable field. Check fields/fieldsets/exclude attributes of class TypeOffreAdmin.
+ERROR 2025-05-17 19:55:54,431 basehttp 80736 123145552273408 "GET /admin/rap_app/typeoffre/add/?_to_field=id&_popup=1 HTTP/1.1" 500 144048
+ERROR 2025-05-17 19:57:29,653 log 82192 123145366532096 Internal Server Error: /admin/rap_app/statut/add/
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/options.py", line 809, in get_form
+    return modelform_factory(self.model, **defaults)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/forms/models.py", line 642, in modelform_factory
+    return type(form)(class_name, (form,), form_class_attrs)
+           ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/forms/models.py", line 300, in __new__
+    fields = fields_for_model(
+        opts.model,
+    ...<10 lines>...
+        apply_limit_choices_to=False,
+    )
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/forms/models.py", line 198, in fields_for_model
+    raise FieldError(
+    ...<2 lines>...
+    )
+django.core.exceptions.FieldError: 'created_by' cannot be specified for Statut model form as it is a non-editable field
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/options.py", line 688, in wrapper
+    return self.admin_site.admin_view(view)(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/utils/decorators.py", line 134, in _wrapper_view
+    response = view_func(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/views/decorators/cache.py", line 62, in _wrapper_view_func
+    response = view_func(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/sites.py", line 242, in inner
+    return view(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/options.py", line 1886, in add_view
+    return self.changeform_view(request, None, form_url, extra_context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/utils/decorators.py", line 46, in _wrapper
+    return bound_method(*args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/utils/decorators.py", line 134, in _wrapper_view
+    response = view_func(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/options.py", line 1747, in changeform_view
+    return self._changeform_view(request, object_id, form_url, extra_context)
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/options.py", line 1782, in _changeform_view
+    ModelForm = self.get_form(
+        request, obj, change=not add, fields=flatten_fieldsets(fieldsets)
+    )
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/options.py", line 811, in get_form
+    raise FieldError(
+    ...<2 lines>...
+    )
+django.core.exceptions.FieldError: 'created_by' cannot be specified for Statut model form as it is a non-editable field. Check fields/fieldsets/exclude attributes of class StatutAdmin.
+ERROR 2025-05-17 19:57:29,666 basehttp 82192 123145366532096 "GET /admin/rap_app/statut/add/?_to_field=id&_popup=1 HTTP/1.1" 500 143922
