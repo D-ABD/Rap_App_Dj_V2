@@ -134,8 +134,33 @@ SPECTACULAR_SETTINGS = {
     'SCHEMA_PATH_PREFIX_TRIM': True,
     'CONTACT': {'name': 'Équipe Rap_app', 'email': 'support@rap_app.app'},
     'LICENSE': {'name': 'Propriétaire'},
+    'PREPROCESSING_HOOKS': ['rap_app.spectacular_hooks.preprocess_hook'],
+    'POSTPROCESSING_HOOKS': ['rap_app.spectacular_hooks.postprocess_hook'],
 
+    'ENUM_NAME_OVERRIDES': {
+        # Prospection
+        'StatutProspection': 'rap_app.models.ProspectionChoices.PROSPECTION_STATUS_CHOICES',
+        'ObjectifProspection': 'rap_app.models.ProspectionChoices.PROSPECTION_OBJECTIF_CHOICES',
+        'MotifProspection': 'rap_app.models.ProspectionChoices.PROSPECTION_MOTIF_CHOICES',
+        'TypeContact': 'rap_app.models.ProspectionChoices.TYPE_CONTACT_CHOICES',
+        'MoyenContact': 'rap_app.models.ProspectionChoices.MOYEN_CONTACT_CHOICES',
+        
+        # HistoriqueProspection
+        'AncienStatut': 'rap_app.models.ProspectionChoices.PROSPECTION_STATUS_CHOICES',
+        'NouveauStatut': 'rap_app.models.ProspectionChoices.PROSPECTION_STATUS_CHOICES',
+    },
+    
+    # Ajouts critiques pour supprimer les warnings résiduels
+    'ENUM_RENAME_ALTERNATIVES': {
+        'StatutF44Enum': 'StatutProspection',
+        'Statut120Enum': 'StatutHistorique'
+    },
+    'ENUM_GENERATE_CHOICE_DESCRIPTION': False,
+    'GENERIC_ADDITIONAL_PROPERTIES': None
 }
+
+
+
 
 
 # CORS Settings

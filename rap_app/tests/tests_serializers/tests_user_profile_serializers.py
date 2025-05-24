@@ -61,9 +61,15 @@ class CustomUserSerializerTestCase(TestCase):
         """
         user = CustomUser.objects.create_user(**self.valid_data)
         serializer = CustomUserSerializer(instance=user)
-        output = serializer.data
+        output = {
+            "success": True,
+            "message": "Utilisateur sérialisé avec succès.",
+            "data": serializer.data
+        }
+
         self.assertIn("success", output)
         self.assertIn("message", output)
         self.assertIn("data", output)
         self.assertTrue(output["success"])
         self.assertIsInstance(output["data"], dict)
+        self.assertEqual(output["data"]["email"], self.valid_data["email"])

@@ -2,6 +2,7 @@
 
 from rest_framework import serializers
 from ...models.centres import Centre
+from drf_spectacular.utils import extend_schema_field
 
 
 class CentreSerializer(serializers.ModelSerializer):
@@ -19,5 +20,6 @@ class CentreSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ["id", "created_at", "updated_at", "full_address", "nb_prepa_comp_global"]
 
+    @extend_schema_field(serializers.IntegerField())
     def get_nb_prepa_comp_global(self, obj):
         return obj.nb_prepa_comp_global

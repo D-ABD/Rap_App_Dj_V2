@@ -58,25 +58,43 @@ class TypeOffreViewSet(viewsets.ModelViewSet):
     ordering_fields = ["nom", "created_at"]
     search_fields = ["nom", "autre"]
 
-    def perform_create(self, serializer):
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
         instance = serializer.save()
+
         LogUtilisateur.log_action(
             instance=instance,
             action=LogUtilisateur.ACTION_CREATE,
-            user=self.request.user,
+            user=request.user,
             details=f"Création du type d'offre : {instance}"
         )
 
-    def perform_update(self, serializer):
+        return Response({
+            "success": True,
+            "message": "Type d'offre créé avec succès.",
+            "data": self.get_serializer(instance).data
+        }, status=status.HTTP_201_CREATED)
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop("partial", False)
         instance = self.get_object()
-        updated_instance = serializer.update(instance, serializer.validated_data)
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        updated_instance = serializer.save()
+
         LogUtilisateur.log_action(
-            instance=instance,
+            instance=updated_instance,
             action=LogUtilisateur.ACTION_UPDATE,
-            user=self.request.user,
-            details=f"Mise à jour du type d'offre : {instance}"
+            user=request.user,
+            details=f"Mise à jour du type d'offre : {updated_instance}"
         )
-        return updated_instance
+
+        return Response({
+            "success": True,
+            "message": "Type d'offre mis à jour avec succès.",
+            "data": self.get_serializer(updated_instance).data
+        })
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()

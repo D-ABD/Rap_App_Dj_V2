@@ -1177,12 +1177,7 @@ paths:
   /evenements/export-csv/:
     get:
       operationId: evenements_export_csv_retrieve
-      description: |-
-        📆 ViewSet pour gérer les événements liés aux formations.
-        - CRUD complet
-        - Actions personnalisées : stats, export CSV
-        - Permissions : IsOwnerOrStaffOrAbove
-        - Pagination personnalisée : RapAppPagination
+      description: 📤 Exporte les événements au format CSV.
       summary: 🧾 Exporter les événements au format CSV
       tags:
       - Événements
@@ -1191,22 +1186,11 @@ paths:
       - jwtAuth: []
       responses:
         '200':
-          content:
-            application/json:
-              schema:
-                type: object
-                additionalProperties: {}
-                description: Unspecified response body
-          description: Fichier CSV contenant les événements
+          description: Réponse CSV contenant les événements
   /evenements/stats-par-type/:
     get:
       operationId: evenements_stats_par_type_retrieve
-      description: |-
-        📆 ViewSet pour gérer les événements liés aux formations.
-        - CRUD complet
-        - Actions personnalisées : stats, export CSV
-        - Permissions : IsOwnerOrStaffOrAbove
-        - Pagination personnalisée : RapAppPagination
+      description: 📈 Renvoie des statistiques d'événements par type entre deux dates.
       summary: 📊 Statistiques par type d'événement
       parameters:
       - in: query
@@ -2210,6 +2194,7 @@ paths:
         name: nouveau_statut
         schema:
           type: string
+          x-spec-enum-id: f44775231acd4212
           enum:
           - a_faire
           - a_relancer
@@ -2218,16 +2203,9 @@ paths:
           - en_cours
           - non_renseigne
           - refusee
-        description: |-
+        description: |+
           Statut après la modification
 
-          * `a_faire` - À faire
-          * `en_cours` - En cours
-          * `a_relancer` - À relancer
-          * `acceptee` - Acceptée
-          * `refusee` - Refusée
-          * `annulee` - Annulée
-          * `non_renseigne` - Non renseigné
       - name: ordering
         required: false
         in: query
@@ -2260,15 +2238,14 @@ paths:
         name: type_contact
         schema:
           type: string
+          x-spec-enum-id: 4de7857b4e88e34f
           title: Type de contact
           enum:
           - premier_contact
           - relance
-        description: |-
+        description: |+
           Type de contact utilisé
 
-          * `premier_contact` - Premier contact
-          * `relance` - Relance
       tags:
       - HistoriquesProspection
       security:
@@ -2409,29 +2386,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/User'
           description: ''
-  /logout/:
-    post:
-      operationId: logout_create
-      description: "\n    Permet à un utilisateur connecté de se déconnecter et d'invalider\
-        \ son token d'authentification.\n\n    \U0001F512 Requiert un token actif\
-        \ dans l’en-tête Authorization.\n    "
-      summary: Déconnexion
-      tags:
-      - Authentification
-      security:
-      - cookieAuth: []
-      - jwtAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                    example: Déconnexion réussie.
-          description: ''
   /logs/:
     get:
       operationId: logs_list
@@ -2488,6 +2442,7 @@ paths:
                       user: admin
                       date: 2024-01-01 12:00
                   summary: Exemple de log
+                  description: Exemple d'entrée dans l'historique des actions utilisateur
           description: ''
   /logs/{id}/:
     get:
@@ -2523,6 +2478,7 @@ paths:
                     user: admin
                     date: 2024-01-01 12:00
                   summary: Exemple de log
+                  description: Exemple d'entrée dans l'historique des actions utilisateur
           description: ''
   /partenaires/:
     get:
@@ -4607,6 +4563,89 @@ paths:
       responses:
         '204':
           description: No response body
+  /test-token/:
+    get:
+      operationId: test_token_retrieve
+      description: "\n        Cette vue permet de vérifier si un token d’authentification\
+        \ (JWT ou DRF Token) est valide,\n        et retourne les informations du\
+        \ compte utilisateur connecté, y compris son rôle.\n\n        \U0001F512 Requiert\
+        \ un token d’authentification valide dans l'en-tête `Authorization`.\n    "
+      summary: Vérifier la validité du token et le rôle
+      tags:
+      - 🔐 Authentification
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Token valide ✅
+                  user_id:
+                    type: integer
+                    example: 1
+                  username:
+                    type: string
+                    example: johndoe
+                  email:
+                    type: string
+                    example: john@example.com
+                  role:
+                    type: string
+                    example: admin
+                  is_staff:
+                    type: boolean
+                    example: true
+                  is_superuser:
+                    type: boolean
+                    example: false
+          description: Token valide et utilisateur authentifié
+  /token/:
+    post:
+      operationId: token_create
+      description: Retourne un access token (JWT) et un refresh token.
+      summary: Connexion avec email et mot de passe
+      tags:
+      - Utilisateurs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmailTokenRequestRequest'
+            examples:
+              RequêteValide:
+                value:
+                  email: admin@example.com
+                  password: motdepasse
+                summary: Requête valide
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/EmailTokenRequestRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/EmailTokenRequestRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmailTokenResponse'
+              examples:
+                RéponseRéussie:
+                  value:
+                    access: eyJ0eXAiOiJKV1QiLCJh...
+                    refresh: eyJ0eXAiOiJKV1QiLCJh...
+                  summary: Réponse réussie
+          description: ''
   /typeoffres/:
     get:
       operationId: typeoffres_list
@@ -5148,84 +5187,6 @@ paths:
                     avatar: null
                   summary: Utilisateur standard
           description: ''
-  /users/me/profile/:
-    get:
-      operationId: users_me_profile_retrieve
-      summary: Afficher son profil
-      tags:
-      - Utilisateur
-      security:
-      - cookieAuth: []
-      - jwtAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CustomUser'
-              examples:
-                UtilisateurStandard:
-                  value:
-                    email: jane.doe@example.com
-                    username: janedoe
-                    first_name: Jane
-                    last_name: Doe
-                    phone: '0601020304'
-                    role: stagiaire
-                    bio: Stagiaire motivée
-                    avatar: null
-                  summary: Utilisateur standard
-          description: ''
-    patch:
-      operationId: users_me_profile_partial_update
-      summary: Mettre à jour son profil
-      tags:
-      - Utilisateur
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/PatchedCustomUserRequest'
-            examples:
-              UtilisateurStandard:
-                value:
-                  email: jane.doe@example.com
-                  username: janedoe
-                  first_name: Jane
-                  last_name: Doe
-                  phone: '0601020304'
-                  role: stagiaire
-                  bio: Stagiaire motivée
-                  avatar: null
-                summary: Utilisateur standard
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/PatchedCustomUserRequest'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/PatchedCustomUserRequest'
-      security:
-      - cookieAuth: []
-      - jwtAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CustomUser'
-              examples:
-                UtilisateurStandard:
-                  value:
-                    email: jane.doe@example.com
-                    username: janedoe
-                    first_name: Jane
-                    last_name: Doe
-                    phone: '0601020304'
-                    role: stagiaire
-                    bio: Stagiaire motivée
-                    avatar: null
-                  summary: Utilisateur standard
-          description: ''
   /users/roles/:
     get:
       operationId: users_roles_retrieve
@@ -5561,31 +5522,6 @@ paths:
           description: ''
 components:
   schemas:
-    ActionsEnum:
-      enum:
-      - recrutement_emploi
-      - recrutement_stage
-      - recrutement_apprentissage
-      - presentation_metier_entreprise
-      - visite_entreprise
-      - coaching
-      - partenariat
-      - autre
-      - non_definie
-      type: string
-      description: |-
-        * `recrutement_emploi` - Recrutement - Emploi
-        * `recrutement_stage` - Recrutement - Stage
-        * `recrutement_apprentissage` - Recrutement - Apprentissage
-        * `presentation_metier_entreprise` - Présentation métier/entreprise
-        * `visite_entreprise` - Visite d'entreprise
-        * `coaching` - Coaching
-        * `partenariat` - Partenariat
-        * `autre` - Autre
-        * `non_definie` - Non définie
-    BlankEnum:
-      enum:
-      - ''
     Centre:
       type: object
       description: Sérialiseur du modèle Centre, basé sur to_serializable_dict.
@@ -5625,7 +5561,7 @@ components:
           readOnly: true
           description: Adresse complète du centre.
         nb_prepa_comp_global:
-          type: string
+          type: integer
           readOnly: true
           description: Nombre de PrepaCompGlobal associés.
       required:
@@ -5715,8 +5651,8 @@ components:
     CustomUser:
       type: object
       description: |-
-        🎯 Serializer principal pour les utilisateurs.
-        Utilise `to_serializable_dict()` pour exposer les données enrichies.
+        🎯 Sérialiseur du modèle CustomUser.
+        Affiche les infos publiques du profil + avatar + rôle + noms.
       properties:
         id:
           type: integer
@@ -5725,11 +5661,11 @@ components:
           type: string
           format: email
           title: Adresse email
-          description: Adresse email unique utilisée pour se connecter
+          description: Adresse email utilisée pour se connecter
           maxLength: 254
         username:
           type: string
-          description: Nom d'utilisateur unique pour cet utilisateur
+          description: Nom d'utilisateur unique
           pattern: ^[\w.@+-]+$
           maxLength: 150
         first_name:
@@ -5741,32 +5677,33 @@ components:
         phone:
           type: string
           title: Téléphone
-          description: Numéro de téléphone portable
+          description: Numéro de téléphone mobile
           maxLength: 20
         bio:
           type: string
           title: Biographie
-          description: Texte de présentation ou bio
+          description: Bio ou description libre
         avatar:
           type: string
           format: uri
           nullable: true
-          description: Image de profil de l'utilisateur
+          description: Image de profil
         avatar_url:
           type: string
+          nullable: true
           readOnly: true
+          description: URL de l'avatar (image de profil)
         role:
-          allOf:
-          - $ref: '#/components/schemas/RoleEnum'
+          enum:
+          - superadmin
+          - admin
+          - stagiaire
+          - staff
+          - test
+          type: string
+          x-spec-enum-id: 1eb82025a4a438c1
           title: Rôle
-          description: |-
-            Rôle de l'utilisateur dans l'application
-
-            * `superadmin` - Super administrateur
-            * `admin` - Administrateur
-            * `stagiaire` - Stagiaire
-            * `staff` - Membre du staff
-            * `test` - Test
+          description: Rôle attribué à cet utilisateur
         role_display:
           type: string
           readOnly: true
@@ -5788,20 +5725,20 @@ components:
     CustomUserRequest:
       type: object
       description: |-
-        🎯 Serializer principal pour les utilisateurs.
-        Utilise `to_serializable_dict()` pour exposer les données enrichies.
+        🎯 Sérialiseur du modèle CustomUser.
+        Affiche les infos publiques du profil + avatar + rôle + noms.
       properties:
         email:
           type: string
           format: email
           minLength: 1
           title: Adresse email
-          description: Adresse email unique utilisée pour se connecter
+          description: Adresse email utilisée pour se connecter
           maxLength: 254
         username:
           type: string
           minLength: 1
-          description: Nom d'utilisateur unique pour cet utilisateur
+          description: Nom d'utilisateur unique
           pattern: ^[\w.@+-]+$
           maxLength: 150
         first_name:
@@ -5813,29 +5750,28 @@ components:
         phone:
           type: string
           title: Téléphone
-          description: Numéro de téléphone portable
+          description: Numéro de téléphone mobile
           maxLength: 20
         bio:
           type: string
           title: Biographie
-          description: Texte de présentation ou bio
+          description: Bio ou description libre
         avatar:
           type: string
           format: binary
           nullable: true
-          description: Image de profil de l'utilisateur
+          description: Image de profil
         role:
-          allOf:
-          - $ref: '#/components/schemas/RoleEnum'
+          enum:
+          - superadmin
+          - admin
+          - stagiaire
+          - staff
+          - test
+          type: string
+          x-spec-enum-id: 1eb82025a4a438c1
           title: Rôle
-          description: |-
-            Rôle de l'utilisateur dans l'application
-
-            * `superadmin` - Super administrateur
-            * `admin` - Administrateur
-            * `stagiaire` - Stagiaire
-            * `staff` - Membre du staff
-            * `test` - Test
+          description: Rôle attribué à cet utilisateur
         is_active:
           type: boolean
           title: Active
@@ -5861,16 +5797,15 @@ components:
           format: uri
           description: Fichier téléversé (PDF, image, doc...)
         type_document:
-          allOf:
-          - $ref: '#/components/schemas/TypeDocumentEnum'
+          enum:
+          - pdf
+          - image
+          - contrat
+          - autre
+          type: string
+          x-spec-enum-id: c86d1ff51b0712f3
           title: Type de document
-          description: |-
-            Catégorie du document (PDF, Image, Contrat...)
-
-            * `pdf` - PDF
-            * `image` - Image
-            * `contrat` - Contrat signé
-            * `autre` - Autre
+          description: Catégorie du document (PDF, Image, Contrat...)
         type_document_display:
           type: string
           readOnly: true
@@ -5930,16 +5865,15 @@ components:
           format: binary
           description: Fichier téléversé (PDF, image, doc...)
         type_document:
-          allOf:
-          - $ref: '#/components/schemas/TypeDocumentEnum'
+          enum:
+          - pdf
+          - image
+          - contrat
+          - autre
+          type: string
+          x-spec-enum-id: c86d1ff51b0712f3
           title: Type de document
-          description: |-
-            Catégorie du document (PDF, Image, Contrat...)
-
-            * `pdf` - PDF
-            * `image` - Image
-            * `contrat` - Contrat signé
-            * `autre` - Autre
+          description: Catégorie du document (PDF, Image, Contrat...)
         formation:
           type: integer
           title: Formation associée
@@ -5948,6 +5882,29 @@ components:
       - fichier
       - formation
       - nom_fichier
+    EmailTokenRequestRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          minLength: 1
+        password:
+          type: string
+          minLength: 1
+      required:
+      - email
+      - password
+    EmailTokenResponse:
+      type: object
+      properties:
+        access:
+          type: string
+        refresh:
+          type: string
+      required:
+      - access
+      - refresh
     Evenement:
       type: object
       description: |-
@@ -5966,19 +5923,18 @@ components:
           type: string
           readOnly: true
         type_evenement:
-          allOf:
-          - $ref: '#/components/schemas/TypeEvenementEnum'
+          enum:
+          - info_collective_presentiel
+          - info_collective_distanciel
+          - job_dating
+          - evenement_emploi
+          - forum
+          - jpo
+          - autre
+          type: string
+          x-spec-enum-id: 5cfab7b774d4d069
           title: Type d'événement
-          description: |-
-            Catégorie de l'événement (ex : forum, job dating, etc.)
-
-            * `info_collective_presentiel` - Information collective présentiel
-            * `info_collective_distanciel` - Information collective distanciel
-            * `job_dating` - Job dating
-            * `evenement_emploi` - Événement emploi
-            * `forum` - Forum
-            * `jpo` - Journée Portes Ouvertes
-            * `autre` - Autre
+          description: 'Catégorie de l''événement (ex : forum, job dating, etc.)'
         type_evenement_display:
           type: string
           readOnly: true
@@ -6000,7 +5956,7 @@ components:
           title: Date de l'événement
           description: Date prévue pour l'événement
         event_date_formatted:
-          type: string
+          type: integer
           readOnly: true
         lieu:
           type: string
@@ -6055,19 +6011,18 @@ components:
         Inclut toutes les données utiles pour affichage et analyse dans l'interface.
       properties:
         type_evenement:
-          allOf:
-          - $ref: '#/components/schemas/TypeEvenementEnum'
+          enum:
+          - info_collective_presentiel
+          - info_collective_distanciel
+          - job_dating
+          - evenement_emploi
+          - forum
+          - jpo
+          - autre
+          type: string
+          x-spec-enum-id: 5cfab7b774d4d069
           title: Type d'événement
-          description: |-
-            Catégorie de l'événement (ex : forum, job dating, etc.)
-
-            * `info_collective_presentiel` - Information collective présentiel
-            * `info_collective_distanciel` - Information collective distanciel
-            * `job_dating` - Job dating
-            * `evenement_emploi` - Événement emploi
-            * `forum` - Forum
-            * `jpo` - Journée Portes Ouvertes
-            * `autre` - Autre
+          description: 'Catégorie de l''événement (ex : forum, job dating, etc.)'
         description_autre:
           type: string
           nullable: true
@@ -6106,18 +6061,6 @@ components:
           description: Nombre de participants présents
       required:
       - type_evenement
-    FormatEnum:
-      enum:
-      - pdf
-      - excel
-      - csv
-      - html
-      type: string
-      description: |-
-        * `pdf` - PDF
-        * `excel` - Excel
-        * `csv` - CSV
-        * `html` - HTML
     Formation:
       type: object
       description: |-
@@ -6205,13 +6148,13 @@ components:
           nullable: true
           description: Dernier commentaire
         centre:
-          type: string
+          type: integer
           readOnly: true
         type_offre:
-          type: string
+          type: integer
           readOnly: true
         statut:
-          type: string
+          type: integer
           readOnly: true
       required:
       - nom
@@ -6318,13 +6261,16 @@ components:
       - type_offre_id
     HistoriqueProspection:
       type: object
+      description: |-
+        Serializer pour l'historique des modifications de prospection.
+        Fournit les champs formatés et calculés utiles à l'affichage.
       properties:
         id:
           type: integer
           readOnly: true
         prospection:
           type: integer
-          description: ID de la prospection liée
+          description: ID de la prospection concernée
         date_modification:
           type: string
           format: date-time
@@ -6332,77 +6278,75 @@ components:
           title: Date de modification
           description: Date et heure de la modification
         ancien_statut:
-          allOf:
-          - $ref: '#/components/schemas/StatutF44Enum'
-          description: |-
-            Statut avant modification
-
-            * `a_faire` - À faire
-            * `en_cours` - En cours
-            * `a_relancer` - À relancer
-            * `acceptee` - Acceptée
-            * `refusee` - Refusée
-            * `annulee` - Annulée
-            * `non_renseigne` - Non renseigné
+          enum:
+          - a_faire
+          - en_cours
+          - a_relancer
+          - acceptee
+          - refusee
+          - annulee
+          - non_renseigne
+          type: string
+          x-spec-enum-id: f44775231acd4212
+          description: Ancien statut avant modification
+          x-enum-name: AncienStatutEnum
         ancien_statut_display:
           type: string
           readOnly: true
         nouveau_statut:
-          allOf:
-          - $ref: '#/components/schemas/StatutF44Enum'
-          description: |-
-            Nouveau statut après modification
-
-            * `a_faire` - À faire
-            * `en_cours` - En cours
-            * `a_relancer` - À relancer
-            * `acceptee` - Acceptée
-            * `refusee` - Refusée
-            * `annulee` - Annulée
-            * `non_renseigne` - Non renseigné
+          enum:
+          - a_faire
+          - en_cours
+          - a_relancer
+          - acceptee
+          - refusee
+          - annulee
+          - non_renseigne
+          type: string
+          x-spec-enum-id: f44775231acd4212
+          description: Nouveau statut après modification
+          x-enum-name: NouveauStatutEnum
         nouveau_statut_display:
           type: string
           readOnly: true
         type_contact:
-          allOf:
-          - $ref: '#/components/schemas/TypeContactEnum'
+          enum:
+          - premier_contact
+          - relance
+          type: string
+          x-spec-enum-id: 4de7857b4e88e34f
           title: Type de contact
-          description: |-
-            Type de contact (premier_contact / relance)
-
-            * `premier_contact` - Premier contact
-            * `relance` - Relance
+          description: Type de contact (premier_contact / relance)
         type_contact_display:
           type: string
           readOnly: true
         commentaire:
           type: string
           nullable: true
-          description: Commentaire interne sur cette modification
+          description: Commentaire facultatif
         resultat:
           type: string
           nullable: true
           title: Résultat
-          description: Résultat ou conséquence de l'action
+          description: Résultat de l'action
         prochain_contact:
           type: string
           format: date
           nullable: true
-          description: Date prévue pour le prochain contact
+          description: Date de relance prévue
         moyen_contact:
+          enum:
+          - email
+          - telephone
+          - visite
+          - reseaux
+          - ''
+          - null
+          type: string
+          x-spec-enum-id: e951287c73affa2d
           nullable: true
           title: Moyen de contact
-          description: |-
-            Moyen de communication utilisé (email, téléphone…)
-
-            * `email` - Email
-            * `telephone` - Téléphone
-            * `visite` - Visite
-            * `reseaux` - Réseaux sociaux
-          oneOf:
-          - $ref: '#/components/schemas/MoyenContactEnum'
-          - $ref: '#/components/schemas/BlankEnum'
-          - $ref: '#/components/schemas/NullEnum'
+          description: Moyen de contact utilisé
         moyen_contact_display:
           type: string
           readOnly: true
@@ -6419,7 +6363,8 @@ components:
           type: string
           readOnly: true
         statut_avec_icone:
-          type: string
+          type: object
+          description: Renvoie un objet avec le nom du statut + icône + couleur CSS
           readOnly: true
       required:
       - ancien_statut
@@ -6439,18 +6384,17 @@ components:
           type: string
           readOnly: true
         statut:
-          allOf:
-          - $ref: '#/components/schemas/Statut120Enum'
-          description: |-
-            Nouveau statut de la VAE
-
-            * `info` - Demande d'informations
-            * `dossier` - Dossier en cours
-            * `attente_financement` - En attente de financement
-            * `accompagnement` - Accompagnement en cours
-            * `jury` - En attente de jury
-            * `terminee` - VAE terminée
-            * `abandonnee` - VAE abandonnée
+          enum:
+          - info
+          - dossier
+          - attente_financement
+          - accompagnement
+          - jury
+          - terminee
+          - abandonnee
+          type: string
+          x-spec-enum-id: 120fe445a9789d34
+          description: Nouveau statut de la VAE
         statut_libelle:
           type: string
           readOnly: true
@@ -6482,8 +6426,12 @@ components:
     LogUtilisateur:
       type: object
       description: |-
-        📄 Serializer en lecture seule pour les logs utilisateur.
-        Utilise `to_dict()` pour exposer les champs enrichis.
+        Serializer en lecture seule pour les logs utilisateur.
+
+        Fournit une vue enrichie des logs, incluant des champs calculés pour :
+        - le modèle concerné (`get_model`)
+        - l'utilisateur ayant réalisé l'action (`get_user`)
+        - la date de l'action formatée (`get_date`)
       properties:
         id:
           type: integer
@@ -6491,27 +6439,27 @@ components:
         action:
           type: string
           readOnly: true
-          description: Type d'action réalisée.
+          description: Type d'action réalisée (création, modification, suppression).
         model:
           type: string
+          description: Nom du modèle concerné par l'action.
           readOnly: true
-          description: Nom du modèle concerné.
         object_id:
           type: integer
           readOnly: true
-          description: Identifiant de l'objet concerné.
+          description: Identifiant de l'objet modifié.
         details:
           type: string
           readOnly: true
-          description: Détail de l'action enregistrée.
+          description: Détails de l'action enregistrée.
         user:
           type: string
+          description: Nom de l'utilisateur ayant effectué l'action.
           readOnly: true
-          description: Utilisateur ayant réalisé l'action.
         date:
           type: string
+          description: 'Date et heure de l''action (format : AAAA-MM-JJ HH:MM).'
           readOnly: true
-          description: Date et heure de l'action.
     LoginRequest:
       type: object
       properties:
@@ -6525,79 +6473,6 @@ components:
       required:
       - email
       - password
-    MoisEnum:
-      enum:
-      - 1
-      - 2
-      - 3
-      - 4
-      - 5
-      - 6
-      - 7
-      - 8
-      - 9
-      - 10
-      - 11
-      - 12
-      type: integer
-      description: |-
-        * `1` - Janvier
-        * `2` - Février
-        * `3` - Mars
-        * `4` - Avril
-        * `5` - Mai
-        * `6` - Juin
-        * `7` - Juillet
-        * `8` - Août
-        * `9` - Septembre
-        * `10` - Octobre
-        * `11` - Novembre
-        * `12` - Décembre
-    MotifEnum:
-      enum:
-      - POEI
-      - apprentissage
-      - VAE
-      - partenariat
-      - autre
-      type: string
-      description: |-
-        * `POEI` - POEI
-        * `apprentissage` - Apprentissage
-        * `VAE` - VAE
-        * `partenariat` - Établir un partenariat
-        * `autre` - Autre
-    MoyenContactEnum:
-      enum:
-      - email
-      - telephone
-      - visite
-      - reseaux
-      type: string
-      description: |-
-        * `email` - Email
-        * `telephone` - Téléphone
-        * `visite` - Visite
-        * `reseaux` - Réseaux sociaux
-    NullEnum:
-      enum:
-      - null
-    ObjectifEnum:
-      enum:
-      - prise_contact
-      - rendez_vous
-      - presentation_offre
-      - contrat
-      - partenariat
-      - autre
-      type: string
-      description: |-
-        * `prise_contact` - Prise de contact
-        * `rendez_vous` - Obtenir un rendez-vous
-        * `presentation_offre` - Présentation d'une offre
-        * `contrat` - Signer un contrat
-        * `partenariat` - Établir un partenariat
-        * `autre` - Autre
     PaginatedCentreList:
       type: object
       properties:
@@ -6969,15 +6844,14 @@ components:
           description: Nom unique de l'entité partenaire
           maxLength: 255
         type:
-          allOf:
-          - $ref: '#/components/schemas/TypeEnum'
+          enum:
+          - entreprise
+          - partenaire
+          - personne
+          type: string
+          x-spec-enum-id: c4355e8bb0c17d86
           title: Type de partenaire
-          description: |-
-            Type de partenaire (entreprise, institutionnel, personne)
-
-            * `entreprise` - Entreprise
-            * `partenaire` - Partenaire institutionnel
-            * `personne` - Personne physique
+          description: Type de partenaire (entreprise, institutionnel, personne)
         type_display:
           type: string
           readOnly: true
@@ -7054,24 +6928,23 @@ components:
           description: URL d’un réseau social (LinkedIn, etc.)
           maxLength: 200
         actions:
+          enum:
+          - recrutement_emploi
+          - recrutement_stage
+          - recrutement_apprentissage
+          - presentation_metier_entreprise
+          - visite_entreprise
+          - coaching
+          - partenariat
+          - autre
+          - non_definie
+          - ''
+          - null
+          type: string
+          x-spec-enum-id: c7d9d03cc1b2e03c
           nullable: true
           title: Type d'action
-          description: |-
-            Catégorie d'action (partenariat, coaching, etc.)
-
-            * `recrutement_emploi` - Recrutement - Emploi
-            * `recrutement_stage` - Recrutement - Stage
-            * `recrutement_apprentissage` - Recrutement - Apprentissage
-            * `presentation_metier_entreprise` - Présentation métier/entreprise
-            * `visite_entreprise` - Visite d'entreprise
-            * `coaching` - Coaching
-            * `partenariat` - Partenariat
-            * `autre` - Autre
-            * `non_definie` - Non définie
-          oneOf:
-          - $ref: '#/components/schemas/ActionsEnum'
-          - $ref: '#/components/schemas/BlankEnum'
-          - $ref: '#/components/schemas/NullEnum'
+          description: Catégorie d'action (partenariat, coaching, etc.)
         actions_display:
           type: string
           readOnly: true
@@ -7118,15 +6991,14 @@ components:
           description: Nom unique de l'entité partenaire
           maxLength: 255
         type:
-          allOf:
-          - $ref: '#/components/schemas/TypeEnum'
+          enum:
+          - entreprise
+          - partenaire
+          - personne
+          type: string
+          x-spec-enum-id: c4355e8bb0c17d86
           title: Type de partenaire
-          description: |-
-            Type de partenaire (entreprise, institutionnel, personne)
-
-            * `entreprise` - Entreprise
-            * `partenaire` - Partenaire institutionnel
-            * `personne` - Personne physique
+          description: Type de partenaire (entreprise, institutionnel, personne)
         secteur_activite:
           type: string
           nullable: true
@@ -7200,24 +7072,23 @@ components:
           description: URL d’un réseau social (LinkedIn, etc.)
           maxLength: 200
         actions:
+          enum:
+          - recrutement_emploi
+          - recrutement_stage
+          - recrutement_apprentissage
+          - presentation_metier_entreprise
+          - visite_entreprise
+          - coaching
+          - partenariat
+          - autre
+          - non_definie
+          - ''
+          - null
+          type: string
+          x-spec-enum-id: c7d9d03cc1b2e03c
           nullable: true
           title: Type d'action
-          description: |-
-            Catégorie d'action (partenariat, coaching, etc.)
-
-            * `recrutement_emploi` - Recrutement - Emploi
-            * `recrutement_stage` - Recrutement - Stage
-            * `recrutement_apprentissage` - Recrutement - Apprentissage
-            * `presentation_metier_entreprise` - Présentation métier/entreprise
-            * `visite_entreprise` - Visite d'entreprise
-            * `coaching` - Coaching
-            * `partenariat` - Partenariat
-            * `autre` - Autre
-            * `non_definie` - Non définie
-          oneOf:
-          - $ref: '#/components/schemas/ActionsEnum'
-          - $ref: '#/components/schemas/BlankEnum'
-          - $ref: '#/components/schemas/NullEnum'
+          description: Catégorie d'action (partenariat, coaching, etc.)
         action_description:
           type: string
           nullable: true
@@ -7277,20 +7148,20 @@ components:
     PatchedCustomUserRequest:
       type: object
       description: |-
-        🎯 Serializer principal pour les utilisateurs.
-        Utilise `to_serializable_dict()` pour exposer les données enrichies.
+        🎯 Sérialiseur du modèle CustomUser.
+        Affiche les infos publiques du profil + avatar + rôle + noms.
       properties:
         email:
           type: string
           format: email
           minLength: 1
           title: Adresse email
-          description: Adresse email unique utilisée pour se connecter
+          description: Adresse email utilisée pour se connecter
           maxLength: 254
         username:
           type: string
           minLength: 1
-          description: Nom d'utilisateur unique pour cet utilisateur
+          description: Nom d'utilisateur unique
           pattern: ^[\w.@+-]+$
           maxLength: 150
         first_name:
@@ -7302,29 +7173,28 @@ components:
         phone:
           type: string
           title: Téléphone
-          description: Numéro de téléphone portable
+          description: Numéro de téléphone mobile
           maxLength: 20
         bio:
           type: string
           title: Biographie
-          description: Texte de présentation ou bio
+          description: Bio ou description libre
         avatar:
           type: string
           format: binary
           nullable: true
-          description: Image de profil de l'utilisateur
+          description: Image de profil
         role:
-          allOf:
-          - $ref: '#/components/schemas/RoleEnum'
+          enum:
+          - superadmin
+          - admin
+          - stagiaire
+          - staff
+          - test
+          type: string
+          x-spec-enum-id: 1eb82025a4a438c1
           title: Rôle
-          description: |-
-            Rôle de l'utilisateur dans l'application
-
-            * `superadmin` - Super administrateur
-            * `admin` - Administrateur
-            * `stagiaire` - Stagiaire
-            * `staff` - Membre du staff
-            * `test` - Test
+          description: Rôle attribué à cet utilisateur
         is_active:
           type: boolean
           title: Active
@@ -7345,16 +7215,15 @@ components:
           format: binary
           description: Fichier téléversé (PDF, image, doc...)
         type_document:
-          allOf:
-          - $ref: '#/components/schemas/TypeDocumentEnum'
+          enum:
+          - pdf
+          - image
+          - contrat
+          - autre
+          type: string
+          x-spec-enum-id: c86d1ff51b0712f3
           title: Type de document
-          description: |-
-            Catégorie du document (PDF, Image, Contrat...)
-
-            * `pdf` - PDF
-            * `image` - Image
-            * `contrat` - Contrat signé
-            * `autre` - Autre
+          description: Catégorie du document (PDF, Image, Contrat...)
         formation:
           type: integer
           title: Formation associée
@@ -7366,19 +7235,18 @@ components:
         Inclut toutes les données utiles pour affichage et analyse dans l'interface.
       properties:
         type_evenement:
-          allOf:
-          - $ref: '#/components/schemas/TypeEvenementEnum'
+          enum:
+          - info_collective_presentiel
+          - info_collective_distanciel
+          - job_dating
+          - evenement_emploi
+          - forum
+          - jpo
+          - autre
+          type: string
+          x-spec-enum-id: 5cfab7b774d4d069
           title: Type d'événement
-          description: |-
-            Catégorie de l'événement (ex : forum, job dating, etc.)
-
-            * `info_collective_presentiel` - Information collective présentiel
-            * `info_collective_distanciel` - Information collective distanciel
-            * `job_dating` - Job dating
-            * `evenement_emploi` - Événement emploi
-            * `forum` - Forum
-            * `jpo` - Journée Portes Ouvertes
-            * `autre` - Autre
+          description: 'Catégorie de l''événement (ex : forum, job dating, etc.)'
         description_autre:
           type: string
           nullable: true
@@ -7520,15 +7388,14 @@ components:
           description: Nom unique de l'entité partenaire
           maxLength: 255
         type:
-          allOf:
-          - $ref: '#/components/schemas/TypeEnum'
+          enum:
+          - entreprise
+          - partenaire
+          - personne
+          type: string
+          x-spec-enum-id: c4355e8bb0c17d86
           title: Type de partenaire
-          description: |-
-            Type de partenaire (entreprise, institutionnel, personne)
-
-            * `entreprise` - Entreprise
-            * `partenaire` - Partenaire institutionnel
-            * `personne` - Personne physique
+          description: Type de partenaire (entreprise, institutionnel, personne)
         secteur_activite:
           type: string
           nullable: true
@@ -7602,24 +7469,23 @@ components:
           description: URL d’un réseau social (LinkedIn, etc.)
           maxLength: 200
         actions:
+          enum:
+          - recrutement_emploi
+          - recrutement_stage
+          - recrutement_apprentissage
+          - presentation_metier_entreprise
+          - visite_entreprise
+          - coaching
+          - partenariat
+          - autre
+          - non_definie
+          - ''
+          - null
+          type: string
+          x-spec-enum-id: c7d9d03cc1b2e03c
           nullable: true
           title: Type d'action
-          description: |-
-            Catégorie d'action (partenariat, coaching, etc.)
-
-            * `recrutement_emploi` - Recrutement - Emploi
-            * `recrutement_stage` - Recrutement - Stage
-            * `recrutement_apprentissage` - Recrutement - Apprentissage
-            * `presentation_metier_entreprise` - Présentation métier/entreprise
-            * `visite_entreprise` - Visite d'entreprise
-            * `coaching` - Coaching
-            * `partenariat` - Partenariat
-            * `autre` - Autre
-            * `non_definie` - Non définie
-          oneOf:
-          - $ref: '#/components/schemas/ActionsEnum'
-          - $ref: '#/components/schemas/BlankEnum'
-          - $ref: '#/components/schemas/NullEnum'
+          description: Catégorie d'action (partenariat, coaching, etc.)
         action_description:
           type: string
           nullable: true
@@ -7701,7 +7567,9 @@ components:
           description: Objectif mensuel pour les jurys
     PatchedProspectionRequest:
       type: object
-      description: Classe de base avec les champs communs
+      description: |-
+        Serializer principal pour les objets de prospection.
+        Gère la validation métier liée au statut et à la date.
       properties:
         partenaire:
           type: integer
@@ -7716,54 +7584,50 @@ components:
           title: Date de prospection
           description: Date et heure de la prospection
         type_contact:
-          allOf:
-          - $ref: '#/components/schemas/TypeContactEnum'
+          enum:
+          - premier_contact
+          - relance
+          type: string
+          x-spec-enum-id: 4de7857b4e88e34f
           title: Type de contact
-          description: |-
-            Type de contact : premier_contact ou relance
-
-            * `premier_contact` - Premier contact
-            * `relance` - Relance
+          description: 'Type de contact (ex: premier_contact)'
         motif:
-          allOf:
-          - $ref: '#/components/schemas/MotifEnum'
-          description: |-
-            Motif de la prospection
-
-            * `POEI` - POEI
-            * `apprentissage` - Apprentissage
-            * `VAE` - VAE
-            * `partenariat` - Établir un partenariat
-            * `autre` - Autre
+          enum:
+          - POEI
+          - apprentissage
+          - VAE
+          - partenariat
+          - autre
+          type: string
+          x-spec-enum-id: 38a8e88b71fd6bb4
+          description: Motif de la prospection
         statut:
-          allOf:
-          - $ref: '#/components/schemas/StatutF44Enum'
-          description: |-
-            Statut de la prospection
-
-            * `a_faire` - À faire
-            * `en_cours` - En cours
-            * `a_relancer` - À relancer
-            * `acceptee` - Acceptée
-            * `refusee` - Refusée
-            * `annulee` - Annulée
-            * `non_renseigne` - Non renseigné
+          enum:
+          - a_faire
+          - en_cours
+          - a_relancer
+          - acceptee
+          - refusee
+          - annulee
+          - non_renseigne
+          type: string
+          x-spec-enum-id: f44775231acd4212
+          description: Statut actuel de la prospection
         objectif:
-          allOf:
-          - $ref: '#/components/schemas/ObjectifEnum'
-          description: |-
-            Objectif visé par la prospection
-
-            * `prise_contact` - Prise de contact
-            * `rendez_vous` - Obtenir un rendez-vous
-            * `presentation_offre` - Présentation d'une offre
-            * `contrat` - Signer un contrat
-            * `partenariat` - Établir un partenariat
-            * `autre` - Autre
+          enum:
+          - prise_contact
+          - rendez_vous
+          - presentation_offre
+          - contrat
+          - partenariat
+          - autre
+          type: string
+          x-spec-enum-id: 85d4a005b48ffb22
+          description: Objectif visé par la prospection
         commentaire:
           type: string
           nullable: true
-          description: Commentaires ou notes sur cette prospection
+          description: Commentaires ou observations
     PatchedRapportRequest:
       type: object
       properties:
@@ -7774,35 +7638,33 @@ components:
           description: Titre descriptif du rapport
           maxLength: 255
         type_rapport:
-          allOf:
-          - $ref: '#/components/schemas/TypeRapportEnum'
+          enum:
+          - occupation
+          - centre
+          - statut
+          - evenement
+          - recrutement
+          - partenaire
+          - repartition
+          - periodique
+          - annuel
+          - utilisateur
+          type: string
+          x-spec-enum-id: 9f8b81ba68be2f7f
           title: Type de rapport
-          description: |-
-            Catégorie du rapport (occupation, centre, etc.)
-
-            * `occupation` - Rapport d'occupation des formations
-            * `centre` - Rapport de performance par centre
-            * `statut` - Rapport de suivi des statuts
-            * `evenement` - Rapport d'efficacité des événements
-            * `recrutement` - Rapport de suivi du recrutement
-            * `partenaire` - Rapport d'activité des partenaires
-            * `repartition` - Rapport de répartition des partenaires
-            * `periodique` - Rapport périodique
-            * `annuel` - Rapport annuel consolidé
-            * `utilisateur` - Rapport d'activité utilisateurs
+          description: Catégorie du rapport (occupation, centre, etc.)
         periode:
-          allOf:
-          - $ref: '#/components/schemas/PeriodeEnum'
+          enum:
+          - quotidien
+          - hebdomadaire
+          - mensuel
+          - trimestriel
+          - annuel
+          - personnalise
+          type: string
+          x-spec-enum-id: 5c9bf9380e3ccb8d
           title: Périodicité
-          description: |-
-            Périodicité du rapport
-
-            * `quotidien` - Quotidien
-            * `hebdomadaire` - Hebdomadaire
-            * `mensuel` - Mensuel
-            * `trimestriel` - Trimestriel
-            * `annuel` - Annuel
-            * `personnalise` - Période personnalisée
+          description: Périodicité du rapport
         date_debut:
           type: string
           format: date
@@ -7814,15 +7676,14 @@ components:
           title: Date de fin
           description: Date de fin de la période analysée
         format:
-          allOf:
-          - $ref: '#/components/schemas/FormatEnum'
-          description: |-
-            Format de sortie du rapport
-
-            * `pdf` - PDF
-            * `excel` - Excel
-            * `csv` - CSV
-            * `html` - HTML
+          enum:
+          - pdf
+          - excel
+          - csv
+          - html
+          type: string
+          x-spec-enum-id: 25239222005dcc2a
+          description: Format de sortie du rapport
         centre:
           type: integer
           nullable: true
@@ -7941,28 +7802,32 @@ components:
           description: Répartition des participants par atelier (AT1–AT6)
     PatchedStatutRequest:
       type: object
+      description: |-
+        Sérialiseur pour le modèle Statut.
+
+        - Le champ `libelle` affiche un nom lisible, en particulier pour le statut 'Autre'.
+        - Le champ `badge_html` fournit une représentation visuelle colorée pour l'interface.
       properties:
         nom:
-          allOf:
-          - $ref: '#/components/schemas/StatutNomEnum'
-          description: |-
-            Nom interne du statut (choix prédéfini).
-
-            * `non_defini` - Non défini
-            * `recrutement_en_cours` - Recrutement en cours
-            * `formation_en_cours` - Formation en cours
-            * `formation_a_annuler` - Formation à annuler
-            * `formation_a_repousser` - Formation à repousser
-            * `formation_annulee` - Formation annulée
-            * `pleine` - Pleine
-            * `quasi_pleine` - Quasi-pleine
-            * `autre` - Autre
+          enum:
+          - non_defini
+          - recrutement_en_cours
+          - formation_en_cours
+          - formation_a_annuler
+          - formation_a_repousser
+          - formation_annulee
+          - pleine
+          - quasi_pleine
+          - autre
+          type: string
+          x-spec-enum-id: 215538a3c8f8aca9
+          description: Nom interne du statut (valeurs définies en base).
         couleur:
           type: string
-          description: Code couleur hexadécimal du statut (#RRGGBB).
+          description: Couleur hexadécimale du badge (#RRGGBB).
         description_autre:
           type: string
-          description: Description personnalisée pour les statuts de type 'Autre'.
+          description: Texte personnalisé pour le statut 'Autre'.
     PatchedSuiviJuryRequest:
       type: object
       properties:
@@ -7973,23 +7838,22 @@ components:
           title: Année
           description: 'Année concernée par le suivi (ex: 2024)'
         mois:
-          allOf:
-          - $ref: '#/components/schemas/MoisEnum'
-          description: |-
-            Mois concerné (1 = janvier, 12 = décembre)
-
-            * `1` - Janvier
-            * `2` - Février
-            * `3` - Mars
-            * `4` - Avril
-            * `5` - Mai
-            * `6` - Juin
-            * `7` - Juillet
-            * `8` - Août
-            * `9` - Septembre
-            * `10` - Octobre
-            * `11` - Novembre
-            * `12` - Décembre
+          enum:
+          - 1
+          - 2
+          - 3
+          - 4
+          - 5
+          - 6
+          - 7
+          - 8
+          - 9
+          - 10
+          - 11
+          - 12
+          type: integer
+          x-spec-enum-id: 9ae431a445417f6a
+          description: Mois concerné (1 = janvier, 12 = décembre)
           minimum: 0
           maximum: 32767
         objectif_jury:
@@ -8006,71 +7870,53 @@ components:
     PatchedTypeOffreRequest:
       type: object
       description: |-
-        🎯 Serializer principal pour les types d'offre.
+        🎯 Sérialiseur du modèle TypeOffre.
 
-        Gère les champs enrichis, les validations personnalisées et l'affichage API-friendly.
-        Utilise `to_serializable_dict()` pour structurer la sortie.
+        Expose les champs utiles pour l’interface frontend, avec validation métier,
+        couleurs personnalisables, et types prédéfinis ou personnalisés.
       properties:
         nom:
-          allOf:
-          - $ref: '#/components/schemas/TypeOffreNomEnum'
+          enum:
+          - crif
+          - alternance
+          - poec
+          - poei
+          - tosa
+          - autre
+          - non_defini
+          type: string
+          x-spec-enum-id: 1edc9e3c89bfa034
           title: Type d'offre
-          description: |-
-            Type d'offre parmi les choix disponibles (ex: CRIF, Alternance, Autre)
-
-            * `crif` - CRIF
-            * `alternance` - Alternance
-            * `poec` - POEC
-            * `poei` - POEI
-            * `tosa` - TOSA
-            * `autre` - Autre
-            * `non_defini` - Non défini
+          description: Nom interne du type d'offre (choix prédéfinis).
         autre:
           type: string
           title: Autre (personnalisé)
-          description: Description personnalisée si le type est 'Autre'
+          description: Texte personnalisé pour les types d'offre marqués comme 'autre'.
           maxLength: 255
         couleur:
           type: string
           nullable: true
           title: Couleur associée (hexadécimal)
-          description: 'Code couleur hexadécimal (ex: #FF5733)'
+          description: 'Couleur affichée pour ce type (code hexadécimal, ex: #FF5733).'
           maxLength: 7
     PatchedVAERequest:
       type: object
       properties:
         statut:
-          allOf:
-          - $ref: '#/components/schemas/Statut120Enum'
-          description: |-
-            Statut actuel de la VAE
-
-            * `info` - Demande d'informations
-            * `dossier` - Dossier en cours
-            * `attente_financement` - En attente de financement
-            * `accompagnement` - Accompagnement en cours
-            * `jury` - En attente de jury
-            * `terminee` - VAE terminée
-            * `abandonnee` - VAE abandonnée
+          enum:
+          - info
+          - dossier
+          - attente_financement
+          - accompagnement
+          - jury
+          - terminee
+          - abandonnee
+          type: string
+          x-spec-enum-id: 120fe445a9789d34
+          description: Statut actuel de la VAE
         commentaire:
           type: string
           description: Remarques ou informations complémentaires
-    PeriodeEnum:
-      enum:
-      - quotidien
-      - hebdomadaire
-      - mensuel
-      - trimestriel
-      - annuel
-      - personnalise
-      type: string
-      description: |-
-        * `quotidien` - Quotidien
-        * `hebdomadaire` - Hebdomadaire
-        * `mensuel` - Mensuel
-        * `trimestriel` - Trimestriel
-        * `annuel` - Annuel
-        * `personnalise` - Période personnalisée
     PrepaCompGlobal:
       type: object
       description: |-
@@ -8239,7 +8085,9 @@ components:
       - centre
     Prospection:
       type: object
-      description: Classe de base avec les champs communs
+      description: |-
+        Serializer principal pour les objets de prospection.
+        Gère la validation métier liée au statut et à la date.
       properties:
         id:
           type: integer
@@ -8263,68 +8111,70 @@ components:
           title: Date de prospection
           description: Date et heure de la prospection
         type_contact:
-          allOf:
-          - $ref: '#/components/schemas/TypeContactEnum'
+          enum:
+          - premier_contact
+          - relance
+          type: string
+          x-spec-enum-id: 4de7857b4e88e34f
           title: Type de contact
-          description: |-
-            Type de contact : premier_contact ou relance
-
-            * `premier_contact` - Premier contact
-            * `relance` - Relance
+          description: 'Type de contact (ex: premier_contact)'
+          x-enum-name: TypeContactEnum
         type_contact_display:
           type: string
           readOnly: true
         motif:
-          allOf:
-          - $ref: '#/components/schemas/MotifEnum'
-          description: |-
-            Motif de la prospection
-
-            * `POEI` - POEI
-            * `apprentissage` - Apprentissage
-            * `VAE` - VAE
-            * `partenariat` - Établir un partenariat
-            * `autre` - Autre
+          enum:
+          - POEI
+          - apprentissage
+          - VAE
+          - partenariat
+          - autre
+          type: string
+          x-spec-enum-id: 38a8e88b71fd6bb4
+          description: Motif de la prospection
+          x-enum-name: MotifEnum
         motif_display:
           type: string
           readOnly: true
         statut:
-          allOf:
-          - $ref: '#/components/schemas/StatutF44Enum'
-          description: |-
-            Statut de la prospection
-
-            * `a_faire` - À faire
-            * `en_cours` - En cours
-            * `a_relancer` - À relancer
-            * `acceptee` - Acceptée
-            * `refusee` - Refusée
-            * `annulee` - Annulée
-            * `non_renseigne` - Non renseigné
+          enum:
+          - a_faire
+          - en_cours
+          - a_relancer
+          - acceptee
+          - refusee
+          - annulee
+          - non_renseigne
+          type: string
+          x-spec-enum-id: f44775231acd4212
+          description: Statut actuel de la prospection
+          x-enum-name: StatutEnum
         statut_display:
           type: string
           readOnly: true
         objectif:
-          allOf:
-          - $ref: '#/components/schemas/ObjectifEnum'
-          description: |-
-            Objectif visé par la prospection
-
-            * `prise_contact` - Prise de contact
-            * `rendez_vous` - Obtenir un rendez-vous
-            * `presentation_offre` - Présentation d'une offre
-            * `contrat` - Signer un contrat
-            * `partenariat` - Établir un partenariat
-            * `autre` - Autre
+          enum:
+          - prise_contact
+          - rendez_vous
+          - presentation_offre
+          - contrat
+          - partenariat
+          - autre
+          type: string
+          x-spec-enum-id: 85d4a005b48ffb22
+          description: Objectif visé par la prospection
+          x-enum-name: ObjectifEnum
         objectif_display:
           type: string
           readOnly: true
         commentaire:
           type: string
           nullable: true
-          description: Commentaires ou notes sur cette prospection
+          description: Commentaires ou observations
         prochain_contact:
           type: string
+          format: date-time
+          nullable: true
           readOnly: true
         is_active:
           type: boolean
@@ -8348,7 +8198,9 @@ components:
       - partenaire
     ProspectionRequest:
       type: object
-      description: Classe de base avec les champs communs
+      description: |-
+        Serializer principal pour les objets de prospection.
+        Gère la validation métier liée au statut et à la date.
       properties:
         partenaire:
           type: integer
@@ -8363,54 +8215,50 @@ components:
           title: Date de prospection
           description: Date et heure de la prospection
         type_contact:
-          allOf:
-          - $ref: '#/components/schemas/TypeContactEnum'
+          enum:
+          - premier_contact
+          - relance
+          type: string
+          x-spec-enum-id: 4de7857b4e88e34f
           title: Type de contact
-          description: |-
-            Type de contact : premier_contact ou relance
-
-            * `premier_contact` - Premier contact
-            * `relance` - Relance
+          description: 'Type de contact (ex: premier_contact)'
         motif:
-          allOf:
-          - $ref: '#/components/schemas/MotifEnum'
-          description: |-
-            Motif de la prospection
-
-            * `POEI` - POEI
-            * `apprentissage` - Apprentissage
-            * `VAE` - VAE
-            * `partenariat` - Établir un partenariat
-            * `autre` - Autre
+          enum:
+          - POEI
+          - apprentissage
+          - VAE
+          - partenariat
+          - autre
+          type: string
+          x-spec-enum-id: 38a8e88b71fd6bb4
+          description: Motif de la prospection
         statut:
-          allOf:
-          - $ref: '#/components/schemas/StatutF44Enum'
-          description: |-
-            Statut de la prospection
-
-            * `a_faire` - À faire
-            * `en_cours` - En cours
-            * `a_relancer` - À relancer
-            * `acceptee` - Acceptée
-            * `refusee` - Refusée
-            * `annulee` - Annulée
-            * `non_renseigne` - Non renseigné
+          enum:
+          - a_faire
+          - en_cours
+          - a_relancer
+          - acceptee
+          - refusee
+          - annulee
+          - non_renseigne
+          type: string
+          x-spec-enum-id: f44775231acd4212
+          description: Statut actuel de la prospection
         objectif:
-          allOf:
-          - $ref: '#/components/schemas/ObjectifEnum'
-          description: |-
-            Objectif visé par la prospection
-
-            * `prise_contact` - Prise de contact
-            * `rendez_vous` - Obtenir un rendez-vous
-            * `presentation_offre` - Présentation d'une offre
-            * `contrat` - Signer un contrat
-            * `partenariat` - Établir un partenariat
-            * `autre` - Autre
+          enum:
+          - prise_contact
+          - rendez_vous
+          - presentation_offre
+          - contrat
+          - partenariat
+          - autre
+          type: string
+          x-spec-enum-id: 85d4a005b48ffb22
+          description: Objectif visé par la prospection
         commentaire:
           type: string
           nullable: true
-          description: Commentaires ou notes sur cette prospection
+          description: Commentaires ou observations
       required:
       - motif
       - partenaire
@@ -8426,38 +8274,36 @@ components:
           description: Titre descriptif du rapport
           maxLength: 255
         type_rapport:
-          allOf:
-          - $ref: '#/components/schemas/TypeRapportEnum'
+          enum:
+          - occupation
+          - centre
+          - statut
+          - evenement
+          - recrutement
+          - partenaire
+          - repartition
+          - periodique
+          - annuel
+          - utilisateur
+          type: string
+          x-spec-enum-id: 9f8b81ba68be2f7f
           title: Type de rapport
-          description: |-
-            Catégorie du rapport (occupation, centre, etc.)
-
-            * `occupation` - Rapport d'occupation des formations
-            * `centre` - Rapport de performance par centre
-            * `statut` - Rapport de suivi des statuts
-            * `evenement` - Rapport d'efficacité des événements
-            * `recrutement` - Rapport de suivi du recrutement
-            * `partenaire` - Rapport d'activité des partenaires
-            * `repartition` - Rapport de répartition des partenaires
-            * `periodique` - Rapport périodique
-            * `annuel` - Rapport annuel consolidé
-            * `utilisateur` - Rapport d'activité utilisateurs
+          description: Catégorie du rapport (occupation, centre, etc.)
         type_rapport_display:
           type: string
           readOnly: true
         periode:
-          allOf:
-          - $ref: '#/components/schemas/PeriodeEnum'
+          enum:
+          - quotidien
+          - hebdomadaire
+          - mensuel
+          - trimestriel
+          - annuel
+          - personnalise
+          type: string
+          x-spec-enum-id: 5c9bf9380e3ccb8d
           title: Périodicité
-          description: |-
-            Périodicité du rapport
-
-            * `quotidien` - Quotidien
-            * `hebdomadaire` - Hebdomadaire
-            * `mensuel` - Mensuel
-            * `trimestriel` - Trimestriel
-            * `annuel` - Annuel
-            * `personnalise` - Période personnalisée
+          description: Périodicité du rapport
         periode_display:
           type: string
           readOnly: true
@@ -8472,15 +8318,14 @@ components:
           title: Date de fin
           description: Date de fin de la période analysée
         format:
-          allOf:
-          - $ref: '#/components/schemas/FormatEnum'
-          description: |-
-            Format de sortie du rapport
-
-            * `pdf` - PDF
-            * `excel` - Excel
-            * `csv` - CSV
-            * `html` - HTML
+          enum:
+          - pdf
+          - excel
+          - csv
+          - html
+          type: string
+          x-spec-enum-id: 25239222005dcc2a
+          description: Format de sortie du rapport
         format_display:
           type: string
           readOnly: true
@@ -8567,35 +8412,33 @@ components:
           description: Titre descriptif du rapport
           maxLength: 255
         type_rapport:
-          allOf:
-          - $ref: '#/components/schemas/TypeRapportEnum'
+          enum:
+          - occupation
+          - centre
+          - statut
+          - evenement
+          - recrutement
+          - partenaire
+          - repartition
+          - periodique
+          - annuel
+          - utilisateur
+          type: string
+          x-spec-enum-id: 9f8b81ba68be2f7f
           title: Type de rapport
-          description: |-
-            Catégorie du rapport (occupation, centre, etc.)
-
-            * `occupation` - Rapport d'occupation des formations
-            * `centre` - Rapport de performance par centre
-            * `statut` - Rapport de suivi des statuts
-            * `evenement` - Rapport d'efficacité des événements
-            * `recrutement` - Rapport de suivi du recrutement
-            * `partenaire` - Rapport d'activité des partenaires
-            * `repartition` - Rapport de répartition des partenaires
-            * `periodique` - Rapport périodique
-            * `annuel` - Rapport annuel consolidé
-            * `utilisateur` - Rapport d'activité utilisateurs
+          description: Catégorie du rapport (occupation, centre, etc.)
         periode:
-          allOf:
-          - $ref: '#/components/schemas/PeriodeEnum'
+          enum:
+          - quotidien
+          - hebdomadaire
+          - mensuel
+          - trimestriel
+          - annuel
+          - personnalise
+          type: string
+          x-spec-enum-id: 5c9bf9380e3ccb8d
           title: Périodicité
-          description: |-
-            Périodicité du rapport
-
-            * `quotidien` - Quotidien
-            * `hebdomadaire` - Hebdomadaire
-            * `mensuel` - Mensuel
-            * `trimestriel` - Trimestriel
-            * `annuel` - Annuel
-            * `personnalise` - Période personnalisée
+          description: Périodicité du rapport
         date_debut:
           type: string
           format: date
@@ -8607,15 +8450,14 @@ components:
           title: Date de fin
           description: Date de fin de la période analysée
         format:
-          allOf:
-          - $ref: '#/components/schemas/FormatEnum'
-          description: |-
-            Format de sortie du rapport
-
-            * `pdf` - PDF
-            * `excel` - Excel
-            * `csv` - CSV
-            * `html` - HTML
+          enum:
+          - pdf
+          - excel
+          - csv
+          - html
+          type: string
+          x-spec-enum-id: 25239222005dcc2a
+          description: Format de sortie du rapport
         centre:
           type: integer
           nullable: true
@@ -8648,20 +8490,6 @@ components:
       - nom
       - periode
       - type_rapport
-    RoleEnum:
-      enum:
-      - superadmin
-      - admin
-      - stagiaire
-      - staff
-      - test
-      type: string
-      description: |-
-        * `superadmin` - Super administrateur
-        * `admin` - Administrateur
-        * `stagiaire` - Stagiaire
-        * `staff` - Membre du staff
-        * `test` - Test
     Semaine:
       type: object
       description: |-
@@ -8884,41 +8712,45 @@ components:
       - date_fin_semaine
     Statut:
       type: object
+      description: |-
+        Sérialiseur pour le modèle Statut.
+
+        - Le champ `libelle` affiche un nom lisible, en particulier pour le statut 'Autre'.
+        - Le champ `badge_html` fournit une représentation visuelle colorée pour l'interface.
       properties:
         id:
           type: integer
           readOnly: true
           description: ID unique du statut.
         nom:
-          allOf:
-          - $ref: '#/components/schemas/StatutNomEnum'
-          description: |-
-            Nom interne du statut (choix prédéfini).
-
-            * `non_defini` - Non défini
-            * `recrutement_en_cours` - Recrutement en cours
-            * `formation_en_cours` - Formation en cours
-            * `formation_a_annuler` - Formation à annuler
-            * `formation_a_repousser` - Formation à repousser
-            * `formation_annulee` - Formation annulée
-            * `pleine` - Pleine
-            * `quasi_pleine` - Quasi-pleine
-            * `autre` - Autre
+          enum:
+          - non_defini
+          - recrutement_en_cours
+          - formation_en_cours
+          - formation_a_annuler
+          - formation_a_repousser
+          - formation_annulee
+          - pleine
+          - quasi_pleine
+          - autre
+          type: string
+          x-spec-enum-id: 215538a3c8f8aca9
+          description: Nom interne du statut (valeurs définies en base).
         couleur:
           type: string
-          description: Code couleur hexadécimal du statut (#RRGGBB).
+          description: Couleur hexadécimale du badge (#RRGGBB).
         description_autre:
           type: string
-          description: Description personnalisée pour les statuts de type 'Autre'.
+          description: Texte personnalisé pour le statut 'Autre'.
         libelle:
           type: string
           readOnly: true
-          description: Libellé affiché du statut (remplace 'Autre' par description
-            personnalisée).
+          description: Libellé affiché du statut (remplace 'Autre' par une description
+            personnalisée si définie).
         badge_html:
           type: string
           readOnly: true
-          description: Code HTML d’un badge coloré pour affichage visuel dans l’interface.
+          description: Code HTML pour un badge coloré représentant le statut visuellement.
         created_at:
           type: string
           format: date-time
@@ -8928,103 +8760,51 @@ components:
           type: string
           format: date-time
           readOnly: true
-          description: Date de dernière modification.
+          description: Dernière mise à jour.
         created_by:
           type: string
+          nullable: true
           readOnly: true
-          description: Utilisateur ayant créé ce statut.
+          description: Nom de l'utilisateur ayant créé ce statut.
         updated_by:
           type: string
+          nullable: true
           readOnly: true
-          description: Dernier utilisateur ayant modifié ce statut.
+          description: Nom de l'utilisateur ayant modifié ce statut.
         is_active:
           type: boolean
           readOnly: true
-          description: Indique si le statut est actif ou supprimé logiquement.
+          description: Statut actif ou désactivé (suppression logique).
       required:
       - nom
-    Statut120Enum:
-      enum:
-      - info
-      - dossier
-      - attente_financement
-      - accompagnement
-      - jury
-      - terminee
-      - abandonnee
-      type: string
-      description: |-
-        * `info` - Demande d'informations
-        * `dossier` - Dossier en cours
-        * `attente_financement` - En attente de financement
-        * `accompagnement` - Accompagnement en cours
-        * `jury` - En attente de jury
-        * `terminee` - VAE terminée
-        * `abandonnee` - VAE abandonnée
-    StatutF44Enum:
-      enum:
-      - a_faire
-      - en_cours
-      - a_relancer
-      - acceptee
-      - refusee
-      - annulee
-      - non_renseigne
-      type: string
-      description: |-
-        * `a_faire` - À faire
-        * `en_cours` - En cours
-        * `a_relancer` - À relancer
-        * `acceptee` - Acceptée
-        * `refusee` - Refusée
-        * `annulee` - Annulée
-        * `non_renseigne` - Non renseigné
-    StatutNomEnum:
-      enum:
-      - non_defini
-      - recrutement_en_cours
-      - formation_en_cours
-      - formation_a_annuler
-      - formation_a_repousser
-      - formation_annulee
-      - pleine
-      - quasi_pleine
-      - autre
-      type: string
-      description: |-
-        * `non_defini` - Non défini
-        * `recrutement_en_cours` - Recrutement en cours
-        * `formation_en_cours` - Formation en cours
-        * `formation_a_annuler` - Formation à annuler
-        * `formation_a_repousser` - Formation à repousser
-        * `formation_annulee` - Formation annulée
-        * `pleine` - Pleine
-        * `quasi_pleine` - Quasi-pleine
-        * `autre` - Autre
     StatutRequest:
       type: object
+      description: |-
+        Sérialiseur pour le modèle Statut.
+
+        - Le champ `libelle` affiche un nom lisible, en particulier pour le statut 'Autre'.
+        - Le champ `badge_html` fournit une représentation visuelle colorée pour l'interface.
       properties:
         nom:
-          allOf:
-          - $ref: '#/components/schemas/StatutNomEnum'
-          description: |-
-            Nom interne du statut (choix prédéfini).
-
-            * `non_defini` - Non défini
-            * `recrutement_en_cours` - Recrutement en cours
-            * `formation_en_cours` - Formation en cours
-            * `formation_a_annuler` - Formation à annuler
-            * `formation_a_repousser` - Formation à repousser
-            * `formation_annulee` - Formation annulée
-            * `pleine` - Pleine
-            * `quasi_pleine` - Quasi-pleine
-            * `autre` - Autre
+          enum:
+          - non_defini
+          - recrutement_en_cours
+          - formation_en_cours
+          - formation_a_annuler
+          - formation_a_repousser
+          - formation_annulee
+          - pleine
+          - quasi_pleine
+          - autre
+          type: string
+          x-spec-enum-id: 215538a3c8f8aca9
+          description: Nom interne du statut (valeurs définies en base).
         couleur:
           type: string
-          description: Code couleur hexadécimal du statut (#RRGGBB).
+          description: Couleur hexadécimale du badge (#RRGGBB).
         description_autre:
           type: string
-          description: Description personnalisée pour les statuts de type 'Autre'.
+          description: Texte personnalisé pour le statut 'Autre'.
       required:
       - nom
     SuiviJury:
@@ -9047,23 +8827,22 @@ components:
           title: Année
           description: 'Année concernée par le suivi (ex: 2024)'
         mois:
-          allOf:
-          - $ref: '#/components/schemas/MoisEnum'
-          description: |-
-            Mois concerné (1 = janvier, 12 = décembre)
-
-            * `1` - Janvier
-            * `2` - Février
-            * `3` - Mars
-            * `4` - Avril
-            * `5` - Mai
-            * `6` - Juin
-            * `7` - Juillet
-            * `8` - Août
-            * `9` - Septembre
-            * `10` - Octobre
-            * `11` - Novembre
-            * `12` - Décembre
+          enum:
+          - 1
+          - 2
+          - 3
+          - 4
+          - 5
+          - 6
+          - 7
+          - 8
+          - 9
+          - 10
+          - 11
+          - 12
+          type: integer
+          x-spec-enum-id: 9ae431a445417f6a
+          description: Mois concerné (1 = janvier, 12 = décembre)
           minimum: 0
           maximum: 32767
         mois_libelle:
@@ -9132,23 +8911,22 @@ components:
           title: Année
           description: 'Année concernée par le suivi (ex: 2024)'
         mois:
-          allOf:
-          - $ref: '#/components/schemas/MoisEnum'
-          description: |-
-            Mois concerné (1 = janvier, 12 = décembre)
-
-            * `1` - Janvier
-            * `2` - Février
-            * `3` - Mars
-            * `4` - Avril
-            * `5` - Mai
-            * `6` - Juin
-            * `7` - Juillet
-            * `8` - Août
-            * `9` - Septembre
-            * `10` - Octobre
-            * `11` - Novembre
-            * `12` - Décembre
+          enum:
+          - 1
+          - 2
+          - 3
+          - 4
+          - 5
+          - 6
+          - 7
+          - 8
+          - 9
+          - 10
+          - 11
+          - 12
+          type: integer
+          x-spec-enum-id: 9ae431a445417f6a
+          description: Mois concerné (1 = janvier, 12 = décembre)
           minimum: 0
           maximum: 32767
         objectif_jury:
@@ -9162,99 +8940,51 @@ components:
           minimum: 0
           title: Jurys réalisés
           description: Nombre de jurys effectivement réalisés
-    TypeContactEnum:
-      enum:
-      - premier_contact
-      - relance
-      type: string
-      description: |-
-        * `premier_contact` - Premier contact
-        * `relance` - Relance
-    TypeDocumentEnum:
-      enum:
-      - pdf
-      - image
-      - contrat
-      - autre
-      type: string
-      description: |-
-        * `pdf` - PDF
-        * `image` - Image
-        * `contrat` - Contrat signé
-        * `autre` - Autre
-    TypeEnum:
-      enum:
-      - entreprise
-      - partenaire
-      - personne
-      type: string
-      description: |-
-        * `entreprise` - Entreprise
-        * `partenaire` - Partenaire institutionnel
-        * `personne` - Personne physique
-    TypeEvenementEnum:
-      enum:
-      - info_collective_presentiel
-      - info_collective_distanciel
-      - job_dating
-      - evenement_emploi
-      - forum
-      - jpo
-      - autre
-      type: string
-      description: |-
-        * `info_collective_presentiel` - Information collective présentiel
-        * `info_collective_distanciel` - Information collective distanciel
-        * `job_dating` - Job dating
-        * `evenement_emploi` - Événement emploi
-        * `forum` - Forum
-        * `jpo` - Journée Portes Ouvertes
-        * `autre` - Autre
     TypeOffre:
       type: object
       description: |-
-        🎯 Serializer principal pour les types d'offre.
+        🎯 Sérialiseur du modèle TypeOffre.
 
-        Gère les champs enrichis, les validations personnalisées et l'affichage API-friendly.
-        Utilise `to_serializable_dict()` pour structurer la sortie.
+        Expose les champs utiles pour l’interface frontend, avec validation métier,
+        couleurs personnalisables, et types prédéfinis ou personnalisés.
       properties:
         id:
           type: integer
           readOnly: true
         nom:
-          allOf:
-          - $ref: '#/components/schemas/TypeOffreNomEnum'
+          enum:
+          - crif
+          - alternance
+          - poec
+          - poei
+          - tosa
+          - autre
+          - non_defini
+          type: string
+          x-spec-enum-id: 1edc9e3c89bfa034
           title: Type d'offre
-          description: |-
-            Type d'offre parmi les choix disponibles (ex: CRIF, Alternance, Autre)
-
-            * `crif` - CRIF
-            * `alternance` - Alternance
-            * `poec` - POEC
-            * `poei` - POEI
-            * `tosa` - TOSA
-            * `autre` - Autre
-            * `non_defini` - Non défini
+          description: Nom interne du type d'offre (choix prédéfinis).
         nom_display:
           type: string
           readOnly: true
         autre:
           type: string
           title: Autre (personnalisé)
-          description: Description personnalisée si le type est 'Autre'
+          description: Texte personnalisé pour les types d'offre marqués comme 'autre'.
           maxLength: 255
         couleur:
           type: string
           nullable: true
           title: Couleur associée (hexadécimal)
-          description: 'Code couleur hexadécimal (ex: #FF5733)'
+          description: 'Couleur affichée pour ce type (code hexadécimal, ex: #FF5733).'
           maxLength: 7
         badge_html:
           type: string
           readOnly: true
         is_personnalise:
-          type: string
+          type: boolean
           readOnly: true
+          description: True si le champ 'autre' est renseigné.
         formations_count:
           type: integer
           readOnly: true
@@ -9287,81 +9017,38 @@ components:
           readOnly: true
           title: Actif
           description: Indique si l'objet est actif ou archivé
-    TypeOffreNomEnum:
-      enum:
-      - crif
-      - alternance
-      - poec
-      - poei
-      - tosa
-      - autre
-      - non_defini
-      type: string
-      description: |-
-        * `crif` - CRIF
-        * `alternance` - Alternance
-        * `poec` - POEC
-        * `poei` - POEI
-        * `tosa` - TOSA
-        * `autre` - Autre
-        * `non_defini` - Non défini
     TypeOffreRequest:
       type: object
       description: |-
-        🎯 Serializer principal pour les types d'offre.
+        🎯 Sérialiseur du modèle TypeOffre.
 
-        Gère les champs enrichis, les validations personnalisées et l'affichage API-friendly.
-        Utilise `to_serializable_dict()` pour structurer la sortie.
+        Expose les champs utiles pour l’interface frontend, avec validation métier,
+        couleurs personnalisables, et types prédéfinis ou personnalisés.
       properties:
         nom:
-          allOf:
-          - $ref: '#/components/schemas/TypeOffreNomEnum'
+          enum:
+          - crif
+          - alternance
+          - poec
+          - poei
+          - tosa
+          - autre
+          - non_defini
+          type: string
+          x-spec-enum-id: 1edc9e3c89bfa034
           title: Type d'offre
-          description: |-
-            Type d'offre parmi les choix disponibles (ex: CRIF, Alternance, Autre)
-
-            * `crif` - CRIF
-            * `alternance` - Alternance
-            * `poec` - POEC
-            * `poei` - POEI
-            * `tosa` - TOSA
-            * `autre` - Autre
-            * `non_defini` - Non défini
+          description: Nom interne du type d'offre (choix prédéfinis).
         autre:
           type: string
           title: Autre (personnalisé)
-          description: Description personnalisée si le type est 'Autre'
+          description: Texte personnalisé pour les types d'offre marqués comme 'autre'.
           maxLength: 255
         couleur:
           type: string
           nullable: true
           title: Couleur associée (hexadécimal)
-          description: 'Code couleur hexadécimal (ex: #FF5733)'
+          description: 'Couleur affichée pour ce type (code hexadécimal, ex: #FF5733).'
           maxLength: 7
-    TypeRapportEnum:
-      enum:
-      - occupation
-      - centre
-      - statut
-      - evenement
-      - recrutement
-      - partenaire
-      - repartition
-      - periodique
-      - annuel
-      - utilisateur
-      type: string
-      description: |-
-        * `occupation` - Rapport d'occupation des formations
-        * `centre` - Rapport de performance par centre
-        * `statut` - Rapport de suivi des statuts
-        * `evenement` - Rapport d'efficacité des événements
-        * `recrutement` - Rapport de suivi du recrutement
-        * `partenaire` - Rapport d'activité des partenaires
-        * `repartition` - Rapport de répartition des partenaires
-        * `periodique` - Rapport périodique
-        * `annuel` - Rapport annuel consolidé
-        * `utilisateur` - Rapport d'activité utilisateurs
     User:
       type: object
       properties:
@@ -9402,18 +9089,17 @@ components:
           type: string
           readOnly: true
         statut:
-          allOf:
-          - $ref: '#/components/schemas/Statut120Enum'
-          description: |-
-            Statut actuel de la VAE
-
-            * `info` - Demande d'informations
-            * `dossier` - Dossier en cours
-            * `attente_financement` - En attente de financement
-            * `accompagnement` - Accompagnement en cours
-            * `jury` - En attente de jury
-            * `terminee` - VAE terminée
-            * `abandonnee` - VAE abandonnée
+          enum:
+          - info
+          - dossier
+          - attente_financement
+          - accompagnement
+          - jury
+          - terminee
+          - abandonnee
+          type: string
+          x-spec-enum-id: 120fe445a9789d34
+          description: Statut actuel de la VAE
         statut_libelle:
           type: string
           readOnly: true
@@ -9465,18 +9151,17 @@ components:
       type: object
       properties:
         statut:
-          allOf:
-          - $ref: '#/components/schemas/Statut120Enum'
-          description: |-
-            Statut actuel de la VAE
-
-            * `info` - Demande d'informations
-            * `dossier` - Dossier en cours
-            * `attente_financement` - En attente de financement
-            * `accompagnement` - Accompagnement en cours
-            * `jury` - En attente de jury
-            * `terminee` - VAE terminée
-            * `abandonnee` - VAE abandonnée
+          enum:
+          - info
+          - dossier
+          - attente_financement
+          - accompagnement
+          - jury
+          - terminee
+          - abandonnee
+          type: string
+          x-spec-enum-id: 120fe445a9789d34
+          description: Statut actuel de la VAE
         commentaire:
           type: string
           description: Remarques ou informations complémentaires

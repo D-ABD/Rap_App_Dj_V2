@@ -29,31 +29,31 @@ class IsAdmin(BasePermission):
 
 class ReadWriteAdminReadStaff(BasePermission):
     """
-    Lecture : autorisée pour staff, admin, superadmin.
-    Écriture : réservée à admin et superadmin uniquement.
+    Lecture : staff, admin, superadmin OU is_staff
+    Écriture : admin, superadmin OU is_superuser
     """
-    message = "Lecture autorisée pour le staff. Modifications réservées aux admins ou superadmins."
+    message = "Lecture réservée au staff. Écriture réservée aux admins."
 
     def has_permission(self, request, view):
         user = request.user
-        if not user.is_authenticated:
+
+        if not user or not user.is_authenticated:
             self.message = "Authentification requise."
             return False
 
         role = getattr(user, 'role', None)
 
         if request.method in SAFE_METHODS:
-            if role in ['staff', 'admin', 'superadmin']:
+            if role in ['staff', 'admin', 'superadmin'] or user.is_staff:
                 return True
             self.message = "Lecture réservée au staff, admins ou superadmins."
             return False
 
-        if role in ['admin', 'superadmin']:
+        if role in ['admin', 'superadmin'] or user.is_superuser:
             return True
 
         self.message = "Seuls les admins ou superadmins peuvent modifier cette ressource."
         return False
-
 
 class IsStaffOrAbove(BasePermission):
     """

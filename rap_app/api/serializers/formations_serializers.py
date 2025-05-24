@@ -5,6 +5,7 @@ from rest_framework import serializers
 from drf_spectacular.utils import extend_schema_serializer, OpenApiExample
 from django.utils.translation import gettext_lazy as _
 from django.core.exceptions import ValidationError
+from drf_spectacular.utils import extend_schema_field
 
 from ...models.formations import Formation, HistoriqueFormation
 from ...models.commentaires import Commentaire
@@ -79,12 +80,15 @@ class FormationSerializer(serializers.Serializer):
     type_offre = serializers.SerializerMethodField(read_only=True)
     statut = serializers.SerializerMethodField(read_only=True)
 
+    @extend_schema_field(serializers.IntegerField())
     def get_centre(self, obj):
         return {"id": obj.centre.id, "nom": obj.centre.nom} if obj.centre else None
 
+    @extend_schema_field(serializers.IntegerField())
     def get_type_offre(self, obj):
         return {"id": obj.type_offre.id, "nom": str(obj.type_offre)} if obj.type_offre else None
 
+    @extend_schema_field(serializers.IntegerField())
     def get_statut(self, obj):
         return {"id": obj.statut.id, "nom": obj.statut.nom} if obj.statut else None
 

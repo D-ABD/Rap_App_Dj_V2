@@ -3065,3 +3065,105 @@ Traceback (most recent call last):
     )
 django.core.exceptions.FieldError: 'created_by' cannot be specified for Statut model form as it is a non-editable field. Check fields/fieldsets/exclude attributes of class StatutAdmin.
 ERROR 2025-05-17 19:57:29,666 basehttp 82192 123145366532096 "GET /admin/rap_app/statut/add/?_to_field=id&_popup=1 HTTP/1.1" 500 143922
+ERROR 2025-05-23 18:51:04,720 log 65236 4692121088 Internal Server Error: /api/users/352/
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/base.py", line 220, in _get_response
+    response = response.render()
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/response.py", line 114, in render
+    self.content = self.rendered_content
+                   ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/response.py", line 70, in rendered_content
+    ret = renderer.render(self.data, accepted_media_type, context)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/renderers.py", line 99, in render
+    ret = json.dumps(
+        data, cls=self.encoder_class,
+        indent=indent, ensure_ascii=self.ensure_ascii,
+        allow_nan=not self.strict, separators=separators
+    )
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/utils/json.py", line 25, in dumps
+    return json.dumps(*args, **kwargs)
+           ~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/usr/local/Cellar/python@3.13/3.13.2/Frameworks/Python.framework/Versions/3.13/lib/python3.13/json/__init__.py", line 238, in dumps
+    **kw).encode(obj)
+          ~~~~~~^^^^^
+  File "/usr/local/Cellar/python@3.13/3.13.2/Frameworks/Python.framework/Versions/3.13/lib/python3.13/json/encoder.py", line 200, in encode
+    chunks = self.iterencode(o, _one_shot=True)
+  File "/usr/local/Cellar/python@3.13/3.13.2/Frameworks/Python.framework/Versions/3.13/lib/python3.13/json/encoder.py", line 261, in iterencode
+    return _iterencode(o, 0)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/utils/encoders.py", line 67, in default
+    return super().default(obj)
+           ~~~~~~~~~~~~~~~^^^^^
+  File "/usr/local/Cellar/python@3.13/3.13.2/Frameworks/Python.framework/Versions/3.13/lib/python3.13/json/encoder.py", line 180, in default
+    raise TypeError(f'Object of type {o.__class__.__name__} '
+                    f'is not JSON serializable')
+TypeError: Object of type CustomUser is not JSON serializable
+ERROR 2025-05-23 21:46:42,867 log 74319 4737238528 Internal Server Error: /api/users/97/
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/base.py", line 220, in _get_response
+    response = response.render()
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/response.py", line 114, in render
+    self.content = self.rendered_content
+                   ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/response.py", line 70, in rendered_content
+    ret = renderer.render(self.data, accepted_media_type, context)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/renderers.py", line 99, in render
+    ret = json.dumps(
+        data, cls=self.encoder_class,
+        indent=indent, ensure_ascii=self.ensure_ascii,
+        allow_nan=not self.strict, separators=separators
+    )
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/utils/json.py", line 25, in dumps
+    return json.dumps(*args, **kwargs)
+           ~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/usr/local/Cellar/python@3.13/3.13.2/Frameworks/Python.framework/Versions/3.13/lib/python3.13/json/__init__.py", line 238, in dumps
+    **kw).encode(obj)
+          ~~~~~~^^^^^
+  File "/usr/local/Cellar/python@3.13/3.13.2/Frameworks/Python.framework/Versions/3.13/lib/python3.13/json/encoder.py", line 200, in encode
+    chunks = self.iterencode(o, _one_shot=True)
+  File "/usr/local/Cellar/python@3.13/3.13.2/Frameworks/Python.framework/Versions/3.13/lib/python3.13/json/encoder.py", line 261, in iterencode
+    return _iterencode(o, 0)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/utils/encoders.py", line 67, in default
+    return super().default(obj)
+           ~~~~~~~~~~~~~~~^^^^^
+  File "/usr/local/Cellar/python@3.13/3.13.2/Frameworks/Python.framework/Versions/3.13/lib/python3.13/json/encoder.py", line 180, in default
+    raise TypeError(f'Object of type {o.__class__.__name__} '
+                    f'is not JSON serializable')
+TypeError: Object of type CustomUser is not JSON serializable
+ERROR 2025-05-24 06:19:23,518 log 20316 4429702656 Internal Server Error: /api/users/97/
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/base.py", line 220, in _get_response
+    response = response.render()
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/response.py", line 114, in render
+    self.content = self.rendered_content
+                   ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/response.py", line 70, in rendered_content
+    ret = renderer.render(self.data, accepted_media_type, context)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/renderers.py", line 99, in render
+    ret = json.dumps(
+        data, cls=self.encoder_class,
+        indent=indent, ensure_ascii=self.ensure_ascii,
+        allow_nan=not self.strict, separators=separators
+    )
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/utils/json.py", line 25, in dumps
+    return json.dumps(*args, **kwargs)
+           ~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/usr/local/Cellar/python@3.13/3.13.2/Frameworks/Python.framework/Versions/3.13/lib/python3.13/json/__init__.py", line 238, in dumps
+    **kw).encode(obj)
+          ~~~~~~^^^^^
+  File "/usr/local/Cellar/python@3.13/3.13.2/Frameworks/Python.framework/Versions/3.13/lib/python3.13/json/encoder.py", line 200, in encode
+    chunks = self.iterencode(o, _one_shot=True)
+  File "/usr/local/Cellar/python@3.13/3.13.2/Frameworks/Python.framework/Versions/3.13/lib/python3.13/json/encoder.py", line 261, in iterencode
+    return _iterencode(o, 0)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/rest_framework/utils/encoders.py", line 67, in default
+    return super().default(obj)
+           ~~~~~~~~~~~~~~~^^^^^
+  File "/usr/local/Cellar/python@3.13/3.13.2/Frameworks/Python.framework/Versions/3.13/lib/python3.13/json/encoder.py", line 180, in default
+    raise TypeError(f'Object of type {o.__class__.__name__} '
+                    f'is not JSON serializable')
+TypeError: Object of type CustomUser is not JSON serializable

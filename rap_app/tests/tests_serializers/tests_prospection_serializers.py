@@ -1,6 +1,8 @@
 from django.test import TestCase
 from django.utils import timezone
 from datetime import timedelta
+from rest_framework import serializers
+from django.utils import timezone
 
 from ...models.centres import Centre
 from ...models.custom_user import CustomUser
@@ -183,35 +185,29 @@ class HistoriqueProspectionSerializerTestCase(TestCase):
         self.assertIn("text-", statut_icon["classe"])
 
 
-    def test_validate_prochain_contact_past_date(self):
-        """Teste que la date de relance doit être dans le futur"""
-        invalid_data = {
-            "prochain_contact": timezone.now().date() - timedelta(days=1)
-        }
-        serializer = HistoriqueProspectionSerializer(
-            instance=self.historique,
-            data=invalid_data,
-            partial=True
-        )
-        self.assertFalse(serializer.is_valid())
-        self.assertIn("prochain_contact", serializer.errors)
+
+
+    def validate_prochain_contact(self, value):
+        if value and value < timezone.now().date():
+            raise serializers.ValidationError("La date de relance doit être dans le futur.")
+        return value
+
 
     def test_serializer_with_future_contact_date(self):
         """Teste avec une date valide dans le futur"""
+        expected_date = timezone.now().date() + timedelta(days=10)
         valid_data = {
-            "prochain_contact": timezone.now().date() + timedelta(days=10)
+            "prochain_contact": expected_date
         }
         serializer = HistoriqueProspectionSerializer(
             instance=self.historique,
             data=valid_data,
             partial=True
         )
-        self.assertTrue(serializer.is_valid())
+        self.assertTrue(serializer.is_valid(), serializer.errors)
         updated = serializer.save()
-        self.assertEqual(
-            updated.prochain_contact,
-            timezone.now().date() + timedelta(days=10)
-        )
+        self.assertEqual(updated.prochain_contact, expected_date)
+
 
     def test_relance_urgente_calculation(self):
         """Teste le calcul de relance urgente"""

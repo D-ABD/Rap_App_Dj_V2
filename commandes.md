@@ -113,7 +113,7 @@ git push -u origin main
 # Pousser les modifications
 git status                           
 git add .                            
-git commit -m "préparation pour front/ mise en place des fichiers admin"   
+git commit -m "Connexion ok avec le backend. tes jwt ok"   
 git push origin main                 
 
 # --------------------------

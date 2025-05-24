@@ -21,7 +21,6 @@ from ...models.logs import LogUtilisateur
     destroy=extend_schema(summary="Supprimer (logiquement) un centre", tags=["Centres"]),
 )
 class CentreViewSet(viewsets.ModelViewSet):
-    queryset = Centre.objects.all().order_by("nom")
     serializer_class = CentreSerializer
     pagination_class = RapAppPagination
     permission_classes = [IsAuthenticated & ReadWriteAdminReadStaff]
@@ -30,10 +29,14 @@ class CentreViewSet(viewsets.ModelViewSet):
     search_fields = ['nom', 'code_postal']
     ordering_fields = ['nom', 'created_at']
 
+    def get_queryset(self):
+        return Centre.objects.filter(is_active=True).order_by("nom")
+
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         centre = Centre(**serializer.validated_data)
+        centre.is_active = True  # ← activation forcée
         centre.save(user=request.user)
         LogUtilisateur.log_action(centre, LogUtilisateur.ACTION_CREATE, request.user)
         return Response({
@@ -59,7 +62,9 @@ class CentreViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(instance, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        LogUtilisateur.log_action(instance, LogUtilisateur.ACTION_UPDATE, request.user, details="Mise à jour partielle")
+        LogUtilisateur.log_action(
+            instance, LogUtilisateur.ACTION_UPDATE, request.user, details="Mise à jour partielle"
+        )
         return Response({
             "success": True,
             "message": "Centre partiellement mis à jour.",
@@ -68,10 +73,11 @@ class CentreViewSet(viewsets.ModelViewSet):
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
+        instance.is_active = False
+        instance.save(user=request.user)
         LogUtilisateur.log_action(instance, LogUtilisateur.ACTION_DELETE, request.user)
-        instance.delete()
         return Response({
             "success": True,
-            "message": "Centre supprimé avec succès.",
-            "data": None
-        }, status=status.HTTP_204_NO_CONTENT)
+            "message": "Centre désactivé (suppression logique).",
+            "data": instance.to_serializable_dict()
+        }, status=status.HTTP_200_OK)

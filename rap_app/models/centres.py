@@ -147,20 +147,7 @@ class Centre(BaseModel):
         ]
     )
     
-    # Optionnel: statut du centre (selon vos besoins)
-    # statut = models.CharField(
-    #     max_length=20,
-    #     choices=STATUS_CHOICES,
-    #     default='actif',
-    #     verbose_name="Statut du centre",
-    #     help_text="État actuel du centre"
-    # )
 
-    # Champs optionnels à ajouter selon vos besoins métier
-    # region = models.CharField(max_length=100, blank=True, verbose_name="Région")
-    # ville = models.CharField(max_length=100, blank=True, verbose_name="Ville")
-    # adresse = models.CharField(max_length=255, blank=True, verbose_name="Adresse")
-    
     # Managers
     objects = models.Manager()  # Manager par défaut
     custom = CentreManager()    # Manager personnalisé
@@ -173,7 +160,6 @@ class Centre(BaseModel):
             models.Index(fields=['nom'], name='centre_nom_idx'),
             models.Index(fields=['code_postal'], name='centre_cp_idx'),
             # Ajouter d'autres index composites si nécessaire:
-            # models.Index(fields=['region', 'ville'], name='centre_region_ville_idx'),
         ]
         # Contraintes optionnelles
         constraints = [

@@ -7,7 +7,6 @@ from rest_framework.response import Response
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiResponse
 
 from ...services.evenements_export import csv_export_evenements
-
 from ...models.evenements import Evenement
 from ...api.serializers.evenements_serializers import EvenementSerializer
 from ...api.paginations import RapAppPagination
@@ -66,15 +65,21 @@ class EvenementViewSet(viewsets.ModelViewSet):
         tags=["Événements"],
         responses={
             200: OpenApiResponse(
-                description="Fichier CSV contenant les événements",
-                response="application/csv"
+                description="Réponse CSV contenant les événements",
+                response=None  # ✅ On ne fournit pas de serializer ici
             )
-        }
+        },
+        examples=[]  # optionnel
     )
     @action(detail=False, methods=["get"], url_path="export-csv")
     def export_csv(self, request):
+        """
+        📤 Exporte les événements au format CSV.
+        """
         response = csv_export_evenements(self.queryset)
         return response
+
+
 
     @extend_schema(
         summary="📊 Statistiques par type d'événement",
@@ -86,12 +91,15 @@ class EvenementViewSet(viewsets.ModelViewSet):
         responses={
             200: OpenApiResponse(
                 description="Dictionnaire des types d'événements avec leurs occurrences",
-                response=None  # ou un serializer spécifique si tu veux
+                response=None  # tu peux ajouter un serializer si besoin plus tard
             )
         }
     )
     @action(detail=False, methods=["get"], url_path="stats-par-type")
     def stats_par_type(self, request):
+        """
+        📈 Renvoie des statistiques d'événements par type entre deux dates.
+        """
         start_date = request.query_params.get("start")
         end_date = request.query_params.get("end")
         stats = Evenement.get_stats_by_type(start_date=start_date, end_date=end_date)

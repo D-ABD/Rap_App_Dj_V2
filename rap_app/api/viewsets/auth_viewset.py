@@ -1,7 +1,6 @@
-""" api/viewsets/auth_viewsets.py"""
-
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework import serializers
 from drf_spectacular.utils import extend_schema, OpenApiExample
 from django.contrib.auth import get_user_model
 
@@ -19,29 +18,46 @@ class EmailTokenObtainPairSerializer(TokenObtainPairSerializer):
         return super().validate(attrs)
 
 
+class EmailTokenRequestSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    password = serializers.CharField()
+
+
+class EmailTokenResponseSerializer(serializers.Serializer):
+    access = serializers.CharField()
+    refresh = serializers.CharField()
+
+
 @extend_schema(
     tags=["Utilisateurs"],
     summary="Connexion avec email et mot de passe",
-    description="Retourne un token d'accès (JWT) et un refresh token à partir d'un email et d'un mot de passe.",
-    request=EmailTokenObtainPairSerializer,
-    responses={
-        200: OpenApiExample(
-            "Réponse de succès",
+    description="Retourne un access token (JWT) et un refresh token.",
+    request=EmailTokenRequestSerializer,
+    responses={200: EmailTokenResponseSerializer},
+    examples=[
+        OpenApiExample(
+            name="Requête valide",
+            value={"email": "admin@example.com", "password": "motdepasse"},
+            request_only=True
+        ),
+        OpenApiExample(
+            name="Réponse réussie",
             value={
                 "access": "eyJ0eXAiOiJKV1QiLCJh...",
                 "refresh": "eyJ0eXAiOiJKV1QiLCJh..."
             },
             response_only=True
         ),
-        401: OpenApiExample(
-            "Échec d’authentification",
+        OpenApiExample(
+            name="Échec d’authentification",
             value={"detail": "Aucun compte actif trouvé avec les identifiants fournis"},
             response_only=True,
+            status_codes=["401"]
         )
-    }
+    ]
 )
 class EmailTokenObtainPairView(TokenObtainPairView):
     """
-    🛂 Vue personnalisée JWT pour connexion avec email
+    🛂 Vue personnalisée JWT pour la connexion par email
     """
     serializer_class = EmailTokenObtainPairSerializer

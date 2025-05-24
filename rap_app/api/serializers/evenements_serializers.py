@@ -4,7 +4,7 @@ from django.utils.translation import gettext_lazy as _
 
 from ...models.evenements import Evenement
 
-
+from drf_spectacular.utils import extend_schema_field
 @extend_schema_serializer(
     examples=[
         OpenApiExample(
@@ -63,7 +63,7 @@ class EvenementSerializer(serializers.ModelSerializer):
             "status", "status_label", "status_color",
             "created_at", "updated_at"
         ]
-
+    @extend_schema_field(serializers.IntegerField())
     def get_event_date_formatted(self, obj):
         return obj.event_date.strftime('%d/%m/%Y') if obj.event_date else None
 

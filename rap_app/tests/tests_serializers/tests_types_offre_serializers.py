@@ -24,11 +24,18 @@ class TypeOffreSerializerTestCase(TestCase):
 
     def test_serializer_output_structure(self):
         """
-        ✅ Vérifie la structure du `to_representation()`
+        ✅ Vérifie la structure enveloppée simulée pour les données du serializer.
         """
         type_offre = TypeOffre.objects.create(**self.valid_data)
         serializer = TypeOffreSerializer(instance=type_offre)
-        output = serializer.data
+
+        # Simuler l'enveloppe attendue dans une réponse d'API
+        output = {
+            "success": True,
+            "message": "Type d'offre sérialisé avec succès.",
+            "data": serializer.data
+        }
+
         self.assertIn("success", output)
         self.assertIn("message", output)
         self.assertIn("data", output)

@@ -43,8 +43,14 @@ class CentreViewSetTestCase(APITestCase):
         self.assertEqual(response.data["data"]["nom"], "Modifié")
 
     def test_delete_centre(self):
-        centre = Centre.objects.create(nom="À Supprimer", code_postal="75012")
-        url = reverse("centre-detail", args=[centre.pk])
+        centre = Centre.objects.create(nom="Centre Test", code_postal="75000", is_active=True)
+        url = reverse("centre-detail", args=[centre.id])
         response = self.client.delete(url)
-        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-        self.assertEqual(Centre.objects.filter(pk=centre.pk).count(), 0)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # ⛔ Ancienne assertion invalide pour suppression logique
+        # self.assertEqual(Centre.objects.filter(pk=centre.pk).count(), 0)
+
+        # ✅ Nouvelle assertion correcte :
+        centre.refresh_from_db()
+        self.assertFalse(centre.is_active)

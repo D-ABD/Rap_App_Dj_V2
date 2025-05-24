@@ -7,7 +7,8 @@ from django.apps import apps
 from ..models.centres import Centre
 from ..models.logs import LogUtilisateur
 
-logger = logging.getLogger(__name__)
+# Logger audit uniquement
+audit_logger = logging.getLogger('rap_app.audit')
 
 
 @receiver(post_save, sender=Centre)
@@ -16,7 +17,7 @@ def log_centre_save(sender, instance, created, **kwargs):
     if not apps.ready or 'migrate' in sys.argv or 'makemigrations' in sys.argv:
         return
 
-    # Logging utilisateur
+    # Logging application (base de données)
     LogUtilisateur.log_action(
         instance=instance,
         action="création" if created else "modification",
@@ -24,17 +25,28 @@ def log_centre_save(sender, instance, created, **kwargs):
         details="Création ou mise à jour d'un centre"
     )
 
-    # Logging console
-    if created:
-        logger.info(f"[Signal] Nouveau centre créé : {instance.nom}")
-    else:
-        logger.info(f"[Signal] Centre mis à jour : {instance.nom}")
+    # Logging audit structuré
+    audit_logger.info(
+        "Nouveau centre créé" if created else "Centre mis à jour",
+        extra={
+            'user': 'system',
+            'action': 'création' if created else 'modification',
+            'object': f"Centre #{instance.pk} - {instance.nom}"
+        }
+    )
 
 
 @receiver(pre_delete, sender=Centre)
 def log_centre_deleted(sender, instance, **kwargs):
     """Signal exécuté avant la suppression d'un centre."""
-    logger.warning(f"[Signal] Suppression du centre : {instance.nom} (ID: {instance.pk})")
+    audit_logger.info(
+        "Centre supprimé (pré-delete)",
+        extra={
+            'user': 'system',
+            'action': 'suppression',
+            'object': f"Centre #{instance.pk} - {instance.nom}"
+        }
+    )
 
 
 @receiver(post_delete, sender=Centre)

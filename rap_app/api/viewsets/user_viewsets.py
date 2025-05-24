@@ -97,7 +97,7 @@ class CustomUserViewSet(viewsets.ModelViewSet):
         instance = self.get_object()
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
         serializer.is_valid(raise_exception=True)
-        result = serializer.update(instance, serializer.validated_data)
+        serializer.save()
 
         LogUtilisateur.log_action(
             instance=instance,
@@ -106,7 +106,19 @@ class CustomUserViewSet(viewsets.ModelViewSet):
             details="Mise à jour d'un utilisateur"
         )
 
-        return Response(result, status=status.HTTP_200_OK)
+        return Response({
+            "success": True,
+            "message": "Utilisateur mis à jour avec succès.",
+            "data": instance.to_serializable_dict(include_sensitive=True)
+        }, status=status.HTTP_200_OK)
+
+
+        return Response({
+            "success": True,
+            "message": "Utilisateur mis à jour avec succès.",
+            "data": result
+        }, status=status.HTTP_200_OK)
+
 
     @action(detail=False, methods=["get"], url_path="me", permission_classes=[permissions.IsAuthenticated])
     @extend_schema(
@@ -155,3 +167,12 @@ class CustomUserViewSet(viewsets.ModelViewSet):
             "message": "Liste des rôles récupérée avec succès.",
             "data": CustomUser.get_role_choices_display()
         })
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        return Response({
+            "success": True,
+            "message": "Utilisateur récupéré avec succès.",
+            "data": serializer.data
+        }, status=status.HTTP_200_OK)
