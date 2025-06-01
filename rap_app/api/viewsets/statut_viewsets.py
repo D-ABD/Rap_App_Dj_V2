@@ -2,10 +2,12 @@ import logging
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from drf_spectacular.utils import extend_schema, extend_schema_view, OpenApiResponse
+from rest_framework.decorators import action
+from ...models.statut import get_default_color
 
 from ...api.permissions import ReadOnlyOrAdmin
 from ...models.statut import Statut
-from ..serializers.statut_serializers import StatutSerializer
+from ..serializers.statut_serializers import StatutChoiceSerializer, StatutSerializer
 
 logger = logging.getLogger("application.statut")
 
@@ -49,7 +51,7 @@ class StatutViewSet(viewsets.ModelViewSet):
     🎯 API REST pour la gestion des statuts de formation.
     Permet la création, consultation, mise à jour et désactivation logique.
     """
-    queryset = Statut.objects.filter(is_active=True)
+    queryset = Statut.objects.all()
     serializer_class = StatutSerializer
     permission_classes = [ReadOnlyOrAdmin]
 
@@ -79,14 +81,14 @@ class StatutViewSet(viewsets.ModelViewSet):
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
-        instance.is_active = False
-        instance.save()
-        logger.warning(f"🗑️ Statut désactivé : {instance}")
+        instance.delete()  # ❌ Supprime définitivement
+        logger.warning(f"🗑️ Statut supprimé définitivement : {instance}")
         return Response({
             "success": True,
             "message": "Statut supprimé avec succès.",
             "data": None
         }, status=status.HTTP_204_NO_CONTENT)
+
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -106,3 +108,35 @@ class StatutViewSet(viewsets.ModelViewSet):
             "data": results
         }
         return self.get_paginated_response(results) if page is not None else Response(response)
+
+
+
+
+    @extend_schema(
+        summary="Liste des choix possibles de statuts",
+        description="Retourne la liste des valeurs `nom` possibles pour un statut, avec libellé et couleur par défaut.",
+        tags=["Statuts"],
+        responses={200: OpenApiResponse(
+            response=StatutChoiceSerializer(many=True),
+            description="Liste des choix disponibles"
+        )}
+    )
+    @action(detail=False, methods=["get"], url_path="choices", url_name="choices")
+    def get_choices(self, request):
+        """
+        ✅ Retourne les choix disponibles pour `nom`, avec label et couleur par défaut.
+        """
+        data = [
+            {
+                "value": key,
+                "label": label,
+                "default_color": get_default_color(key)
+            }
+            for key, label in Statut.STATUT_CHOICES
+        ]
+        logger.debug("📋 Statut choices envoyés.")
+        return Response({
+            "success": True,
+            "message": "Liste des choix de statuts.",
+            "data": data
+        })

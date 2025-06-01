@@ -158,3 +158,20 @@ class HistoriqueStatutVAESerializer(serializers.ModelSerializer):
         read_only_fields = [
             "id", "vae_reference", "statut_libelle", "created_at", "created_by"
         ]
+from rest_framework import serializers
+
+class VAEChoicesSerializer(serializers.Serializer):
+    statuts = serializers.SerializerMethodField()
+    mois = serializers.SerializerMethodField()
+
+    def get_statuts(self, obj):
+        return [
+            {"value": k, "label": v}
+            for k, v in VAE.STATUT_CHOICES
+        ]
+
+    def get_mois(self, obj):
+        return [
+            {"value": k, "label": v}
+            for k, v in SuiviJury.MOIS_CHOICES
+        ]

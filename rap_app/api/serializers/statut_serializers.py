@@ -92,3 +92,13 @@ class StatutSerializer(serializers.ModelSerializer):
             })
 
         return data
+class StatutChoiceSerializer(serializers.Serializer):
+    value = serializers.CharField(
+        help_text="Identifiant interne du statut (ex: 'non_defini')"
+    )
+    label = serializers.CharField(
+        help_text="Libellé lisible du statut (ex: 'Non défini')"
+    )
+    default_color = serializers.CharField(
+        help_text="Couleur hexadécimale par défaut du statut (ex: '#FFEB3B')"
+    )

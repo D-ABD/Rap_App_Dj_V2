@@ -61,3 +61,16 @@ class LogUtilisateurSerializer(serializers.ModelSerializer):
     def get_date(self, obj) -> str:
         """Retourne la date de l'action formatée (YYYY-MM-DD HH:MM)"""
         return obj.created_at.strftime("%Y-%m-%d %H:%M") if obj.created_at else ""
+
+from rest_framework import serializers
+from ...models.logs import LogUtilisateur
+
+class LogActionChoiceSerializer(serializers.Serializer):
+    value = serializers.CharField(help_text="Nom technique de l'action (ex: 'création')")
+    label = serializers.CharField(help_text="Libellé lisible de l'action (ex: 'Création')")
+
+class LogChoicesSerializer(serializers.Serializer):
+    actions = serializers.ListField(
+        child=LogActionChoiceSerializer(),
+        help_text="Liste des actions possibles de log"
+    )

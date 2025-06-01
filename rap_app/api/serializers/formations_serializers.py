@@ -197,3 +197,13 @@ class HistoriqueFormationSerializer(serializers.Serializer):
 
     def to_representation(self, instance):
         return instance.to_serializable_dict()
+
+    formation = serializers.SerializerMethodField()
+
+    def get_formation(self, obj):
+        if obj.formation:
+            return {
+                "id": obj.formation.id,
+                "nom": obj.formation.nom
+            }
+        return None

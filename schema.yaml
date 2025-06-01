@@ -845,6 +845,23 @@ paths:
                       created_by: admin
                   summary: Exemple de document PDF
           description: ''
+  /documents/types/:
+    get:
+      operationId: documents_types_retrieve
+      description: Retourne les types de documents valides avec leurs libellés lisibles.
+      summary: Liste des types de documents
+      tags:
+      - Documents
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedTypeDocumentChoiceList'
+          description: ''
   /evenements/:
     get:
       operationId: evenements_list
@@ -1174,6 +1191,49 @@ paths:
       responses:
         '204':
           description: No response body
+  /evenements/choices/:
+    get:
+      operationId: evenements_choices_retrieve
+      description: |-
+        📆 ViewSet pour gérer les événements liés aux formations.
+        - CRUD complet
+        - Actions personnalisées : stats, export CSV
+        - Permissions : IsOwnerOrStaffOrAbove
+        - Pagination personnalisée : RapAppPagination
+      tags:
+      - Événements
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Evenement'
+              examples:
+                ExempleD'événement:
+                  value:
+                    id: 1
+                    formation_id: 12
+                    formation_nom: Prépa CléA
+                    type_evenement: forum
+                    type_evenement_display: Forum
+                    description_autre: null
+                    details: Stand avec brochures
+                    event_date: '2025-06-15'
+                    event_date_formatted: 15/06/2025
+                    lieu: Centre Paris
+                    participants_prevus: 20
+                    participants_reels: 18
+                    taux_participation: 90.0
+                    status: soon
+                    status_label: Bientôt
+                    status_color: text-warning
+                    created_at: '2025-05-11T10:00:00'
+                    updated_at: '2025-05-12T15:00:00'
+                  summary: Exemple d'événement
+          description: ''
   /evenements/export-csv/:
     get:
       operationId: evenements_export_csv_retrieve
@@ -2281,6 +2341,24 @@ paths:
               schema:
                 $ref: '#/components/schemas/HistoriqueProspection'
           description: ''
+  /historiques-prospection/choices/:
+    get:
+      operationId: historiques_prospection_choices_retrieve
+      description: Retourne tous les choix pour `statut`, `objectif`, `motif`, `type_contact`,
+        `moyen_contact`.
+      summary: 📋 Liste des choix possibles pour les prospections
+      tags:
+      - Prospections
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProspectionChoiceList'
+          description: ''
   /historiques-vae/:
     get:
       operationId: historiques_vae_list
@@ -2735,10 +2813,27 @@ paths:
       responses:
         '204':
           description: Suppression réussie
+  /partenaires/choices/:
+    get:
+      operationId: partenaires_choices_retrieve
+      description: Retourne les choix possibles pour le type de partenaire et le type
+        d’action.
+      summary: 🔢 Liste des choix de types et d’actions
+      tags:
+      - Partenaires
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PartenaireChoicesResponse'
+          description: Liste des choix de type et d'action pour les partenaires
   /prepa-globaux/:
     get:
       operationId: prepa_globaux_list
-      summary: Lister les bilans globaux
       parameters:
       - name: page
         required: false
@@ -2753,7 +2848,7 @@ paths:
         schema:
           type: integer
       tags:
-      - PrepaCompGlobal
+      - prepa-globaux
       security:
       - cookieAuth: []
       - jwtAuth: []
@@ -2763,67 +2858,16 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PaginatedPrepaCompGlobalList'
-              examples:
-                ExempleDeBilanGlobal:
-                  value:
-                    count: 123
-                    next: http://api.example.org/accounts/?page=4
-                    previous: http://api.example.org/accounts/?page=2
-                    results:
-                    - centre:
-                        id: 1
-                        nom: Centre de Lyon
-                      annee: 2025
-                      adhesions: 120
-                      presents: 150
-                      taux_transformation: 80.0
-                      taux_objectif_annee: 60.0
-                      objectif_annuel_prepa: 200
-                      objectif_hebdo: 20
-                      prescriptions: 180
-                      places_ouvertes: 130
-                      objectif_restant: 80
-                      semaines_restantes: 30
-                      adhesions_hebdo_necessaires: 2.7
-                      moyenne_hebdomadaire: 4.5
-                      objectif_jury:
-                        annuel: 40
-                        mensuel: 10
-                  summary: Exemple de bilan global
           description: ''
     post:
       operationId: prepa_globaux_create
-      summary: Créer un bilan global
       tags:
-      - PrepaCompGlobal
+      - prepa-globaux
       requestBody:
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/PrepaCompGlobalRequest'
-            examples:
-              ExempleDeBilanGlobal:
-                value:
-                  centre:
-                    id: 1
-                    nom: Centre de Lyon
-                  annee: 2025
-                  adhesions: 120
-                  presents: 150
-                  taux_transformation: 80.0
-                  taux_objectif_annee: 60.0
-                  objectif_annuel_prepa: 200
-                  objectif_hebdo: 20
-                  prescriptions: 180
-                  places_ouvertes: 130
-                  objectif_restant: 80
-                  semaines_restantes: 30
-                  adhesions_hebdo_necessaires: 2.7
-                  moyenne_hebdomadaire: 4.5
-                  objectif_jury:
-                    annuel: 40
-                    mensuel: 10
-                summary: Exemple de bilan global
           application/x-www-form-urlencoded:
             schema:
               $ref: '#/components/schemas/PrepaCompGlobalRequest'
@@ -2840,34 +2884,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PrepaCompGlobal'
-              examples:
-                ExempleDeBilanGlobal:
-                  value:
-                    centre:
-                      id: 1
-                      nom: Centre de Lyon
-                    annee: 2025
-                    adhesions: 120
-                    presents: 150
-                    taux_transformation: 80.0
-                    taux_objectif_annee: 60.0
-                    objectif_annuel_prepa: 200
-                    objectif_hebdo: 20
-                    prescriptions: 180
-                    places_ouvertes: 130
-                    objectif_restant: 80
-                    semaines_restantes: 30
-                    adhesions_hebdo_necessaires: 2.7
-                    moyenne_hebdomadaire: 4.5
-                    objectif_jury:
-                      annuel: 40
-                      mensuel: 10
-                  summary: Exemple de bilan global
           description: ''
   /prepa-globaux/{id}/:
     get:
       operationId: prepa_globaux_retrieve
-      summary: Détail d’un bilan global
       parameters:
       - in: path
         name: id
@@ -2876,7 +2896,7 @@ paths:
         description: A unique integer value identifying this Bilan global PrépaComp.
         required: true
       tags:
-      - PrepaCompGlobal
+      - prepa-globaux
       security:
       - cookieAuth: []
       - jwtAuth: []
@@ -2886,33 +2906,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PrepaCompGlobal'
-              examples:
-                ExempleDeBilanGlobal:
-                  value:
-                    centre:
-                      id: 1
-                      nom: Centre de Lyon
-                    annee: 2025
-                    adhesions: 120
-                    presents: 150
-                    taux_transformation: 80.0
-                    taux_objectif_annee: 60.0
-                    objectif_annuel_prepa: 200
-                    objectif_hebdo: 20
-                    prescriptions: 180
-                    places_ouvertes: 130
-                    objectif_restant: 80
-                    semaines_restantes: 30
-                    adhesions_hebdo_necessaires: 2.7
-                    moyenne_hebdomadaire: 4.5
-                    objectif_jury:
-                      annuel: 40
-                      mensuel: 10
-                  summary: Exemple de bilan global
           description: ''
     put:
       operationId: prepa_globaux_update
-      summary: Modifier un bilan global
       parameters:
       - in: path
         name: id
@@ -2921,35 +2917,12 @@ paths:
         description: A unique integer value identifying this Bilan global PrépaComp.
         required: true
       tags:
-      - PrepaCompGlobal
+      - prepa-globaux
       requestBody:
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/PrepaCompGlobalRequest'
-            examples:
-              ExempleDeBilanGlobal:
-                value:
-                  centre:
-                    id: 1
-                    nom: Centre de Lyon
-                  annee: 2025
-                  adhesions: 120
-                  presents: 150
-                  taux_transformation: 80.0
-                  taux_objectif_annee: 60.0
-                  objectif_annuel_prepa: 200
-                  objectif_hebdo: 20
-                  prescriptions: 180
-                  places_ouvertes: 130
-                  objectif_restant: 80
-                  semaines_restantes: 30
-                  adhesions_hebdo_necessaires: 2.7
-                  moyenne_hebdomadaire: 4.5
-                  objectif_jury:
-                    annuel: 40
-                    mensuel: 10
-                summary: Exemple de bilan global
           application/x-www-form-urlencoded:
             schema:
               $ref: '#/components/schemas/PrepaCompGlobalRequest'
@@ -2966,29 +2939,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PrepaCompGlobal'
-              examples:
-                ExempleDeBilanGlobal:
-                  value:
-                    centre:
-                      id: 1
-                      nom: Centre de Lyon
-                    annee: 2025
-                    adhesions: 120
-                    presents: 150
-                    taux_transformation: 80.0
-                    taux_objectif_annee: 60.0
-                    objectif_annuel_prepa: 200
-                    objectif_hebdo: 20
-                    prescriptions: 180
-                    places_ouvertes: 130
-                    objectif_restant: 80
-                    semaines_restantes: 30
-                    adhesions_hebdo_necessaires: 2.7
-                    moyenne_hebdomadaire: 4.5
-                    objectif_jury:
-                      annuel: 40
-                      mensuel: 10
-                  summary: Exemple de bilan global
           description: ''
     patch:
       operationId: prepa_globaux_partial_update
@@ -3006,29 +2956,6 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/PatchedPrepaCompGlobalRequest'
-            examples:
-              ExempleDeBilanGlobal:
-                value:
-                  centre:
-                    id: 1
-                    nom: Centre de Lyon
-                  annee: 2025
-                  adhesions: 120
-                  presents: 150
-                  taux_transformation: 80.0
-                  taux_objectif_annee: 60.0
-                  objectif_annuel_prepa: 200
-                  objectif_hebdo: 20
-                  prescriptions: 180
-                  places_ouvertes: 130
-                  objectif_restant: 80
-                  semaines_restantes: 30
-                  adhesions_hebdo_necessaires: 2.7
-                  moyenne_hebdomadaire: 4.5
-                  objectif_jury:
-                    annuel: 40
-                    mensuel: 10
-                summary: Exemple de bilan global
           application/x-www-form-urlencoded:
             schema:
               $ref: '#/components/schemas/PatchedPrepaCompGlobalRequest'
@@ -3044,33 +2971,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PrepaCompGlobal'
-              examples:
-                ExempleDeBilanGlobal:
-                  value:
-                    centre:
-                      id: 1
-                      nom: Centre de Lyon
-                    annee: 2025
-                    adhesions: 120
-                    presents: 150
-                    taux_transformation: 80.0
-                    taux_objectif_annee: 60.0
-                    objectif_annuel_prepa: 200
-                    objectif_hebdo: 20
-                    prescriptions: 180
-                    places_ouvertes: 130
-                    objectif_restant: 80
-                    semaines_restantes: 30
-                    adhesions_hebdo_necessaires: 2.7
-                    moyenne_hebdomadaire: 4.5
-                    objectif_jury:
-                      annuel: 40
-                      mensuel: 10
-                  summary: Exemple de bilan global
           description: ''
     delete:
       operationId: prepa_globaux_destroy
-      summary: Supprimer un bilan global
       parameters:
       - in: path
         name: id
@@ -3079,7 +2982,7 @@ paths:
         description: A unique integer value identifying this Bilan global PrépaComp.
         required: true
       tags:
-      - PrepaCompGlobal
+      - prepa-globaux
       security:
       - cookieAuth: []
       - jwtAuth: []
@@ -3100,29 +3003,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PrepaCompGlobal'
-              examples:
-                ExempleDeBilanGlobal:
-                  value:
-                    centre:
-                      id: 1
-                      nom: Centre de Lyon
-                    annee: 2025
-                    adhesions: 120
-                    presents: 150
-                    taux_transformation: 80.0
-                    taux_objectif_annee: 60.0
-                    objectif_annuel_prepa: 200
-                    objectif_hebdo: 20
-                    prescriptions: 180
-                    places_ouvertes: 130
-                    objectif_restant: 80
-                    semaines_restantes: 30
-                    adhesions_hebdo_necessaires: 2.7
-                    moyenne_hebdomadaire: 4.5
-                    objectif_jury:
-                      annuel: 40
-                      mensuel: 10
-                  summary: Exemple de bilan global
           description: ''
   /prospections/:
     get:
@@ -4328,6 +4208,24 @@ paths:
       responses:
         '204':
           description: Suppression réussie
+  /statuts/choices/:
+    get:
+      operationId: statuts_choices_retrieve
+      description: Retourne la liste des valeurs `nom` possibles pour un statut, avec
+        libellé et couleur par défaut.
+      summary: Liste des choix possibles de statuts
+      tags:
+      - Statuts
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedStatutChoiceList'
+          description: Liste des choix disponibles
   /suivis-jury/:
     get:
       operationId: suivis_jury_list
@@ -4905,6 +4803,24 @@ paths:
       responses:
         '204':
           description: Suppression réussie.
+  /typeoffres/choices/:
+    get:
+      operationId: typeoffres_choices_retrieve
+      description: Retourne les valeurs possibles pour `nom`, avec libellé et couleur
+        par défaut.
+      summary: 📋 Liste des choix possibles de types d'offres
+      tags:
+      - TypesOffre
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedTypeOffreChoiceList'
+          description: Liste des types d'offres disponibles
   /users/:
     get:
       operationId: users_list
@@ -5905,6 +5821,18 @@ components:
       required:
       - access
       - refresh
+    EnumChoice:
+      type: object
+      properties:
+        value:
+          type: string
+          description: Valeur brute utilisée en base
+        label:
+          type: string
+          description: Libellé affiché (traduction)
+      required:
+      - label
+      - value
     Evenement:
       type: object
       description: |-
@@ -6753,6 +6681,26 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Semaine'
+    PaginatedStatutChoiceList:
+      type: object
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/StatutChoice'
     PaginatedStatutList:
       type: object
       properties:
@@ -6793,6 +6741,46 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/SuiviJury'
+    PaginatedTypeDocumentChoiceList:
+      type: object
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/TypeDocumentChoice'
+    PaginatedTypeOffreChoiceList:
+      type: object
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/TypeOffreChoice'
     PaginatedTypeOffreList:
       type: object
       properties:
@@ -6982,6 +6970,32 @@ components:
           description: Indique si l'objet est actif ou archivé
       required:
       - nom
+    PartenaireChoice:
+      type: object
+      properties:
+        value:
+          type: string
+          description: 'Valeur interne (ex: ''entreprise'')'
+        label:
+          type: string
+          description: 'Libellé lisible (ex: ''Entreprise'')'
+      required:
+      - label
+      - value
+    PartenaireChoicesResponse:
+      type: object
+      properties:
+        types:
+          type: array
+          items:
+            $ref: '#/components/schemas/PartenaireChoice'
+        actions:
+          type: array
+          items:
+            $ref: '#/components/schemas/PartenaireChoice'
+      required:
+      - actions
+      - types
     PartenaireRequest:
       type: object
       properties:
@@ -8196,6 +8210,35 @@ components:
       required:
       - motif
       - partenaire
+    ProspectionChoiceList:
+      type: object
+      properties:
+        statut:
+          type: array
+          items:
+            $ref: '#/components/schemas/EnumChoice'
+        objectif:
+          type: array
+          items:
+            $ref: '#/components/schemas/EnumChoice'
+        type_contact:
+          type: array
+          items:
+            $ref: '#/components/schemas/EnumChoice'
+        motif:
+          type: array
+          items:
+            $ref: '#/components/schemas/EnumChoice'
+        moyen_contact:
+          type: array
+          items:
+            $ref: '#/components/schemas/EnumChoice'
+      required:
+      - motif
+      - moyen_contact
+      - objectif
+      - statut
+      - type_contact
     ProspectionRequest:
       type: object
       description: |-
@@ -8777,6 +8820,22 @@ components:
           description: Statut actif ou désactivé (suppression logique).
       required:
       - nom
+    StatutChoice:
+      type: object
+      properties:
+        value:
+          type: string
+          description: 'Identifiant interne du statut (ex: ''non_defini'')'
+        label:
+          type: string
+          description: 'Libellé lisible du statut (ex: ''Non défini'')'
+        default_color:
+          type: string
+          description: 'Couleur hexadécimale par défaut du statut (ex: ''#FFEB3B'')'
+      required:
+      - default_color
+      - label
+      - value
     StatutRequest:
       type: object
       description: |-
@@ -8940,6 +8999,18 @@ components:
           minimum: 0
           title: Jurys réalisés
           description: Nombre de jurys effectivement réalisés
+    TypeDocumentChoice:
+      type: object
+      properties:
+        value:
+          type: string
+          description: 'Valeur interne du type (ex: ''pdf'')'
+        label:
+          type: string
+          description: 'Libellé lisible du type (ex: ''PDF'')'
+      required:
+      - label
+      - value
     TypeOffre:
       type: object
       description: |-
@@ -9017,6 +9088,22 @@ components:
           readOnly: true
           title: Actif
           description: Indique si l'objet est actif ou archivé
+    TypeOffreChoice:
+      type: object
+      properties:
+        value:
+          type: string
+          description: 'Identifiant du type (ex: ''crif'', ''autre'').'
+        label:
+          type: string
+          description: 'Libellé lisible (ex: ''CRIF'', ''Autre'').'
+        default_color:
+          type: string
+          description: 'Couleur hexadécimale par défaut (ex: ''#4e73df'').'
+      required:
+      - default_color
+      - label
+      - value
     TypeOffreRequest:
       type: object
       description: |-

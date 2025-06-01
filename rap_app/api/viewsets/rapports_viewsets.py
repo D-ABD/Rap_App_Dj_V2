@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from drf_spectacular.utils import extend_schema, extend_schema_view, OpenApiResponse
 
 from ...models.rapports import Rapport
-from ...api.serializers.rapports_serializers import RapportSerializer
+from ...api.serializers.rapports_serializers import RapportChoiceGroupSerializer, RapportSerializer
 from ...api.permissions import IsStaffOrAbove
 from ...api.paginations import RapAppPagination
 from ...models.logs import LogUtilisateur
@@ -131,4 +131,28 @@ class RapportViewSet(viewsets.ModelViewSet):
             "success": True,
             "message": "Liste des rapports récupérée avec succès.",
             "data": serializer.data
+        })
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from drf_spectacular.utils import extend_schema, OpenApiResponse
+
+
+class RapportChoicesView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        summary="Liste des choix possibles pour les rapports",
+        description="Retourne les choix disponibles pour les types de rapports, périodicité et formats.",
+        responses={200: OpenApiResponse(response=RapportChoiceGroupSerializer)},
+        tags=["Rapports"]
+    )
+    def get(self, request):
+        def serialize_choices(choices):
+            return [{"value": k, "label": v} for k, v in choices]
+
+        return Response({
+            "type_rapport": serialize_choices(Rapport.TYPE_CHOICES),
+            "periode": serialize_choices(Rapport.PERIODE_CHOICES),
+            "format": serialize_choices(Rapport.FORMAT_CHOICES),
         })

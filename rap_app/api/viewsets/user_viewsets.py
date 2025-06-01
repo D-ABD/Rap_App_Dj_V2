@@ -2,9 +2,10 @@ from rest_framework import viewsets, status, permissions, filters
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from drf_spectacular.utils import extend_schema, extend_schema_view, OpenApiResponse
+from rest_framework.views import APIView
 
 from ..permissions import ReadWriteAdminReadStaff
-from ..serializers.user_profil_serializers import CustomUserSerializer
+from ..serializers.user_profil_serializers import CustomUserSerializer, RoleChoiceSerializer
 from ...models.custom_user import CustomUser
 from ...models.logs import LogUtilisateur
 
@@ -176,3 +177,16 @@ class CustomUserViewSet(viewsets.ModelViewSet):
             "message": "Utilisateur récupéré avec succès.",
             "data": serializer.data
         }, status=status.HTTP_200_OK)
+
+class RoleChoicesView(APIView):
+    @extend_schema(
+        responses={200: RoleChoiceSerializer(many=True)},
+        summary="Liste des rôles utilisateurs disponibles",
+        description="Retourne tous les rôles utilisables avec leurs identifiants et libellés."
+    )
+    def get(self, request):
+        data = [
+            {"value": value, "label": label}
+            for value, label in CustomUser.ROLE_CHOICES
+        ]
+        return Response(data)

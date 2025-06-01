@@ -8,7 +8,7 @@ from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiRespon
 
 from ...services.evenements_export import csv_export_evenements
 from ...models.evenements import Evenement
-from ...api.serializers.evenements_serializers import EvenementSerializer
+from ...api.serializers.evenements_serializers import EvenementChoiceSerializer, EvenementSerializer
 from ...api.paginations import RapAppPagination
 from ...api.permissions import IsOwnerOrStaffOrAbove
 
@@ -104,3 +104,22 @@ class EvenementViewSet(viewsets.ModelViewSet):
         end_date = request.query_params.get("end")
         stats = Evenement.get_stats_by_type(start_date=start_date, end_date=end_date)
         return Response({"success": True, "data": stats})
+
+
+    @action(detail=False, methods=["get"])
+    @extend_schema(
+        summary="Liste des types d’événements possibles",
+        description="Retourne la liste des valeurs possibles pour `type_evenement`, avec leur libellé lisible.",
+        tags=["Événements"],
+        responses={200: OpenApiResponse(response=EvenementChoiceSerializer(many=True))}
+    )
+    def choices(self, request):
+        data = [
+            {"value": key, "label": label}
+            for key, label in Evenement.TypeEvenement.choices
+        ]
+        return Response({
+            "success": True,
+            "message": "Liste des types d’événements récupérée avec succès.",
+            "data": data
+        })

@@ -2,10 +2,12 @@ from rest_framework import viewsets, status, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from drf_spectacular.utils import extend_schema, OpenApiResponse
+from rest_framework.views import APIView
+from rest_framework.permissions import AllowAny
 
 from ...models.commentaires import Commentaire
 from ...models.logs import LogUtilisateur
-from ...api.serializers.commentaires_serializers import CommentaireSerializer
+from ...api.serializers.commentaires_serializers import CommentaireMetaSerializer, CommentaireSerializer
 from ...api.paginations import RapAppPagination
 from ...api.permissions import IsOwnerOrStaffOrAbove
 
@@ -109,3 +111,11 @@ class CommentaireViewSet(viewsets.ModelViewSet):
             "message": "Statistiques de saturation récupérées avec succès.",
             "data": stats
         })
+
+
+class CommentaireMetaView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        serializer = CommentaireMetaSerializer()
+        return Response(serializer.data)

@@ -90,3 +90,10 @@ class TypeOffreSerializer(serializers.ModelSerializer):
         instance.full_clean()
         instance.save()
         return instance
+class TypeOffreChoiceSerializer(serializers.Serializer):
+    value = serializers.CharField(help_text="Identifiant du type (ex: 'crif', 'autre').")
+    label = serializers.CharField(help_text="Libellé lisible (ex: 'CRIF', 'Autre').")
+    default_color = serializers.CharField(help_text="Couleur hexadécimale par défaut (ex: '#4e73df').")
+
+
+

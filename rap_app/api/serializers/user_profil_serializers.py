@@ -96,3 +96,8 @@ class CustomUserSerializer(serializers.ModelSerializer):
             setattr(instance, attr, value)
         instance.save()
         return instance
+from rest_framework import serializers
+
+class RoleChoiceSerializer(serializers.Serializer):
+    value = serializers.CharField(help_text="Identifiant du rôle (ex: 'admin')")
+    label = serializers.CharField(help_text="Libellé du rôle (ex: 'Administrateur')")

@@ -2,10 +2,11 @@ from rest_framework import viewsets, status, filters
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from drf_spectacular.utils import extend_schema, extend_schema_view, OpenApiResponse
+from rest_framework import serializers
 
 from ...api.permissions import IsOwnerOrStaffOrAbove
 from ...models.partenaires import Partenaire
-from ..serializers.partenaires_serializers import PartenaireSerializer
+from ..serializers.partenaires_serializers import PartenaireChoicesResponseSerializer, PartenaireSerializer
 from ...models.logs import LogUtilisateur
 
 
@@ -108,3 +109,27 @@ class PartenaireViewSet(viewsets.ModelViewSet):
             "message": "Partenaire supprimé avec succès.",
             "data": None
         }, status=status.HTTP_204_NO_CONTENT)
+
+
+
+    @extend_schema(
+        summary="🔢 Liste des choix de types et d’actions",
+        description="Retourne les choix possibles pour le type de partenaire et le type d’action.",
+        tags=["Partenaires"],
+        responses={200: OpenApiResponse(
+            response=PartenaireChoicesResponseSerializer,
+            description="Liste des choix de type et d'action pour les partenaires"
+        )}
+    )
+    @action(detail=False, methods=["get"], url_path="choices")
+    def choices(self, request):
+        return Response({
+            "types": [
+                {"value": val, "label": label}
+                for val, label in Partenaire.TYPE_CHOICES
+            ],
+            "actions": [
+                {"value": val, "label": label}
+                for val, label in Partenaire.CHOICES_TYPE_OF_ACTION
+            ]
+        })

@@ -4,8 +4,10 @@ from rest_framework.permissions import IsAuthenticated
 from drf_spectacular.utils import extend_schema, extend_schema_view
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
+from rest_framework.views import APIView
+from rest_framework.permissions import AllowAny
 
-from ..serializers.centres_serializers import CentreSerializer
+from ..serializers.centres_serializers import CentreConstantsSerializer, CentreSerializer
 from ...models.centres import Centre
 from ..permissions import ReadWriteAdminReadStaff
 from ..paginations import RapAppPagination
@@ -30,7 +32,8 @@ class CentreViewSet(viewsets.ModelViewSet):
     ordering_fields = ['nom', 'created_at']
 
     def get_queryset(self):
-        return Centre.objects.filter(is_active=True).order_by("nom")
+        return Centre.objects.all().order_by("nom")
+
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -77,7 +80,16 @@ class CentreViewSet(viewsets.ModelViewSet):
         instance.save(user=request.user)
         LogUtilisateur.log_action(instance, LogUtilisateur.ACTION_DELETE, request.user)
         return Response({
-            "success": True,
-            "message": "Centre désactivé (suppression logique).",
-            "data": instance.to_serializable_dict()
+        "success": True,
+        "message": "Centre désactivé avec succès."
         }, status=status.HTTP_200_OK)
+
+
+
+
+class CentreConstantsView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        serializer = CentreConstantsSerializer()
+        return Response(serializer.data)

@@ -2,11 +2,13 @@ from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from drf_spectacular.utils import extend_schema, OpenApiResponse, extend_schema_view, OpenApiParameter
+from rest_framework.views import APIView
+from rest_framework.permissions import AllowAny
 
 from ..permissions import IsStaffOrAbove
 from ..paginations import RapAppPagination
-from ..serializers.prepacomp_serializers import SemaineSerializer, PrepaCompGlobalSerializer
-from ...models.prepacomp import Semaine, PrepaCompGlobal
+from ..serializers.prepacomp_serializers import SemaineChoicesSerializer, SemaineSerializer, PrepaCompGlobalSerializer
+from ...models.prepacomp import NOMS_ATELIERS, NOMS_MOIS, NUM_DEPARTEMENTS, Semaine, PrepaCompGlobal
 from ...models.logs import LogUtilisateur
 
 
@@ -151,6 +153,26 @@ class SemaineViewSet(viewsets.ModelViewSet):
         tags=["PrepaCompGlobal"]
     )
 )
+
+
+
+
+class SemaineChoicesView(APIView):
+    permission_classes = [AllowAny]
+
+    @extend_schema(
+        responses={200: SemaineChoicesSerializer},
+        operation_id="semaines_choices",
+        summary="Constantes métier pour les semaines",
+        tags=["Semaine"]
+    )
+    def get(self, request):
+        return Response({
+            "mois": NOMS_MOIS,
+            "ateliers": NOMS_ATELIERS,
+            "departements": NUM_DEPARTEMENTS,
+        })
+
 class PrepaCompGlobalViewSet(viewsets.ModelViewSet):
     queryset = PrepaCompGlobal.objects.filter(is_active=True).select_related("centre")
     serializer_class = PrepaCompGlobalSerializer

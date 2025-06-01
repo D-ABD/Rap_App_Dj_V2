@@ -87,3 +87,21 @@ class EvenementSerializer(serializers.ModelSerializer):
             })
 
         return data
+from rest_framework import serializers
+from drf_spectacular.utils import extend_schema_serializer
+
+@extend_schema_serializer(
+    examples=[
+        {
+            "value": "job_dating",
+            "label": "Job dating"
+        }
+    ]
+)
+class EvenementChoiceSerializer(serializers.Serializer):
+    value = serializers.CharField(
+        help_text="Clé technique du type d'événement (ex: 'forum', 'job_dating')"
+    )
+    label = serializers.CharField(
+        help_text="Nom lisible affiché pour le type d'événement"
+    )

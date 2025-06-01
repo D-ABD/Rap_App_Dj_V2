@@ -14,6 +14,7 @@ from drf_spectacular.utils import (
 from ...api.paginations import RapAppPagination
 from ...models.prospection import Prospection, HistoriqueProspection, ProspectionChoices
 from ..serializers.prospection_serializers import (
+    ProspectionChoiceListSerializer,
     ProspectionSerializer,
     HistoriqueProspectionSerializer,
     ChangerStatutSerializer,
@@ -204,4 +205,31 @@ class HistoriqueProspectionViewSet(viewsets.ReadOnlyModelViewSet):
             "success": True,
             "message": "Historique récupéré avec succès.",
             "data": serializer.data
+        })
+
+    @extend_schema(
+        summary="📋 Liste des choix possibles pour les prospections",
+        description="Retourne tous les choix pour `statut`, `objectif`, `motif`, `type_contact`, `moyen_contact`.",
+        responses={200: OpenApiResponse(response=ProspectionChoiceListSerializer)},
+        tags=["Prospections"]
+    )
+    @action(detail=False, methods=["get"], url_path="choices", url_name="choices")
+    def get_choices(self, request):
+        from ...models.prospection import ProspectionChoices
+
+        def format_choices(choices):
+            return [{"value": key, "label": str(label)} for key, label in choices]
+
+        data = {
+            "statut": format_choices(ProspectionChoices.PROSPECTION_STATUS_CHOICES),
+            "objectif": format_choices(ProspectionChoices.PROSPECTION_OBJECTIF_CHOICES),
+            "motif": format_choices(ProspectionChoices.PROSPECTION_MOTIF_CHOICES),
+            "type_contact": format_choices(ProspectionChoices.TYPE_CONTACT_CHOICES),
+            "moyen_contact": format_choices(ProspectionChoices.MOYEN_CONTACT_CHOICES),
+        }
+
+        return Response({
+            "success": True,
+            "message": "Choix disponibles pour les prospections",
+            "data": data
         })

@@ -2,7 +2,10 @@
 # GESTION DE PROJET DJANGO - CHEAT SHEET (Python3/Pip3)
 # ========================================================
 
+
+
 python3 manage.py runserver 0.0.0.0:8000
+python3 manage.py spectacular --file schema.yaml
 
 -- Étape 1 : Se connecter à la base postgres par défaut
 -- Vous devez exécuter ce script en étant connecté à la base "postgres"
@@ -113,8 +116,14 @@ git push -u origin main
 # Pousser les modifications
 git status                           
 git add .                            
-git commit -m "Connexion ok avec le backend. tes jwt ok"   
+git commit -m "Ajout des listes de choix aux serializers et viewset pour les exposer à la doc"   
 git push origin main                 
+
+
+
+
+
+
 
 # --------------------------
 # 5. PRODUCTION

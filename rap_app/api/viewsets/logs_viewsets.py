@@ -2,9 +2,10 @@ from rest_framework import viewsets, filters, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from drf_spectacular.utils import extend_schema_view, extend_schema, OpenApiResponse
+from rest_framework.views import APIView
 
 from ...models.logs import LogUtilisateur
-from ...api.serializers.logs_serializers import LogUtilisateurSerializer
+from ...api.serializers.logs_serializers import LogChoicesSerializer, LogUtilisateurSerializer
 from ...api.permissions import IsStaffOrAbove
 from ...api.paginations import RapAppPagination
 
@@ -65,3 +66,33 @@ class LogUtilisateurViewSet(viewsets.ReadOnlyModelViewSet):
             "message": "Log utilisateur récupéré avec succès.",
             "data": serializer.data
         }, status=status.HTTP_200_OK)
+
+
+
+@extend_schema(
+    methods=["GET"],
+    responses={200: LogChoicesSerializer},
+    description="Retourne la liste des actions possibles enregistrées dans les logs utilisateur."
+)
+class LogChoicesView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        label_map = {
+            LogUtilisateur.ACTION_CREATE: "Création",
+            LogUtilisateur.ACTION_UPDATE: "Modification",
+            LogUtilisateur.ACTION_DELETE: "Suppression",
+            LogUtilisateur.ACTION_VIEW: "Consultation",
+            LogUtilisateur.ACTION_LOGIN: "Connexion",
+            LogUtilisateur.ACTION_LOGOUT: "Déconnexion",
+            LogUtilisateur.ACTION_EXPORT: "Export",
+            LogUtilisateur.ACTION_IMPORT: "Import",
+        }
+
+        data = {
+            "actions": [
+                {"value": k, "label": v}
+                for k, v in label_map.items()
+            ]
+        }
+        return Response(data)

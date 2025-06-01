@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 from drf_spectacular.utils import extend_schema, extend_schema_view, OpenApiResponse
 
-from ...api.serializers.types_offre_serializers import TypeOffreSerializer
+from ...api.serializers.types_offre_serializers import TypeOffreChoiceSerializer, TypeOffreSerializer
 from ...models.types_offre import TypeOffre
 
 from ...models.logs import LogUtilisateur
@@ -50,7 +50,7 @@ class TypeOffreViewSet(viewsets.ModelViewSet):
     🎯 ViewSet complet pour les types d'offres.
     CRUD + journalisation + pagination + permissions + Swagger.
     """
-    queryset = TypeOffre.objects.filter(is_active=True).order_by("nom")
+    queryset = TypeOffre.objects.all().order_by("nom")
     serializer_class = TypeOffreSerializer
     permission_classes = [ReadWriteAdminReadStaff]
     pagination_class = RapAppPagination
@@ -98,7 +98,7 @@ class TypeOffreViewSet(viewsets.ModelViewSet):
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
-        instance.is_active = False
+        instance.delete()  # ✅ Suppression réelle
         instance.save()
         LogUtilisateur.log_action(
             instance=instance,
@@ -111,3 +111,35 @@ class TypeOffreViewSet(viewsets.ModelViewSet):
             "message": "Type d'offre supprimé avec succès.",
             "data": None
         }, status=status.HTTP_204_NO_CONTENT)
+
+# views/typeoffre_viewsets.py
+
+
+    @extend_schema(
+        summary="📋 Liste des choix possibles de types d'offres",
+        description="Retourne les valeurs possibles pour `nom`, avec libellé et couleur par défaut.",
+        tags=["TypesOffre"],
+        responses={200: OpenApiResponse(
+            response=TypeOffreChoiceSerializer(many=True),
+            description="Liste des types d'offres disponibles"
+        )}
+    )
+    @action(detail=False, methods=["get"], url_path="choices", url_name="choices")
+    def get_choices(self, request):
+        """
+        Retourne tous les types d'offres standards (hors base de données),
+        avec leur libellé et couleur par défaut.
+        """
+        data = [
+            {
+                "value": key,
+                "label": label,
+                "default_color": TypeOffre.COULEURS_PAR_DEFAUT.get(key, "#6c757d")
+            }
+            for key, label in TypeOffre.TYPE_OFFRE_CHOICES
+        ]
+        return Response({
+            "success": True,
+            "message": "Liste des types d'offres prédéfinis.",
+            "data": data
+        })

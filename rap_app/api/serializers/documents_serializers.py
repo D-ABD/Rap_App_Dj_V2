@@ -82,3 +82,8 @@ class DocumentSerializer(serializers.ModelSerializer):
             "message": "Document récupéré avec succès.",
             "data": instance.to_serializable_dict()
         }
+
+
+class TypeDocumentChoiceSerializer(serializers.Serializer):
+    value = serializers.CharField(help_text="Valeur interne du type (ex: 'pdf')")
+    label = serializers.CharField(help_text="Libellé lisible du type (ex: 'PDF')")

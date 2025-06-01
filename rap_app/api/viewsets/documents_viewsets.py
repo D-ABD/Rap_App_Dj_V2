@@ -11,7 +11,7 @@ from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiRespon
 
 from ...models.documents import Document
 from ...models.logs import LogUtilisateur
-from ...api.serializers.documents_serializers import DocumentSerializer
+from ...api.serializers.documents_serializers import DocumentSerializer, TypeDocumentChoiceSerializer
 from ...api.paginations import RapAppPagination
 from ...api.permissions import IsOwnerOrStaffOrAbove
 
@@ -190,3 +190,23 @@ class DocumentViewSet(viewsets.ModelViewSet):
             ])
 
         return response
+
+    @extend_schema(
+        summary="Liste des types de documents",
+        description="Retourne les types de documents valides avec leurs libellés lisibles.",
+        tags=["Documents"],
+        responses={200: OpenApiResponse(response=TypeDocumentChoiceSerializer(many=True))}
+    )
+    @action(detail=False, methods=["get"], url_path="types", url_name="types")
+    def get_types(self, request):
+        data = [
+            {"value": value, "label": label}
+            for value, label in Document.TYPE_DOCUMENT_CHOICES
+        ]
+        serializer = TypeDocumentChoiceSerializer(data, many=True)
+        return Response({
+            "success": True,
+            "message": "Types de documents disponibles.",
+            "data": serializer.data
+        })
+

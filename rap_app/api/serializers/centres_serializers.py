@@ -23,3 +23,7 @@ class CentreSerializer(serializers.ModelSerializer):
     @extend_schema_field(serializers.IntegerField())
     def get_nb_prepa_comp_global(self, obj):
         return obj.nb_prepa_comp_global
+    
+class CentreConstantsSerializer(serializers.Serializer):
+    nom_max_length = serializers.IntegerField(default=Centre.NOM_MAX_LENGTH)
+    code_postal_length = serializers.IntegerField(default=Centre.CODE_POSTAL_LENGTH)

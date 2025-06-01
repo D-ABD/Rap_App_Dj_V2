@@ -15,12 +15,13 @@ class TypeOffreAdmin(admin.ModelAdmin):
         "nom",
         "autre",
         "couleur",
+        "is_active",  # 👈 Ajout ici
         "get_formations_count",
         "created_at",
         "updated_at",
         "created_by_display",
     )
-    list_filter = ("nom", "created_at", "updated_at")
+    list_filter = ("nom", "is_active", "created_at", "updated_at")  # 👈 Ajout ici
     search_fields = ("nom", "autre", "couleur")
     ordering = ("nom",)
     date_hierarchy = "created_at"
@@ -34,7 +35,7 @@ class TypeOffreAdmin(admin.ModelAdmin):
 
     fieldsets = (
         (_("Informations générales"), {
-            "fields": ("nom", "autre", "couleur", "badge_preview"),
+            "fields": ("nom", "autre", "couleur", "is_active", "badge_preview"),  # 👈 Ajout ici
         }),
         (_("🧾 Métadonnées"), {
             "fields": ("created_at", "updated_at", "created_by"),

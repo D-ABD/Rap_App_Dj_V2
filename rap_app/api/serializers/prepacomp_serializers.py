@@ -145,6 +145,21 @@ class SemaineSerializer(serializers.ModelSerializer):
         )
     ]
 )
+
+class SemaineChoicesSerializer(serializers.Serializer):
+    mois = serializers.DictField(
+        child=serializers.CharField(),
+        help_text="Clés = numéros de mois (1-12), valeurs = noms en français"
+    )
+    ateliers = serializers.DictField(
+        child=serializers.CharField(),
+        help_text="Clés = codes d'atelier (AT1...AT6, AT_Autre), valeurs = libellés"
+    )
+    departements = serializers.DictField(
+        child=serializers.CharField(),
+        help_text="Clés = codes département, valeurs = noms longs"
+    )
+
 class PrepaCompGlobalSerializer(serializers.ModelSerializer):
     """
     📊 Serializer principal pour PrepaCompGlobal.

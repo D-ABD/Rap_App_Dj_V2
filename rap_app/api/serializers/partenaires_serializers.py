@@ -108,3 +108,12 @@ class PartenaireSerializer(serializers.ModelSerializer):
             "message": "Partenaire mis à jour avec succès.",
             "data": instance.to_serializable_dict(include_relations=True)
         }
+
+class PartenaireChoiceSerializer(serializers.Serializer):
+    value = serializers.CharField(help_text="Valeur interne (ex: 'entreprise')")
+    label = serializers.CharField(help_text="Libellé lisible (ex: 'Entreprise')")
+
+
+class PartenaireChoicesResponseSerializer(serializers.Serializer):
+    types = PartenaireChoiceSerializer(many=True)
+    actions = PartenaireChoiceSerializer(many=True)

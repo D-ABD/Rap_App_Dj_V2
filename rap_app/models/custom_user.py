@@ -328,15 +328,7 @@ class CustomUser(AbstractUser):
         return '/static/images/default_avatar.png'
 
         
-    def get_admin_url(self):
-        """
-        🔗 URL vers la page d'administration de l'utilisateur.
-        
-        Returns:
-            str: URL d'administration
-        """
-        from django.urls import reverse
-        return reverse('admin:auth_user_change', args=[self.pk])
+
 
     def to_serializable_dict(self, include_sensitive=False):
         """

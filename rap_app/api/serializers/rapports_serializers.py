@@ -86,3 +86,18 @@ class RapportSerializer(serializers.ModelSerializer):
         instance = Rapport(**attrs)
         instance.clean()
         return attrs
+from rest_framework import serializers
+from ...models.rapports import Rapport
+
+class RapportChoiceSerializer(serializers.Serializer):
+    value = serializers.CharField(
+        help_text="Valeur interne (ex: 'occupation')"
+    )
+    label = serializers.CharField(
+        help_text="Libellé lisible (ex: 'Rapport d’occupation des formations')"
+    )
+
+class RapportChoiceGroupSerializer(serializers.Serializer):
+    type_rapport = RapportChoiceSerializer(many=True)
+    periode = RapportChoiceSerializer(many=True)
+    format = RapportChoiceSerializer(many=True)

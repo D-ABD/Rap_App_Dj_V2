@@ -94,4 +94,5 @@ class CustomUserAdmin(DjangoUserAdmin):
     def save_model(self, request, obj, form, change):
         if not obj.pk and not obj.created_by:
             obj.created_by = request.user
+        obj.updated_by = request.user
         super().save_model(request, obj, form, change)

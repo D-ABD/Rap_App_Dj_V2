@@ -97,3 +97,26 @@ class CommentaireSerializer(serializers.ModelSerializer):
             setattr(instance, attr, value)
         instance.save()
         return instance
+from rest_framework import serializers
+
+class CommentaireMetaSerializer(serializers.Serializer):
+    saturation_min = serializers.IntegerField(
+        read_only=True, help_text="Valeur minimale autorisée pour la saturation (en %)"
+    )
+    saturation_max = serializers.IntegerField(
+        read_only=True, help_text="Valeur maximale autorisée pour la saturation (en %)"
+    )
+    preview_default_length = serializers.IntegerField(
+        read_only=True, help_text="Longueur par défaut pour l'aperçu du contenu"
+    )
+    recent_default_days = serializers.IntegerField(
+        read_only=True, help_text="Nombre de jours à considérer comme 'récent'"
+    )
+
+    def to_representation(self, instance=None):
+        return {
+            "saturation_min": Commentaire.SATURATION_MIN,
+            "saturation_max": Commentaire.SATURATION_MAX,
+            "preview_default_length": Commentaire.PREVIEW_DEFAULT_LENGTH,
+            "recent_default_days": Commentaire.RECENT_DEFAULT_DAYS,
+        }

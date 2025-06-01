@@ -16,7 +16,7 @@ from ...models.vae_jury import VAE, SuiviJury, HistoriqueStatutVAE
 
 # Serializers
 from ...api.serializers.vae_jury_serializers import (
-    VAESerializer, SuiviJurySerializer,
+    VAEChoicesSerializer, VAESerializer, SuiviJurySerializer,
     HistoriqueStatutVAESerializer, ChangerStatutVAESerializer
 )
 @extend_schema(tags=["Suivi Jury"])
@@ -243,3 +243,11 @@ class HistoriqueStatutVAEViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = HistoriqueStatutVAESerializer
     permission_classes = [IsStaffOrAbove]
     pagination_class = RapAppPagination
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+
+class VAEChoicesView(APIView):
+    def get(self, request):
+        serializer = VAEChoicesSerializer()
+        return Response(serializer.data)

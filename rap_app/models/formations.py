@@ -1239,11 +1239,14 @@ class HistoriqueFormation(BaseModel):
 
     formation = models.ForeignKey(
         'Formation',
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,  # 👈 important pour éviter les erreurs à la suppression
+        null=True,
+        blank=True,
         related_name="historiques",
         verbose_name=_("Formation concernée"),
         help_text=_("Formation à laquelle ce changement est associé")
     )
+
 
     action = models.CharField(
         max_length=ACTION_MAX_LENGTH,

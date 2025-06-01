@@ -197,3 +197,14 @@ class HistoriqueProspectionSerializer(serializers.ModelSerializer):
                 _("La date de relance doit être dans le futur.")
             )
         return value
+
+class EnumChoiceSerializer(serializers.Serializer):
+    value = serializers.CharField(help_text="Valeur brute utilisée en base")
+    label = serializers.CharField(help_text="Libellé affiché (traduction)")
+
+class ProspectionChoiceListSerializer(serializers.Serializer):
+    statut = EnumChoiceSerializer(many=True)
+    objectif = EnumChoiceSerializer(many=True)
+    type_contact = EnumChoiceSerializer(many=True)
+    motif = EnumChoiceSerializer(many=True)
+    moyen_contact = EnumChoiceSerializer(many=True)
