@@ -14,8 +14,12 @@ class RapAppPagination(PageNumberPagination):
             "message": "Liste paginée des résultats.",
             "data": {
                 "count": self.page.paginator.count,
+                "page": self.page.number,
+                "page_size": self.get_page_size(self.request),
+                "total_pages": self.page.paginator.num_pages,
                 "next": self.get_next_link(),
                 "previous": self.get_previous_link(),
-                "results": data
+                "results": data,
             }
         })
+

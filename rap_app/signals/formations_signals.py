@@ -15,21 +15,43 @@ logger_historique = logging.getLogger("rap_app.historiqueformation")
 
 
 def skip_during_migrations() -> bool:
-    """⛔ Empêche l'exécution des signaux pendant les migrations."""
+    """
+    ⛔ Empêche l'exécution des signaux pendant les migrations.
+
+    Returns:
+        bool: True si les migrations sont en cours, sinon False.
+    """
     return not apps.ready or 'migrate' in sys.argv or 'makemigrations' in sys.argv
 
 
 def get_user(instance):
     """
-    🔍 Récupère l'utilisateur lié à l'action.
+    🔍 Récupère l'utilisateur lié à l'action depuis l'instance, ou via le middleware.
+
+    Args:
+        instance (Model): Instance Django à inspecter.
+
+    Returns:
+        User | None: Utilisateur courant si trouvé, sinon None.
     """
-    return getattr(instance, '_user', None) or getattr(instance, 'updated_by', None) or getattr(instance, 'created_by', None) or get_current_user()
+    return (
+        getattr(instance, '_user', None)
+        or getattr(instance, 'updated_by', None)
+        or getattr(instance, 'created_by', None)
+        or get_current_user()
+    )
 
 
 @receiver(post_save, sender=Formation)
 def log_formation_saved(sender, instance, created, **kwargs):
     """
-    📝 Signal post_save pour Formation (création ou modification).
+    📝 Enregistre un message dans le log lorsqu'une formation est créée ou modifiée.
+    Crée aussi une ligne dans HistoriqueFormation si création.
+
+    Args:
+        sender (Model): Le modèle ayant émis le signal.
+        instance (Formation): L’instance concernée.
+        created (bool): True si nouvel objet, False si mise à jour.
     """
     if skip_during_migrations():
         return
@@ -58,9 +80,6 @@ def log_formation_saved(sender, instance, created, **kwargs):
 
 @receiver(pre_delete, sender=Formation)
 def log_formation_deleted(sender, instance, **kwargs):
-    """
-    🗑️ Signal pre_delete pour Formation.
-    """
     if skip_during_migrations():
         return
 
@@ -74,17 +93,18 @@ def log_formation_deleted(sender, instance, **kwargs):
     try:
         with transaction.atomic():
             HistoriqueFormation.objects.create(
-                formation=instance,
-                action='suppression',
+                formation=None,  # ⛔ surtout pas `formation=instance`
+                action=HistoriqueFormation.ActionType.SUPPRESSION,
                 champ_modifie='formation',
                 ancienne_valeur=instance.nom,
+                nouvelle_valeur=None,
                 commentaire=f"Formation supprimée le {now().strftime('%d/%m/%Y à %H:%M')}",
                 created_by=user,
                 details={
                     "id": instance.pk,
                     "nom": instance.nom,
-                    "centre": str(instance.centre) if instance.centre else None,
-                    "type_offre": str(instance.type_offre) if instance.type_offre else None,
+                    "centre": str(instance.centre) if instance.centre_id else None,
+                    "type_offre": str(instance.type_offre) if instance.type_offre_id else None,
                     "date_suppression": now().isoformat()
                 }
             )
@@ -95,7 +115,12 @@ def log_formation_deleted(sender, instance, **kwargs):
 @receiver(post_save, sender=HistoriqueFormation)
 def log_historique_ajout(sender, instance, created, **kwargs):
     """
-    📘 Signal post_save pour HistoriqueFormation.
+    📘 Enregistre un log quand une entrée HistoriqueFormation est créée.
+
+    Args:
+        sender (Model): Le modèle ayant émis le signal.
+        instance (HistoriqueFormation): L’instance créée.
+        created (bool): True si nouvel objet.
     """
     if skip_during_migrations() or not created:
         return
@@ -120,7 +145,11 @@ def log_historique_ajout(sender, instance, created, **kwargs):
 @receiver(pre_delete, sender=HistoriqueFormation)
 def log_historique_suppression(sender, instance, **kwargs):
     """
-    🗑️ Signal pre_delete pour HistoriqueFormation.
+    🗑️ Enregistre un log lorsqu’une ligne HistoriqueFormation est supprimée.
+
+    Args:
+        sender (Model): Le modèle ayant émis le signal.
+        instance (HistoriqueFormation): L’instance supprimée.
     """
     if skip_during_migrations():
         return

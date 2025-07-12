@@ -281,7 +281,9 @@ class Formation(BaseModel):
     
     centre = models.ForeignKey(
         Centre, 
-        on_delete=models.CASCADE, 
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
         related_name='formations', 
         verbose_name=_("Centre de formation"),
         help_text=_("Centre où se déroule la formation")
@@ -289,7 +291,9 @@ class Formation(BaseModel):
     
     type_offre = models.ForeignKey(
         TypeOffre, 
-        on_delete=models.CASCADE, 
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
         related_name="formations", 
         verbose_name=_("Type d'offre"),
         help_text=_("Catégorie d'offre de formation")
@@ -297,7 +301,9 @@ class Formation(BaseModel):
     
     statut = models.ForeignKey(
         Statut, 
-        on_delete=models.CASCADE, 
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
         related_name="formations", 
         verbose_name=_("Statut de la formation"),
         help_text=_("État actuel de la formation")
@@ -370,9 +376,11 @@ class Formation(BaseModel):
     saturation = models.FloatField(
         null=True, 
         blank=True, 
+        editable=False,  # ✅ Empêche l'édition manuelle dans l'admin Django
         verbose_name=_("Niveau de saturation moyen"),
-        help_text=_("Pourcentage moyen de saturation basé sur les commentaires")
+        help_text=_("Pourcentage moyen de saturation basé sur le taux d’inscrits")
     )
+
 
     # Informations supplémentaires
     assistante = models.CharField(
@@ -482,55 +490,78 @@ class Formation(BaseModel):
         user = kwargs.pop("user", None)
         skip_history = kwargs.pop("skip_history", False)  # Option pour désactiver l'historique
         update_fields = kwargs.get("update_fields", None)  # Champs à mettre à jour
-        
+
         is_new = self.pk is None
         original = None if is_new else self.__class__.objects.filter(pk=self.pk).first()
-        
+
         # Validation des données
         self.full_clean()
+
+        # ➕ Met à jour automatiquement la saturation avant la sauvegarde
+        self.saturation = self.taux_saturation
 
         with transaction.atomic():
             # Transmission de l'utilisateur au BaseModel si fourni
             if user:
                 self._user = user
-                
+
             # Journalisation de l'action
             if is_new:
                 logger.info(f"[Formation] Créée : {self.nom}")
             else:
                 logger.info(f"[Formation] Modifiée : {self.nom} (#{self.pk})")
-            
+
             # Sauvegarde
             super().save(*args, **kwargs)
-            
+
             # Création de l'historique pour chaque champ modifié
             if not skip_history and original:
                 self._create_history_entries(original, user, update_fields)
 
+    def get_resume_info(self):
+        """
+        📦 Retourne un résumé structuré de la formation pour affichage en ligne.
+
+        Utilisable depuis les serializers ou to_serializable_dict().
+        """
+        badge = "❓"
+        if self.saturation is not None:
+            badge = "🔴" if self.saturation >= 80 else "🟡" if self.saturation >= 50 else "🟢"
+
+        return {
+            "formation_nom": self.nom or "Formation inconnue",
+            "centre_nom": getattr(self.centre, "nom", "Centre ?") if self.centre else "Centre ?",
+            "type_offre": getattr(self.type_offre, "nom", "Type ?") if self.type_offre else "Type ?",
+            "num_offre": self.num_offre or "N/A",
+            "statut": getattr(self.statut, "nom", "Inconnu") if self.statut else "Inconnu",
+            "start_date": self.start_date.isoformat() if self.start_date else "??",
+            "end_date": self.end_date.isoformat() if self.end_date else "??",
+            "saturation_formation": self.saturation,
+            "saturation_badge": badge,
+        }
+
+
+
     def _create_history_entries(self, original, user, update_fields=None):
-        """
-        Crée des entrées d'historique pour les champs modifiés.
-        
-        Args:
-            original (Formation): Instance originale avant modifications
-            user (User): Utilisateur ayant effectué les modifications
-            update_fields (list, optional): Liste des champs mis à jour
-        """
         fields_to_check = update_fields or self.FIELDS_TO_TRACK
-        
+        any_change = False
+
         for field in fields_to_check:
             if field not in self.FIELDS_TO_TRACK:
                 continue
-                
+
             old_val = getattr(original, field)
             new_val = getattr(self, field)
-            
+
             if old_val != new_val:
-                # Formatage des valeurs pour les champs spéciaux
+                any_change = True
                 old_val_str = self._format_field_for_history(field, old_val)
                 new_val_str = self._format_field_for_history(field, new_val)
-                
-                # Création de l'entrée d'historique
+
+                if not Formation.objects.filter(pk=self.pk).exists():
+                    logger.warning(f"Formation introuvable (ID={self.pk}), historique ignoré pour champ {field}")
+                    continue
+
                 HistoriqueFormation.objects.create(
                     formation=self,
                     champ_modifie=field,
@@ -540,8 +571,11 @@ class Formation(BaseModel):
                     created_by=user,
                     details={"user": user.pk if user else None}
                 )
-                
+
                 logger.debug(f"[Formation] Historique créé pour {field}: {old_val_str} → {new_val_str}")
+
+        if not any_change:
+            logger.debug(f"[Formation] Aucun champ modifié pour {self.nom} (ID={self.pk})")
     
     def _format_field_for_history(self, field_name, value):
         """
@@ -583,10 +617,10 @@ class Formation(BaseModel):
 
         # Données de base
         base_data = {key: convert_value(getattr(self, key)) for key in [
-            "nom", "start_date", "end_date", "num_kairos", "num_offre", "num_produit",
+            "nom", "start_date", "end_date","statut", "num_kairos", "num_offre", "num_produit",
             "prevus_crif", "prevus_mp", "inscrits_crif", "inscrits_mp", "assistante", "cap",
             "convocation_envoie", "entree_formation", "nombre_candidats",
-            "nombre_entretiens", "nombre_evenements", "dernier_commentaire"
+            "nombre_entretiens", "nombre_evenements", "dernier_commentaire",
         ]}
 
         # Relations
@@ -598,7 +632,7 @@ class Formation(BaseModel):
             "statut_color": self.get_status_color(),
             "created_at": convert_value(self.created_at),
             "updated_at": convert_value(self.updated_at),
-            "status_temporel": self.status_temporel,  # Ajout du statut temporel
+            "saturation": self.saturation,  # ✅ Ajout ici
         })
 
         # Propriétés calculées
@@ -881,6 +915,7 @@ class Formation(BaseModel):
             nouvelle_valeur=f"{type_display} le {event_date_str}",
             commentaire="Ajout d'un événement",
             created_by=user
+            
         )
 
         return evenement
@@ -1089,7 +1124,10 @@ class Formation(BaseModel):
             nouvelle_valeur="Duplication",
             commentaire=f"Dupliqué depuis la formation #{self.pk}: {self.nom}",
             created_by=user,
-            action=HistoriqueFormation.ActionType.AJOUT
+            action=HistoriqueFormation.ActionType.AJOUT,
+            on_delete=models.SET_NULL,
+            # On garde l’historique même si la formation est supprimée
+
         )
         
         return new_formation
@@ -1178,6 +1216,17 @@ class Formation(BaseModel):
                 
         return result
 
+
+    def get_saturation_badge(self):
+        if self.saturation is None:
+            return "—"
+        if self.saturation < 50:
+            return "🟢 Faible"
+        elif self.saturation < 80:
+            return "🟡 Moyenne"
+        else:
+            return "🔴 Saturée"
+
     class Meta:
         verbose_name = _("Formation")
         verbose_name_plural = _("Formations")
@@ -1204,31 +1253,17 @@ class Formation(BaseModel):
         ]
 
 
-class HistoriqueFormation(BaseModel):
-    """
-    🕓 Historique de modification d'une formation.
+from django.db import models, transaction
+from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
+import logging
 
-    Ce modèle trace tous les changements appliqués à une formation, champ par champ,
-    avec la date, l'utilisateur et un commentaire facultatif.
-    
-    Attributs:
-        formation (Formation): Formation concernée par la modification
-        action (str): Type d'action (modification, ajout, suppression)
-        champ_modifie (str): Nom du champ modifié
-        ancienne_valeur (str): Valeur avant modification
-        nouvelle_valeur (str): Valeur après modification
-        commentaire (str): Commentaire explicatif
-        details (dict): Données contextuelles supplémentaires
-        
-    Propriétés:
-        utilisateur_nom (str): Nom de l'utilisateur ayant fait la modification
-    """
-    
-    # Constantes pour les limites de champs
+logger = logging.getLogger("rap_app.historiqueformation")
+
+class HistoriqueFormation(BaseModel):
     ACTION_MAX_LENGTH = 100
     CHAMP_MAX_LENGTH = 100
-    
-    # Choix pour le type d'action
+
     class ActionType(models.TextChoices):
         MODIFICATION = 'modification', _('Modification')
         AJOUT = 'ajout', _('Ajout')
@@ -1239,14 +1274,13 @@ class HistoriqueFormation(BaseModel):
 
     formation = models.ForeignKey(
         'Formation',
-        on_delete=models.SET_NULL,  # 👈 important pour éviter les erreurs à la suppression
+        on_delete=models.SET_NULL,
         null=True,
         blank=True,
         related_name="historiques",
         verbose_name=_("Formation concernée"),
-        help_text=_("Formation à laquelle ce changement est associé")
+        help_text="Formation liée (null si supprimée)"
     )
-
 
     action = models.CharField(
         max_length=ACTION_MAX_LENGTH,
@@ -1302,35 +1336,21 @@ class HistoriqueFormation(BaseModel):
         ]
 
     def __str__(self):
-        """Représentation textuelle de l'entrée d'historique."""
         return f"Modification de {self.champ_modifie} le {self.created_at.strftime('%d/%m/%Y à %H:%M')}"
 
     def save(self, *args, **kwargs):
-        """
-        Sauvegarde l'entrée d'historique de formation dans une transaction atomique.
-
-        Cette méthode surcharge `save()` pour garantir que chaque création ou mise à jour
-        d'une instance de `HistoriqueFormation` est encapsulée dans une transaction.
-        Elle vérifie également les doublons potentiels (même champ modifié, même utilisateur,
-        même valeur dans un intervalle court) pour éviter la duplication d'entrées.
-
-        Args:
-            *args: Arguments positionnels transmis à `super().save()`.
-            **kwargs: Arguments nommés transmis à `super().save()`, notamment:
-                skip_duplicate_check (bool): Si True, désactive la vérification des doublons
-
-        Returns:
-            bool: True si sauvegardé, False si doublon détecté et ignoré
-        """
         skip_duplicate_check = kwargs.pop("skip_duplicate_check", False)
-        
-        # Vérification des doublons seulement pour les nouvelles entrées
+
+        # 🔒 Sécurité : vérifier que la formation existe encore
+        if self.formation_id is not None:
+            from rap_app.models import Formation
+            if not Formation.objects.filter(pk=self.formation_id).exists():
+                self.formation = None
+
         if not skip_duplicate_check and not self.pk:
-            # Intervalle de temps pour considérer les mises à jour comme doublons (5 minutes par défaut)
             time_threshold = kwargs.pop("time_threshold", timezone.timedelta(minutes=5))
             cutoff_time = timezone.now() - time_threshold
-            
-            # Recherche des entrées similaires récentes
+
             recent_similar = HistoriqueFormation.objects.filter(
                 formation=self.formation,
                 champ_modifie=self.champ_modifie,
@@ -1338,29 +1358,22 @@ class HistoriqueFormation(BaseModel):
                 nouvelle_valeur=self.nouvelle_valeur,
                 created_at__gte=cutoff_time
             ).exists()
-            
+
             if recent_similar:
                 logger.info(f"[Historique] Doublon ignoré: {self.champ_modifie} pour {self.formation}")
                 return False
 
         with transaction.atomic():
             super().save(*args, **kwargs)
-        
+
         logger.info(f"[Historique] {self}")
         return True
 
-
     def to_serializable_dict(self):
-        """
-        📦 Représentation JSON de l'entrée d'historique.
-
-        Returns:
-            dict: Contenu API-friendly.
-        """
         return {
             "id": self.pk,
             "formation_id": self.formation_id,
-            "formation_nom": str(self.formation),
+            "formation_nom": str(self.formation) if self.formation else "Formation supprimée",
             "champ": self.champ_modifie,
             "ancienne_valeur": self.ancienne_valeur,
             "nouvelle_valeur": self.nouvelle_valeur,
@@ -1374,24 +1387,12 @@ class HistoriqueFormation(BaseModel):
 
     @property
     def utilisateur_nom(self):
-        """
-        👤 Nom de l'utilisateur ayant réalisé la modification.
-        
-        Returns:
-            str: Nom complet de l'utilisateur ou "Inconnu"
-        """
         if self.created_by:
             return f"{self.created_by.first_name} {self.created_by.last_name}".strip() or self.created_by.username
         return "Inconnu"
-        
+
     @property
     def valeur_changement(self):
-        """
-        💫 Récupère une représentation du changement effectué.
-        
-        Returns:
-            str: Représentation du changement
-        """
         if self.ancienne_valeur and self.nouvelle_valeur:
             return f"{self.ancienne_valeur} → {self.nouvelle_valeur}"
         elif self.nouvelle_valeur:
@@ -1399,16 +1400,7 @@ class HistoriqueFormation(BaseModel):
         elif self.ancienne_valeur:
             return f"Suppression: {self.ancienne_valeur}"
         return "Aucun changement spécifié"
-        
+
     @classmethod
     def get_latest_changes(cls, limit=10):
-        """
-        Récupère les derniers changements, toutes formations confondues.
-        
-        Args:
-            limit (int): Nombre maximum de changements à retourner
-            
-        Returns:
-            QuerySet: Derniers changements
-        """
         return cls.objects.select_related('formation', 'created_by').order_by('-created_at')[:limit]

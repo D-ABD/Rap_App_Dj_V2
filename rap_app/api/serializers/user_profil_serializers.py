@@ -101,3 +101,18 @@ from rest_framework import serializers
 class RoleChoiceSerializer(serializers.Serializer):
     value = serializers.CharField(help_text="Identifiant du rôle (ex: 'admin')")
     label = serializers.CharField(help_text="Libellé du rôle (ex: 'Administrateur')")
+
+class RegistrationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomUser
+        fields = ['email', 'password', 'first_name', 'last_name']
+        extra_kwargs = {
+            'password': {'write_only': True},
+        }
+
+    def create(self, validated_data):
+        return CustomUser.objects.create_user(
+            is_active=False,  # 🛑 création inactif
+            role='stagiaire',  # 👤 rôle par défaut
+            **validated_data
+        )

@@ -1,7 +1,6 @@
 import csv
 import logging
 from rest_framework import viewsets, status
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiResponse
@@ -26,7 +25,7 @@ class EvenementViewSet(viewsets.ModelViewSet):
     """
     queryset = Evenement.objects.all().select_related("formation")
     serializer_class = EvenementSerializer
-    permission_classes = [IsAuthenticated & IsOwnerOrStaffOrAbove]
+    permission_classes = [ IsOwnerOrStaffOrAbove]
     pagination_class = RapAppPagination
 
     @extend_schema(
@@ -40,6 +39,10 @@ class EvenementViewSet(viewsets.ModelViewSet):
         ],
         responses={200: OpenApiResponse(response=EvenementSerializer(many=True))}
     )
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
     def list(self, request, *args, **kwargs):
         formation = request.query_params.get("formation")
         type_evenement = request.query_params.get("type_evenement")

@@ -194,6 +194,24 @@ paths:
       responses:
         '204':
           description: No response body
+  /centres/{id}/delete-from-bdd/:
+    delete:
+      operationId: centres_delete_from_bdd_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Centre.
+        required: true
+      tags:
+      - centres
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
   /commentaires/:
     get:
       operationId: commentaires_list
@@ -4212,7 +4230,7 @@ paths:
     get:
       operationId: statuts_choices_retrieve
       description: Retourne la liste des valeurs `nom` possibles pour un statut, avec
-        libellé et couleur par défaut.
+        libellé, couleur par défaut et couleur de texte.
       summary: Liste des choix possibles de statuts
       tags:
       - Statuts
@@ -8832,9 +8850,14 @@ components:
         default_color:
           type: string
           description: 'Couleur hexadécimale par défaut du statut (ex: ''#FFEB3B'')'
+        text_color:
+          type: string
+          description: 'Couleur de texte recommandée selon la lisibilité (ex: ''#000000''
+            ou ''#FFFFFF'')'
       required:
       - default_color
       - label
+      - text_color
       - value
     StatutRequest:
       type: object

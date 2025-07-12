@@ -58,13 +58,13 @@ class TypeOffre(BaseModel):
     
     # Mapping des couleurs par défaut pour chaque type d'offre
     COULEURS_PAR_DEFAUT = {
-        CRIF: "#4e73df",         # Bleu
-        ALTERNANCE: "#1cc88a",   # Vert
-        POEC: "#f6c23e",         # Jaune
-        POEI: "#e74a3b",         # Rouge
-        TOSA: "#6f42c1",         # Violet
-        AUTRE: "#20c997",        # Turquoise
-        NON_DEFINI: "#6c757d",   # Gris
+        CRIF: "#D735B4",        # 🔵 Bleu (CRIF)
+        ALTERNANCE: "#063c68",  # 🟢 Vert (Alternance)
+        POEC: "#260a5b",        # 🟣 Violet (POEC)
+        POEI: "#0b4f04",        # 🟠 Orange (POEI)
+        TOSA: "#323435",         # ⚙️ Gris (TOSA)
+        AUTRE: "#ff6207",        # 🟡 Jaune (Autre)
+        NON_DEFINI: "#000000",   # ⚫ Noir (Non défini)
     }
     
     nom = models.CharField(

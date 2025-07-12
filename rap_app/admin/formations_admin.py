@@ -2,7 +2,6 @@ from django.contrib import admin
 from django.utils.html import format_html
 from ..models.formations import Formation
 
-
 @admin.register(Formation)
 class FormationAdmin(admin.ModelAdmin):
     """
@@ -21,6 +20,7 @@ class FormationAdmin(admin.ModelAdmin):
         "total_inscrits",
         "places_disponibles",
         "taux_saturation_display",
+        "saturation_display",  # ✅ Ajouté
         "status_temporel_badge",
     )
     list_filter = (
@@ -46,6 +46,7 @@ class FormationAdmin(admin.ModelAdmin):
         "updated_at",
         "created_by",
         "updated_by",
+        "saturation",  # ✅ Lecture seule
     )
 
     fieldsets = (
@@ -65,7 +66,7 @@ class FormationAdmin(admin.ModelAdmin):
         ("👥 Statistiques & Commentaires", {
             "fields": (
                 "nombre_candidats", "nombre_entretiens", "nombre_evenements",
-                "dernier_commentaire", "saturation",
+                "dernier_commentaire", "saturation",  # ✅ Déjà présent
             ),
         }),
         ("🔗 Partenaires", {
@@ -102,8 +103,63 @@ class FormationAdmin(admin.ModelAdmin):
     end_date_display.short_description = "Fin"
 
     def taux_saturation_display(self, obj):
-        return f"{obj.taux_saturation:.1f} %" if obj.total_places else "—"
-    taux_saturation_display.short_description = "Saturation"
+        if not obj.total_places:
+            return "—"
+
+        try:
+            value = float(obj.taux_saturation)
+        except (TypeError, ValueError):
+            return "—"
+
+        # Couleur selon le pourcentage
+        if value >= 90:
+            color = "#dc3545"  # Rouge
+        elif value >= 70:
+            color = "#fd7e14"  # Orange
+        elif value >= 50:
+            color = "#ffc107"  # Jaune
+        else:
+            color = "#28a745"  # Vert
+
+        text = f"{value:.1f}%"
+        return format_html(
+            '<strong style="color: {}; font-weight: bold;">{}</strong>',
+            color,
+            text
+        )
+
+    taux_saturation_display.short_description = "Taux d’occupation"
+
+
+    def saturation_display(self, obj):
+        if obj.saturation is None:
+            return "—"
+
+        try:
+            value = float(obj.saturation)
+        except (TypeError, ValueError):
+            return "—"
+
+        # Couleur selon le pourcentage
+        if value >= 90:
+            color = "#dc3545"  # Rouge
+        elif value >= 70:
+            color = "#fd7e14"  # Orange
+        elif value >= 50:
+            color = "#ffc107"  # Jaune
+        else:
+            color = "#28a745"  # Vert
+
+        # On prépare le texte déjà formaté avant format_html
+        text = f"{value:.1f}%"
+        return format_html(
+            '<strong style="color: {}; font-weight: bold;">{}</strong>',
+            color,
+            text
+        )
+
+    saturation_display.short_description = "Saturation actuelle"
+
 
     def status_temporel_badge(self, obj):
         label = obj.status_temporel.capitalize()

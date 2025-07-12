@@ -28,6 +28,13 @@ class PartenaireSerializer(serializers.ModelSerializer):
     type_display = serializers.CharField(source="get_type_display", read_only=True)
     actions_display = serializers.CharField(source="get_actions_display", read_only=True)
 
+    # 👇 Fix pour éviter l'enum avec une valeur vide
+    actions = serializers.ChoiceField(
+        choices=Partenaire.CHOICES_TYPE_OF_ACTION,
+        required=False,
+        allow_blank=False,  # ⛔️ interdit ""
+    )
+
     class Meta:
         model = Partenaire
         fields = [

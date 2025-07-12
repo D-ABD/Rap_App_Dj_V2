@@ -1,4 +1,8 @@
 # rap_app/api/serializers/commentaires_serializers.py
+import re
+import bleach
+from bleach.sanitizer import Cleaner
+from bleach.css_sanitizer import CSSSanitizer
 
 from rest_framework import serializers
 from drf_spectacular.utils import extend_schema_serializer, OpenApiExample
@@ -7,6 +11,14 @@ from django.utils.html import strip_tags
 
 from ...models.commentaires import Commentaire
 
+ALLOWED_TAGS = ['p', 'b', 'i', 'u', 'em', 'strong', 'ul', 'ol', 'li', 'span']
+ALLOWED_ATTRIBUTES = {
+    'span': ['style'],
+}
+
+css_sanitizer = CSSSanitizer(
+    allowed_css_properties=["color", "background-color"]  # ✅ UNIQUEMENT cela
+)
 
 @extend_schema_serializer(
     examples=[
@@ -36,7 +48,8 @@ from ...models.commentaires import Commentaire
                     "is_recent": True,
                     "is_edited": False,
                     "created_at": "2025-05-12T14:30:00Z",
-                    "updated_at": "2025-05-12T14:30:00Z"
+                    "updated_at": "2025-05-12T14:30:00Z",
+                    
                 }
             },
             response_only=True
@@ -44,12 +57,22 @@ from ...models.commentaires import Commentaire
     ]
 )
 class CommentaireSerializer(serializers.ModelSerializer):
+    
+
     """
     💬 Serializer principal pour les commentaires de formation.
     """
+    centre_nom = serializers.SerializerMethodField()
+    statut_nom = serializers.SerializerMethodField()
+    type_offre_nom = serializers.SerializerMethodField()
+    numero_offre = serializers.SerializerMethodField()
     class Meta:
         model = Commentaire
-        fields = ["id", "formation", "contenu", "saturation", "created_at", "updated_at"]
+        fields = [
+            "id", "formation", "contenu", "saturation",
+            "centre_nom", "statut_nom", "type_offre_nom", "numero_offre",
+            "created_at", "updated_at"
+        ]
         extra_kwargs = {
             "formation": {"required": True},
             "contenu": {
@@ -58,16 +81,60 @@ class CommentaireSerializer(serializers.ModelSerializer):
                     "blank": _("Création échouée : le champ 'contenu' est requis.")
                 }
             },
-            "saturation": {
-                "required": False
-            },
+            "saturation": {"required": False},
         }
 
-    def validate_contenu(self, value):
-        value = strip_tags(value).strip()
-        if not value:
+
+    def validate_contenu(self, value: str) -> str:
+        print("🛠 Contenu brut reçu :", value)
+
+        css_sanitizer = CSSSanitizer(
+            allowed_css_properties=["color", "background-color"]
+        )
+
+        cleaned = bleach.clean(
+            value,
+            tags=ALLOWED_TAGS,
+            attributes=ALLOWED_ATTRIBUTES,
+            css_sanitizer=css_sanitizer,
+            strip=True,
+            strip_comments=True,
+        )
+
+        print("✅ Contenu après nettoyage :", cleaned)
+
+        if not strip_tags(cleaned).strip():
             raise serializers.ValidationError(_("Le contenu ne peut pas être vide."))
-        return value
+
+        return cleaned
+
+
+
+
+    def get_centre_nom(self, obj):
+        try:
+            return obj.formation.centre.nom
+        except AttributeError:
+            return None
+
+    def get_statut_nom(self, obj):
+        try:
+            return obj.formation.statut.nom
+        except AttributeError:
+            return None
+
+    def get_type_offre_nom(self, obj):
+        try:
+            return obj.formation.type_offre.nom
+        except AttributeError:
+            return None
+
+    def get_numero_offre(self, obj):
+        try:
+            return obj.formation.numero_offre  # ou obj.formation.num_offre selon ton modèle
+        except AttributeError:
+            return None
+    
 
     def validate_saturation(self, value):
         if value is not None and not (0 <= value <= 100):
@@ -82,7 +149,8 @@ class CommentaireSerializer(serializers.ModelSerializer):
                 "message": f"Commentaire {'récupéré' if view.action == 'retrieve' else 'traité'} avec succès.",
                 "data": instance.to_serializable_dict(include_full_content=True)
             }
-        return instance.to_serializable_dict()
+        include_full_content = self.context.get("include_full_content", True)
+        return instance.to_serializable_dict(include_full_content=include_full_content)
 
     def create(self, validated_data):
         request = self.context.get("request")
@@ -97,6 +165,9 @@ class CommentaireSerializer(serializers.ModelSerializer):
             setattr(instance, attr, value)
         instance.save()
         return instance
+
+
+        
 from rest_framework import serializers
 
 class CommentaireMetaSerializer(serializers.Serializer):

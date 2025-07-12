@@ -360,6 +360,11 @@ class Evenement(BaseModel):
             elif original:
                 self._log_changes(original)
 
+
+    def get_absolute_url(self):
+        return reverse("evenement-detail", kwargs={"pk": self.pk})
+
+
     def _log_changes(self, original):
         """
         📝 Enregistre les modifications détectées par comparaison avec l'instance originale.
@@ -367,7 +372,6 @@ class Evenement(BaseModel):
         Args:
             original (Evenement): Ancienne version de l'objet avant modification.
         """
-        # Liste des champs à surveiller
         fields_to_watch = [
             ('type_evenement', 'Type d\'événement'),
             ('event_date', 'Date'),
@@ -377,21 +381,18 @@ class Evenement(BaseModel):
             ('participants_reels', 'Participants réels'),
             ('description_autre', 'Description personnalisée'),
         ]
-        
-        # Détection des changements
+
         changes = []
         for field, label in fields_to_watch:
             old_value = getattr(original, field)
             new_value = getattr(self, field)
-            
+
             if old_value != new_value:
-                old_display = self._format_field_value(field, old_value)
-                new_display = self._format_field_value(field, new_value)
-                changes.append(f"{label}: '{old_display}' → '{new_display}'")
-        
-        # Journalisation si des changements sont détectés
+                changes.append(f"{label}: '{old_value}' → '{new_value}'")
+
         if changes:
-            logger.info(f"Modification de l'événement #{self.pk} : {', '.join(changes)}")
+            message = f"Événement #{self.pk} modifié. Changements : " + "; ".join(changes)
+            logger.info(message)
     
     def _format_field_value(self, field_name, value):
         """
@@ -532,6 +533,12 @@ class Evenement(BaseModel):
         return status in [self.StatutTemporel.BIENTOT, self.StatutTemporel.FUTUR]
 
     # ===== Statistiques =====
+
+    @property
+    def nombre_candidats(self):
+        return self.candidats.count()
+
+
     def get_participation_rate(self):
         """
         📊 Calcule le taux de participation si possible.
@@ -651,3 +658,7 @@ class Evenement(BaseModel):
             }
         
         return result
+    
+    @property
+    def nombre_candidats(self):
+        return self.candidats.count()

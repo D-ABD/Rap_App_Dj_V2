@@ -94,7 +94,7 @@ class DocumentManager(models.Manager):
 def validate_file_extension(value, type_doc=None):
     """
     ✅ Valide l'extension d'un fichier selon son type de document.
-
+    
     Args:
         value (File): Le fichier à valider.
         type_doc (str): Le type de document défini dans les choix.
@@ -103,22 +103,30 @@ def validate_file_extension(value, type_doc=None):
         ValidationError: Si l'extension est invalide pour ce type.
     """
     ext = os.path.splitext(value.name)[1].lower()
+
     valides = {
         Document.PDF: ['.pdf'],
         Document.IMAGE: ['.jpg', '.jpeg', '.png', '.gif', '.webp'],
         Document.CONTRAT: ['.pdf', '.doc', '.docx'],
-        Document.AUTRE: []
+        Document.AUTRE: [],  # aucune restriction
     }
 
+    # Si aucun type fourni ou que le type est AUTRE => on ne valide pas
     if not type_doc or type_doc == Document.AUTRE:
         return
 
-    if ext not in valides.get(type_doc, []):
-        raise ValidationError(
-            f"Extension invalide pour {type_doc}. "
-            f"Attendu : {', '.join(valides.get(type_doc))}"
-        )
+    # Si le type de document n'est pas reconnu => erreur claire
+    if type_doc not in valides:
+        raise ValidationError(f"Type de document non reconnu : {type_doc}")
 
+    # Si l'extension n'est pas autorisée pour ce type => erreur explicite
+    extensions_attendues = valides[type_doc]
+    if ext not in extensions_attendues:
+        raise ValidationError(
+            f"Extension « {ext} » invalide pour le type « {type_doc} ». "
+            f"Extensions autorisées : {', '.join(extensions_attendues)}"
+        )
+    
 def filepath_for_document(instance, filename):
     """
     Détermine le chemin de sauvegarde pour un document.
@@ -379,7 +387,7 @@ class Document(BaseModel):
 
             # Détection du MIME type
             try:
-                self.mime_type = magic.from_buffer(self.fichier.read(2048), mime=True)
+                # self.mime_type = magic.from_buffer(self.fichier.read(2048), mime=True)
                 self.fichier.seek(0)
             except Exception as e:
                 logger.warning(f"Impossible de détecter le MIME type pour {self.nom_fichier}: {e}")

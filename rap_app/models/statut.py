@@ -27,15 +27,15 @@ def get_default_color(statut_nom):
         str: Code couleur hexadécimal correspondant au statut
     """
     COULEURS_PREDEFINIES = {
-        'non_defini': "#FFEB3B",             # Jaune
-        'recrutement_en_cours': "#4CAF50",   # Vert
-        'formation_en_cours': "#2196F3",     # Bleu
-        'formation_a_annuler': "#FF9800",    # Orange
-        'formation_a_repousser': "#FFEB3B",  # Jaune
-        'formation_annulee': "#F44336",      # Rouge
-        'pleine': "#9C27B0",                 # Violet
-        'quasi_pleine': "#3F51B5",           # Indigo
-        'autre': "#795548",                  # Marron
+        'non_defini': "#080807",             # Jaune
+        'recrutement_en_cours': "#0A54F4",   # Vert
+        'formation_en_cours': "#110452",     # Bleu
+        'formation_a_annuler': "#FD570A",    # Orange
+        'formation_a_repousser': "#D6C424",  # Jaune
+        'formation_annulee': "#922119",      # Rouge
+        'pleine': "#00980F",                 # Violet
+        'quasi_pleine': "#04758C",           # Indigo
+        'autre': "#7B8386",                  # Marron
     }
     return COULEURS_PREDEFINIES.get(statut_nom, "#607D8B")  # Bleu-gris par défaut
 

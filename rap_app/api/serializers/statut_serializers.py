@@ -102,3 +102,6 @@ class StatutChoiceSerializer(serializers.Serializer):
     default_color = serializers.CharField(
         help_text="Couleur hexadécimale par défaut du statut (ex: '#FFEB3B')"
     )
+    text_color = serializers.CharField(
+        help_text="Couleur de texte recommandée selon la lisibilité (ex: '#000000' ou '#FFFFFF')"
+    )

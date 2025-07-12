@@ -3,9 +3,12 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 from drf_spectacular.utils import extend_schema, extend_schema_view, OpenApiResponse
 from rest_framework.views import APIView
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
+from rest_framework.permissions import AllowAny
 
 from ..permissions import ReadWriteAdminReadStaff
-from ..serializers.user_profil_serializers import CustomUserSerializer, RoleChoiceSerializer
+from ..serializers.user_profil_serializers import CustomUserSerializer, RegistrationSerializer, RoleChoiceSerializer
 from ...models.custom_user import CustomUser
 from ...models.logs import LogUtilisateur
 
@@ -42,6 +45,28 @@ from ...models.logs import LogUtilisateur
         responses={204: OpenApiResponse(description="Utilisateur supprimé avec succès.")},
     ),
 )
+
+
+class RegisterView(APIView):
+
+    def get_permissions(self):
+        return [AllowAny()]  # <-- 🔒 Ceci écrase les permissions globales
+     
+    def post(self, request):
+        print("📥 RegisterView POST data:", request.data)
+        print("🔐 User:", request.user, "- Authenticated:", request.user.is_authenticated)
+        serializer = RegistrationSerializer(data=request.data)
+        if serializer.is_valid():
+            user = serializer.save()
+            return Response({
+                "success": True,
+                "message": "Compte créé. En attente de validation.",
+                "user": {
+                    "email": user.email,
+                }
+            }, status=status.HTTP_201_CREATED)
+        return Response({"errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
 class CustomUserViewSet(viewsets.ModelViewSet):
     """
     👤 ViewSet complet pour la gestion des utilisateurs.
@@ -72,25 +97,6 @@ class CustomUserViewSet(viewsets.ModelViewSet):
             "data": None
         }, status=status.HTTP_204_NO_CONTENT)
 
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        instance = serializer.save()
-
-        # Journalisation
-        from ...models.logs import LogUtilisateur
-        LogUtilisateur.log_action(
-            instance=instance,
-            action=LogUtilisateur.ACTION_CREATE,
-            user=request.user,
-            details="Création d'un nouvel utilisateur"
-        )
-
-        return Response({
-            "success": True,
-            "message": "Utilisateur créé avec succès.",
-            "data": instance.to_serializable_dict(include_sensitive=True)
-        }, status=status.HTTP_201_CREATED)
 
 
     def update(self, request, *args, **kwargs):
@@ -177,6 +183,23 @@ class CustomUserViewSet(viewsets.ModelViewSet):
             "message": "Utilisateur récupéré avec succès.",
             "data": serializer.data
         }, status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=["get"], url_path="liste-simple")
+    @extend_schema(
+        summary="Liste simple des utilisateurs (id + nom complet)",
+        description="Retourne une liste allégée des utilisateurs actifs pour les filtres (id, nom).",
+        tags=["Utilisateurs"]
+    )
+    def liste_simple(self, request):
+        users = CustomUser.objects.filter(is_active=True).only("id", "first_name", "last_name", "email").order_by("first_name")
+        data = [
+            {
+                "id": user.id,
+                "nom": f"{user.first_name} {user.last_name}".strip() or user.email
+            }
+            for user in users
+        ]
+        return Response({"success": True, "data": data})        
 
 class RoleChoicesView(APIView):
     @extend_schema(

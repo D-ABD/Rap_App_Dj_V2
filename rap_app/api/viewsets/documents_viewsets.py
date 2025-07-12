@@ -5,52 +5,76 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from drf_spectacular.utils import OpenApiTypes
-
-from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiResponse
+from drf_spectacular.utils import (
+    OpenApiTypes, extend_schema, OpenApiParameter, OpenApiResponse
+)
+from django_filters.rest_framework import DjangoFilterBackend
+import django_filters
 
 from ...models.documents import Document
 from ...models.logs import LogUtilisateur
-from ...api.serializers.documents_serializers import DocumentSerializer, TypeDocumentChoiceSerializer
+from ...api.serializers.documents_serializers import (
+    DocumentSerializer,
+    TypeDocumentChoiceSerializer,
+)
 from ...api.paginations import RapAppPagination
 from ...api.permissions import IsOwnerOrStaffOrAbove
 
 logger = logging.getLogger("application.api")
 
+class DocumentFilter(django_filters.FilterSet):
+    centre_id = django_filters.NumberFilter(field_name='formation__centre_id')
+    statut_id = django_filters.NumberFilter(field_name='formation__statut_id')
+    type_offre_id = django_filters.NumberFilter(field_name='formation__type_offre_id')
 
+    class Meta:
+        model = Document
+        fields = ['centre_id', 'statut_id', 'type_offre_id']
+        
 @extend_schema(tags=["Documents"])
 class DocumentViewSet(viewsets.ModelViewSet):
     """
     📎 ViewSet complet pour gérer les documents liés aux formations.
+
+    Fonctionnalités :
+    - CRUD complet
+    - Filtres : centre, statut, type d'offre (via `DocumentFilter`)
+    - Export CSV
+    - Endpoint par formation
+    - Types de documents disponibles
     """
     queryset = Document.objects.all()
     serializer_class = DocumentSerializer
     permission_classes = [IsAuthenticated & IsOwnerOrStaffOrAbove]
     pagination_class = RapAppPagination
 
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = DocumentFilter
+    
     @extend_schema(
         summary="📄 Lister tous les documents",
         responses={200: OpenApiResponse(response=DocumentSerializer(many=True))}
     )
     def list(self, request, *args, **kwargs):
-        page = self.paginate_queryset(self.queryset)
-        serializer = self.get_serializer(page or self.queryset, many=True)
-        return self.get_paginated_response(serializer.data) if page else Response({
-            "success": True,
-            "message": "Liste des documents.",
-            "data": serializer.data
-        })
+        """
+        📄 Liste paginée des documents, avec filtres `centre_id`, `statut_id`, `type_offre_id`.
+        """
+        return super().list(request, *args, **kwargs)
 
     @extend_schema(
         summary="📂 Détail d’un document",
         responses={200: OpenApiResponse(response=DocumentSerializer)}
     )
     def retrieve(self, request, *args, **kwargs):
+        """
+        📂 Détail enrichi d’un document.
+        """
         doc = self.get_object()
+        serializer = self.get_serializer(doc)
         return Response({
             "success": True,
             "message": "Document récupéré avec succès.",
-            "data": doc.to_serializable_dict()
+            "data": serializer.data
         })
 
     @extend_schema(
@@ -59,6 +83,9 @@ class DocumentViewSet(viewsets.ModelViewSet):
         responses={201: OpenApiResponse(response=DocumentSerializer)}
     )
     def create(self, request, *args, **kwargs):
+        """
+        ➕ Création d’un nouveau document.
+        """
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
             document = serializer.save(created_by=request.user)
@@ -89,9 +116,17 @@ class DocumentViewSet(viewsets.ModelViewSet):
         responses={200: OpenApiResponse(response=DocumentSerializer)}
     )
     def update(self, request, *args, **kwargs):
+        """
+        ✏️ Mise à jour partielle d’un document.
+        """
         instance = self.get_object()
-        serializer = self.get_serializer(instance, data=request.data, partial=True)
+        data = request.data.copy()
 
+        # Ne pas supprimer le fichier s’il n’est pas envoyé
+        if 'fichier' not in data or data.get('fichier') in [None, '', 'null']:
+            data.pop('fichier', None)
+
+        serializer = self.get_serializer(instance, data=data, partial=True)
         if serializer.is_valid():
             document = serializer.save()
 
@@ -119,6 +154,9 @@ class DocumentViewSet(viewsets.ModelViewSet):
         responses={204: OpenApiResponse(description="Document supprimé avec succès.")}
     )
     def destroy(self, request, *args, **kwargs):
+        """
+        🗑️ Suppression physique d’un document.
+        """
         document = self.get_object()
         document.delete(user=request.user)
 
@@ -144,6 +182,9 @@ class DocumentViewSet(viewsets.ModelViewSet):
     )
     @action(detail=False, methods=["get"], url_path="par-formation")
     def par_formation(self, request):
+        """
+        📚 Retourne tous les documents liés à une formation donnée.
+        """
         formation_id = request.query_params.get("formation")
         if not formation_id:
             return Response({"success": False, "message": "Paramètre 'formation' requis."}, status=400)
@@ -172,6 +213,9 @@ class DocumentViewSet(viewsets.ModelViewSet):
     )
     @action(detail=False, methods=["get"], url_path="export-csv")
     def export_csv(self, request):
+        """
+        🧾 Export CSV complet des documents (non filtré).
+        """
         response = HttpResponse(content_type='text/csv')
         response["Content-Disposition"] = "attachment; filename=documents.csv"
 
@@ -199,6 +243,9 @@ class DocumentViewSet(viewsets.ModelViewSet):
     )
     @action(detail=False, methods=["get"], url_path="types", url_name="types")
     def get_types(self, request):
+        """
+        📋 Retourne les types de documents disponibles.
+        """
         data = [
             {"value": value, "label": label}
             for value, label in Document.TYPE_DOCUMENT_CHOICES
@@ -210,3 +257,37 @@ class DocumentViewSet(viewsets.ModelViewSet):
             "data": serializer.data
         })
 
+    @extend_schema(
+        summary="Récupérer les filtres disponibles pour les documents",
+        responses={200: OpenApiResponse(description="Filtres disponibles")}
+    )
+    @action(detail=False, methods=["get"], url_path="filtres")
+    def get_filtres(self, request):
+        """
+        Renvoie les options de filtres disponibles pour les documents.
+        ⚠️ Affiche uniquement les centres/statuts/types liés à au moins un document.
+        """
+        centres = Document.objects \
+            .filter(formation__centre__isnull=False) \
+            .values_list("formation__centre_id", "formation__centre__nom") \
+            .distinct()
+
+        statuts = Document.objects \
+            .filter(formation__statut__isnull=False) \
+            .values_list("formation__statut_id", "formation__statut__nom") \
+            .distinct()
+
+        type_offres = Document.objects \
+            .filter(formation__type_offre__isnull=False) \
+            .values_list("formation__type_offre_id", "formation__type_offre__nom") \
+            .distinct()
+
+        return Response({
+            "success": True,
+            "message": "Filtres documents récupérés avec succès",
+            "data": {
+                "centres": [{"id": c[0], "nom": c[1]} for c in centres],
+                "statuts": [{"id": s[0], "nom": s[1]} for s in statuts],
+                "type_offres": [{"id": t[0], "nom": t[1]} for t in type_offres],
+            }
+        })

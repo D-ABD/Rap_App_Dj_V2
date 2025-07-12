@@ -67,12 +67,7 @@ class EvenementSerializer(serializers.ModelSerializer):
     def get_event_date_formatted(self, obj):
         return obj.event_date.strftime('%d/%m/%Y') if obj.event_date else None
 
-    def to_representation(self, instance):
-        return {
-            "success": True,
-            "message": "Événement récupéré avec succès.",
-            "data": instance.to_serializable_dict()
-        }
+
     def validate(self, data):
         """
         Validation personnalisée :

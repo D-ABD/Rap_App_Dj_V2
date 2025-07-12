@@ -116,7 +116,7 @@ git push -u origin main
 # Pousser les modifications
 git status                           
 git add .                            
-git commit -m "Ajout des listes de choix aux serializers et viewset pour les exposer à la doc"   
+git commit -m "Ajout des listes de choix aux serializers et viewset pour les exposer à la doc. / modification de centreviewset"   
 git push origin main                 
 
 

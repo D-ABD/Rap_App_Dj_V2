@@ -92,7 +92,7 @@ class CustomUserAdmin(DjangoUserAdmin):
     avatar_preview.short_description = "Aperçu de l'avatar"
 
     def save_model(self, request, obj, form, change):
-        if not obj.pk and not obj.created_by:
-            obj.created_by = request.user
-        obj.updated_by = request.user
+        # ✅ Suppression de l’accès à `created_by` (non défini dans CustomUser)
+        # Si tu ajoutes un champ 'updated_by' dans le modèle, cette ligne sera utile
+        # obj.updated_by = request.user
         super().save_model(request, obj, form, change)

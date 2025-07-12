@@ -17,7 +17,9 @@ from .vae_jury import VAE, SuiviJury, HistoriqueStatutVAE
 from .logs import LogUtilisateur
 from .custom_user import CustomUser
 from .models_test import DummyModel
-
+from .candidat import Candidat
+from .appairage import Appairage, HistoriqueAppairage
+from .atelier_tre import AtelierTRE
 
 __all__ = ['CustomUser']  # Important pour l'importation
 
@@ -40,4 +42,8 @@ from . import (
     types_offre,
     custom_user,
     vae_jury,
+    candidat,
+    appairage,
+    atelier_tre,
+    
 )

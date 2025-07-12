@@ -289,7 +289,7 @@ class CustomUser(AbstractUser):
 
     def __str__(self):
         """🔁 Représentation textuelle de l'utilisateur."""
-        return f"{self.get_full_name()} ({self.email})"
+        return self.username
         
     def __repr__(self):
         """Représentation technique pour le débogage."""

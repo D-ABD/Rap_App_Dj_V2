@@ -99,7 +99,6 @@ class TypeOffreViewSet(viewsets.ModelViewSet):
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
         instance.delete()  # ✅ Suppression réelle
-        instance.save()
         LogUtilisateur.log_action(
             instance=instance,
             action=LogUtilisateur.ACTION_DELETE,

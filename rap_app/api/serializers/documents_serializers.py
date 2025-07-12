@@ -41,6 +41,32 @@ class DocumentSerializer(serializers.ModelSerializer):
     icon_class = serializers.CharField(read_only=True)
     download_url = serializers.CharField(read_only=True)
     created_by = serializers.CharField(source="created_by.username", read_only=True)
+    is_viewable_in_browser = serializers.BooleanField(read_only=True)
+
+    # Champs enrichis depuis la formation
+    formation_nom = serializers.CharField(source='formation.nom', read_only=True)
+    formation_num_offre = serializers.CharField(source='formation.num_offre', read_only=True)
+    formation_start_date = serializers.DateField(source='formation.start_date', read_only=True)
+    formation_end_date = serializers.DateField(source='formation.end_date', read_only=True)
+    formation_centre_nom = serializers.CharField(source='formation.centre.nom', read_only=True)
+    formation_type_offre_libelle = serializers.SerializerMethodField()
+    formation_statut = serializers.SerializerMethodField()
+
+    def get_formation_type_offre_libelle(self, obj):
+        if obj.formation and obj.formation.type_offre:
+            return str(obj.formation.type_offre)
+        return None
+
+    def get_formation_statut(self, obj):
+        statut = getattr(obj.formation, 'statut', None)
+        if statut:
+            return {
+                "id": statut.id,
+                "nom": statut.nom,
+                "libelle": statut.get_nom_display(),
+                "couleur": statut.couleur
+            }
+        return None
 
     class Meta:
         model = Document
@@ -48,23 +74,22 @@ class DocumentSerializer(serializers.ModelSerializer):
             "id", "nom_fichier", "fichier", "type_document",
             "type_document_display", "taille_fichier", "taille_readable",
             "mime_type", "extension", "icon_class", "download_url",
-            "formation", "created_at", "created_by"
+            "formation", "created_at", "created_by", "is_viewable_in_browser",
+
+            # Champs enrichis
+            "formation_nom", "formation_num_offre", "formation_start_date",
+            "formation_end_date", "formation_centre_nom", "formation_type_offre_libelle",
+            "formation_statut",
         ]
         read_only_fields = [
             "id", "type_document_display", "taille_readable", "extension", "icon_class",
-            "download_url", "mime_type", "taille_fichier", "created_at", "created_by"
+            "download_url", "mime_type", "taille_fichier", "created_at", "created_by",
+            "is_viewable_in_browser", "formation_nom", "formation_num_offre",
+            "formation_start_date", "formation_end_date", "formation_centre_nom",
+            "formation_type_offre_libelle", "formation_statut"
         ]
-        extra_kwargs = {
-            "nom_fichier": {"help_text": "Nom lisible du document (sera nettoyé automatiquement)"},
-            "fichier": {"help_text": "Fichier téléversé (PDF, image, doc...)"},
-            "type_document": {"help_text": "Catégorie du document (PDF, Image, Contrat...)"},
-            "formation": {"help_text": "ID de la formation liée à ce document"},
-        }
 
     def validate(self, data):
-        """
-        Valide la cohérence type / extension et taille.
-        """
         fichier = data.get("fichier")
         type_doc = data.get("type_document")
 
@@ -73,16 +98,13 @@ class DocumentSerializer(serializers.ModelSerializer):
                 validate_file_extension(fichier, type_doc)
             except ValidationError as e:
                 raise serializers.ValidationError({"fichier": str(e)})
-
         return data
 
-    def to_representation(self, instance):
-        return {
-            "success": True,
-            "message": "Document récupéré avec succès.",
-            "data": instance.to_serializable_dict()
-        }
-
+    def update(self, instance, validated_data):
+        fichier = validated_data.pop('fichier', None)
+        if fichier:
+            instance.fichier = fichier
+        return super().update(instance, validated_data)
 
 class TypeDocumentChoiceSerializer(serializers.Serializer):
     value = serializers.CharField(help_text="Valeur interne du type (ex: 'pdf')")

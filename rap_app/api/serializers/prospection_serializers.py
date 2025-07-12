@@ -133,22 +133,50 @@ class ChangerStatutSerializer(serializers.Serializer):
         return data
 
 
+from rest_framework import serializers
+from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
+from ...models.prospection import HistoriqueProspection, ProspectionChoices
+
+
 class HistoriqueProspectionSerializer(serializers.ModelSerializer):
     """
     Serializer pour l'historique des modifications de prospection.
     Fournit les champs formatés et calculés utiles à l'affichage.
     """
 
+    # === Champs display ===
     type_contact_display = serializers.CharField(source="get_type_contact_display", read_only=True)
     ancien_statut_display = serializers.CharField(source="get_ancien_statut_display", read_only=True)
     nouveau_statut_display = serializers.CharField(source="get_nouveau_statut_display", read_only=True)
     moyen_contact_display = serializers.CharField(source="get_moyen_contact_display", read_only=True)
+
+    # === Champs calculés ===
     jours_avant_relance = serializers.IntegerField(read_only=True)
     relance_urgente = serializers.BooleanField(read_only=True)
     est_recent = serializers.BooleanField(read_only=True)
     created_by = serializers.StringRelatedField(read_only=True)
 
     statut_avec_icone = serializers.SerializerMethodField()
+
+    # === Correction des ChoiceFields ===
+    type_contact = serializers.ChoiceField(
+        choices=ProspectionChoices.TYPE_CONTACT_CHOICES,
+        allow_blank=False
+    )
+    ancien_statut = serializers.ChoiceField(
+        choices=ProspectionChoices.PROSPECTION_STATUS_CHOICES,
+        allow_blank=False
+    )
+    nouveau_statut = serializers.ChoiceField(
+        choices=ProspectionChoices.PROSPECTION_STATUS_CHOICES,
+        allow_blank=False
+    )
+    moyen_contact = serializers.ChoiceField(
+        choices=ProspectionChoices.MOYEN_CONTACT_CHOICES,
+        required=False,
+        allow_blank=False
+    )
 
     class Meta:
         model = HistoriqueProspection
@@ -181,7 +209,7 @@ class HistoriqueProspectionSerializer(serializers.ModelSerializer):
             "prochain_contact": {"help_text": "Date de relance prévue"},
             "moyen_contact": {"help_text": "Moyen de contact utilisé"},
         }
-        
+
     def get_statut_avec_icone(self, obj) -> dict:
         """Renvoie un objet avec le nom du statut + icône + couleur CSS"""
         return {
@@ -197,6 +225,7 @@ class HistoriqueProspectionSerializer(serializers.ModelSerializer):
                 _("La date de relance doit être dans le futur.")
             )
         return value
+
 
 class EnumChoiceSerializer(serializers.Serializer):
     value = serializers.CharField(help_text="Valeur brute utilisée en base")

@@ -3,11 +3,10 @@ from rest_framework import viewsets, status
 from rest_framework.response import Response
 from drf_spectacular.utils import extend_schema, extend_schema_view, OpenApiResponse
 from rest_framework.decorators import action
-from ...models.statut import get_default_color
 
-from ...api.permissions import ReadOnlyOrAdmin
-from ...models.statut import Statut
+from ...models.statut import calculer_couleur_texte, get_default_color, Statut
 from ..serializers.statut_serializers import StatutChoiceSerializer, StatutSerializer
+from ...api.permissions import ReadOnlyOrAdmin
 
 logger = logging.getLogger("application.statut")
 
@@ -81,14 +80,13 @@ class StatutViewSet(viewsets.ModelViewSet):
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
-        instance.delete()  # ❌ Supprime définitivement
+        instance.delete()
         logger.warning(f"🗑️ Statut supprimé définitivement : {instance}")
         return Response({
             "success": True,
             "message": "Statut supprimé avec succès.",
             "data": None
         }, status=status.HTTP_204_NO_CONTENT)
-
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -99,22 +97,25 @@ class StatutViewSet(viewsets.ModelViewSet):
         })
 
     def list(self, request, *args, **kwargs):
+        """
+        ✅ Liste des statuts — format standard { count, next, previous, results }
+        Compatible avec openapi-typescript-codegen et React Query.
+        """
         queryset = self.filter_queryset(self.get_queryset())
         page = self.paginate_queryset(queryset)
-        results = [obj.to_serializable_dict() for obj in page] if page is not None else [obj.to_serializable_dict() for obj in queryset]
-        response = {
-            "success": True,
-            "message": "Liste des statuts récupérée avec succès.",
-            "data": results
-        }
-        return self.get_paginated_response(results) if page is not None else Response(response)
 
-
-
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return Response({
+                "count": self.paginator.page.paginator.count,
+                "next": self.paginator.get_next_link(),
+                "previous": self.paginator.get_previous_link(),
+                "results": serializer.data
+            })
 
     @extend_schema(
         summary="Liste des choix possibles de statuts",
-        description="Retourne la liste des valeurs `nom` possibles pour un statut, avec libellé et couleur par défaut.",
+        description="Retourne la liste des valeurs `nom` possibles pour un statut, avec libellé, couleur par défaut et couleur de texte.",
         tags=["Statuts"],
         responses={200: OpenApiResponse(
             response=StatutChoiceSerializer(many=True),
@@ -124,19 +125,20 @@ class StatutViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=["get"], url_path="choices", url_name="choices")
     def get_choices(self, request):
         """
-        ✅ Retourne les choix disponibles pour `nom`, avec label et couleur par défaut.
+        ✅ Retourne les choix disponibles pour `nom`, avec label, couleur par défaut et couleur du texte.
         """
-        data = [
+        results = [
             {
                 "value": key,
                 "label": label,
-                "default_color": get_default_color(key)
+                "default_color": (color := get_default_color(key)),
+                "text_color": calculer_couleur_texte(color)
             }
             for key, label in Statut.STATUT_CHOICES
         ]
-        logger.debug("📋 Statut choices envoyés.")
         return Response({
-            "success": True,
-            "message": "Liste des choix de statuts.",
-            "data": data
+            "count": len(results),
+            "next": None,
+            "previous": None,
+            "results": results
         })

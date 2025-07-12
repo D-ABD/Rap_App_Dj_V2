@@ -19,3 +19,5 @@ class RapAppConfig(AppConfig):
         import rap_app.signals.prepacomp_signals
         import rap_app.signals.logs_signals  
         import rap_app.signals.statut_signals
+        import rap_app.signals.appairage_signals
+

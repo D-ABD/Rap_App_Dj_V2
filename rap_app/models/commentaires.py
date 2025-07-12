@@ -7,9 +7,17 @@ from django.utils.html import strip_tags
 from django.utils import timezone
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.core.exceptions import ValidationError
-
+from django.template.loader import render_to_string
+from weasyprint import HTML
 from .base import BaseModel
 from .formations import Formation
+import csv
+import io
+from docx import Document
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import A4
+from django.http import HttpResponse
+from rest_framework.decorators import action
 
 logger = logging.getLogger(__name__)
 
@@ -132,6 +140,13 @@ class Commentaire(BaseModel):
         ]
     )
     
+    saturation_formation = models.PositiveIntegerField(
+    null=True,
+    blank=True,
+    verbose_name="Saturation de la formation (copiée)",
+    help_text="Valeur de la saturation de la formation au moment du commentaire"
+    )
+
     # === Managers === 
     objects = models.Manager()  # Manager par défaut
     custom = CommentaireManager()  # Manager personnalisé
@@ -193,32 +208,29 @@ class Commentaire(BaseModel):
         """
         💾 Sauvegarde le commentaire après nettoyage et validation.
 
-        - Supprime tout HTML du contenu via `strip_tags`.
         - Vérifie et contraint la valeur de `saturation` entre 0 et 100.
+        - Copie la saturation de la formation (si disponible).
         - Validation des données métier via `clean()`.
-
-        Args:
-            *args: Arguments positionnels pour `super().save()`.
-            **kwargs: Arguments nommés pour `super().save()`.
-
-        Returns:
-            None
         """
-        # Nettoyer et valider les données
-        self.contenu = strip_tags(self.contenu)
-        
+
+        # ✅ NE PAS nettoyer ici : on suppose que le frontend a déjà validé/sécurisé le HTML
+        pass
+
+        # Clamp de la saturation
         if self.saturation is not None:
             self.saturation = max(self.SATURATION_MIN, min(self.SATURATION_MAX, self.saturation))
-            
+
+        # Copier la saturation de la formation (au moment de la création)
+        if self.formation and hasattr(self.formation, 'saturation'):
+            self.saturation_formation = self.formation.saturation
+
         # Validation métier
         self.clean()
-        
-        # Conserver l'état "is_new" pour le logging
+
         is_new = self.pk is None
-        
-        # Enregistrer l'objet
+
         super().save(*args, **kwargs)
-        
+
         logger.debug(f"Commentaire #{self.pk} {'créé' if is_new else 'mis à jour'} pour la formation #{self.formation_id}")
         
     def delete(self, *args, **kwargs):
@@ -524,22 +536,31 @@ class Commentaire(BaseModel):
         return stats
 
     def to_serializable_dict(self, include_full_content=False):
+        formation = self.formation
+
         """
         📦 Retourne une représentation sérialisable du commentaire.
 
         Args:
             include_full_content (bool): Si True, inclut le contenu complet
-                                         sinon, inclut seulement un aperçu
+                                        sinon, inclut seulement un aperçu
 
         Returns:
             dict: Dictionnaire des champs exposables du commentaire.
         """
         return {
             "id": self.pk,
-            "formation_id": self.formation_id,
-            "formation_nom": self.formation.nom,
+            "formation_id": formation.id if formation else None,
+            "formation_nom": formation.nom if formation else "N/A",
+            "num_offre": getattr(formation, "num_offre", None),
+            "centre_nom": getattr(formation.centre, "nom", None) if getattr(formation, "centre", None) else None,
+            "start_date": formation.start_date.isoformat() if getattr(formation, "start_date", None) else None,
+            "end_date": formation.end_date.isoformat() if getattr(formation, "end_date", None) else None,
+            "type_offre": formation.type_offre.nom if getattr(formation, "type_offre", None) else None,
+            "statut": formation.statut.nom if getattr(formation, "statut", None) else None,
             "contenu": self.contenu if include_full_content else self.get_content_preview(),
             "saturation": self.saturation,
+            "saturation_formation": self.saturation_formation,  # ✅ valeur historique au moment du commentaire
             "auteur": self.auteur_nom,
             "date": self.date_formatee,
             "heure": self.heure_formatee,
@@ -548,7 +569,6 @@ class Commentaire(BaseModel):
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,
         }
-
         
     def get_edit_url(self):
         """
@@ -567,3 +587,20 @@ class Commentaire(BaseModel):
             str: URL de suppression pour ce commentaire
         """
         return reverse("commentaire-delete", kwargs={"pk": self.pk})
+    
+    @action(detail=False, methods=["get"], url_path="export-pdf")
+    def export_pdf(self, request):
+        ids = request.GET.getlist("ids")
+        commentaires = self.queryset.filter(id__in=ids)
+
+        html_string = render_to_string("commentaires/export_pdf.html", {"commentaires": commentaires})
+        pdf_file = HTML(string=html_string).write_pdf()
+
+        return HttpResponse(
+            pdf_file,
+            content_type="application/pdf",
+            headers={"Content-Disposition": 'attachment; filename="commentaires.pdf"'}
+        )
+
+
+

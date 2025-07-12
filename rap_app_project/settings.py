@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     "drf_spectacular",
     "drf_spectacular_sidecar",
+    "django_extensions",
 
 ]
 
@@ -93,7 +94,6 @@ DATABASES = {
 # Django REST Framework
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework.authentication.SessionAuthentication',
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': [
@@ -107,6 +107,7 @@ REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rap_app.api.paginations.RapAppPagination',
     'PAGE_SIZE': 10,
 }
+
 # Optionnel : durée de vie des tokens
 from datetime import timedelta
 
@@ -161,16 +162,22 @@ SPECTACULAR_SETTINGS = {
 
 
 
+# Autoriser les requêtes POST depuis Vite en local
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+]
 
 
 # CORS Settings
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-    "http://192.168.1.25:19000",  # Expo Go (dev tools)
-    "http://192.168.1.25:19006",  # Expo Web preview
+    "http://localhost:5173",        # Vite dev server
+    "http://127.0.0.1:5173",        # Si tu alternes avec 127.0.0.1
+    "http://localhost:3000",        # (facultatif, ancienne version React ?)
+    "http://192.168.1.25:19000",    # Expo Go
+    "http://192.168.1.25:19006",    # Expo Web preview
 ]
-CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_CREDENTIALS = True
 
 # Email
 EMAIL_BACKEND = config('EMAIL_BACKEND', default='django.core.mail.backends.console.EmailBackend')
@@ -184,10 +191,12 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 # Internationalization
-LANGUAGE_CODE = 'en-us'
-TIME_ZONE = 'UTC'
+LANGUAGE_CODE = 'fr'
+TIME_ZONE = 'Europe/Paris'
 USE_I18N = True
+USE_L10N = True
 USE_TZ = True
+
 
 # Static files
 STATIC_URL = "/static/"
