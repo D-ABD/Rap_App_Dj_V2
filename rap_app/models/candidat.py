@@ -115,6 +115,14 @@ class Candidat(BaseModel):
         help_text=_("Notes libres concernant le candidat")
     )
 
+    origine_sourcing = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        verbose_name=_("Origine du sourcing"),
+        help_text=_("Comment le contact a été établi avec le candidat")
+    )
+
     date_inscription = models.DateTimeField(
         auto_now_add=True,
         verbose_name=_("Date d’inscription"),

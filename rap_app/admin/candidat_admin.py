@@ -40,12 +40,12 @@ class CandidatAdmin(admin.ModelAdmin):
         "prenom", "nom", "statut", "age", "formation", "resultat_placement",
         "date_inscription", "admissible", "entretien_done", "test_is_ok",
         "voir_appairages", "vu_par", "responsable_placement", "ateliers_resume",
-        "date_placement", "contrat_signe", "courrier_rentree", "date_rentree"
+        "date_placement", "contrat_signe", "courrier_rentree", "date_rentree", "origine_sourcing"
     )
     list_filter = (
         "statut", "formation", "type_contrat", "disponibilite", "admissible",
         "entretien_done", "test_is_ok", "rqth", "permis_b",
-        "resultat_placement", "contrat_signe", "vu_par", "responsable_placement",
+        "resultat_placement", "contrat_signe", "vu_par", "origine_sourcing", "responsable_placement",
     )
     search_fields = ("prenom", "nom", "email", "telephone", "ville", "code_postal")
     readonly_fields = ("date_inscription", "age")
@@ -61,7 +61,7 @@ class CandidatAdmin(admin.ModelAdmin):
         (_("Identité"), {
             "fields": (
                 ("prenom", "nom"), "date_naissance", "age", "email",
-                "telephone", "ville", "code_postal"
+                "telephone", "ville", "code_postal", "origine_sourcing"
             )
         }),
         (_("Compte et inscription"), {
