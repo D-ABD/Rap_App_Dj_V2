@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
 from django.utils.html import format_html
 from django.utils.timezone import localtime
+from django.contrib import messages
 from ..models.custom_user import CustomUser
 
 
@@ -96,3 +97,11 @@ class CustomUserAdmin(DjangoUserAdmin):
         # Si tu ajoutes un champ 'updated_by' dans le modèle, cette ligne sera utile
         # obj.updated_by = request.user
         super().save_model(request, obj, form, change)
+@admin.action(description="Passer en stagiaire")
+def passer_en_stagiaire(self, request, queryset):
+    for user in queryset:
+        old_role = user.role
+        user.role = CustomUser.ROLE_STAGIAIRE
+        user.save()
+        self.message_user(request, f"{user.email} : rôle mis à jour ({old_role} → stagiaire)", messages.SUCCESS)
+        self.message_user(request, f"{user.email} : rôle mis à jour ({old_role} → stagiaire)", messages.SUCCESS)

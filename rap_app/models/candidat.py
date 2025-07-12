@@ -4,14 +4,23 @@ from django.db import models, transaction
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
+import unicodedata
+import re
+from django.core.validators import MinValueValidator, MaxValueValidator
+
+from .custom_user import CustomUser
 
 from .formations import Formation
 from .base import BaseModel
 from .evenements import Evenement
 
 logger = logging.getLogger("application.candidats")
+NIVEAU_CHOICES = [(i, f"{i} ★") for i in range(1, 6)]
 
-
+def slugify_username(value: str) -> str:
+    value = unicodedata.normalize("NFKD", value).encode("ascii", "ignore").decode("ascii")
+    value = re.sub(r"[^\w.@+-]", "", value)  # Seuls caractères autorisés
+    return value.lower()
 class Candidat(BaseModel):
     """
     👤 Représente un candidat.
@@ -161,26 +170,30 @@ class Candidat(BaseModel):
         verbose_name=_("Permis B"),
     )
 
-    csp = models.IntegerField(
-        choices=[(i, str(i)) for i in range(1, 5)],
+
+    communication = models.PositiveSmallIntegerField(
         null=True,
         blank=True,
-        verbose_name=_("CSP"),
+        verbose_name=_("Communication (étoiles)"),
+        validators=[MinValueValidator(1), MaxValueValidator(5)],
+        choices=NIVEAU_CHOICES,
     )
 
-    communication = models.IntegerField(
-        choices=[(i, str(i)) for i in range(1, 5)],
-        null=True,
-        blank=True,
-        verbose_name=_("Niveau de communication"),
-    )
+    experience = models.PositiveSmallIntegerField(
+            null=True,
+            blank=True,
+            verbose_name=_("Expérience (étoiles)"),
+            validators=[MinValueValidator(1), MaxValueValidator(5)],
+            choices=NIVEAU_CHOICES,
+        )
 
-    experience = models.IntegerField(
-        choices=[(i, str(i)) for i in range(1, 5)],
-        null=True,
-        blank=True,
-        verbose_name=_("Niveau d’expérience"),
-    )
+    csp = models.PositiveSmallIntegerField(
+            null=True,
+            blank=True,
+            verbose_name=_("CSP (étoiles)"),
+            validators=[MinValueValidator(1), MaxValueValidator(5)],
+            choices=NIVEAU_CHOICES,
+        )
 
     vu_par = models.ForeignKey(
         get_user_model(),
@@ -287,6 +300,79 @@ class Candidat(BaseModel):
                 (today.month, today.day) < (self.date_naissance.month, self.date_naissance.day)
             )
         return None
+    
+
+    def valider_comme_stagiaire(self):
+        """
+        Crée ou met à jour un compte utilisateur stagiaire à partir de ce candidat.
+        Lève une erreur si le candidat n’est pas admissible.
+        """
+        if not self.admissible:
+            raise ValidationError(_("Ce candidat n'est pas admissible."))
+
+        if self.compte_utilisateur:
+            user = self.compte_utilisateur
+            user.role = CustomUser.ROLE_STAGIAIRE
+            user.save()
+        else:
+            email = f"{self.prenom.lower()}.{self.nom.lower()}@exemple.com"
+            username = f"{self.prenom.lower()}_{self.nom.lower()}"
+            user = CustomUser.objects.create_user_with_role(
+                email=email,
+                username=username,
+                password="changeme123",
+                role=CustomUser.ROLE_STAGIAIRE,
+                first_name=self.prenom,
+                last_name=self.nom,
+            )
+            self.compte_utilisateur = user
+            self.save()
+
+        return user
+    
+    @property
+    def est_valide_comme_stagiaire(self) -> bool:
+        return bool(self.compte_utilisateur and self.compte_utilisateur.role == CustomUser.ROLE_STAGIAIRE)
+
+    @property
+    def est_valide_comme_candidatuser(self):
+        return bool(self.compte_utilisateur and self.compte_utilisateur.role == CustomUser.ROLE_CANDIDAT_USER)
+
+        
+    def valider_comme_candidatuser(self):
+        """
+        Crée ou met à jour un compte utilisateur avec le rôle candidatuser à partir de ce candidat.
+        """
+        if self.compte_utilisateur:
+            user = self.compte_utilisateur
+            user.role = CustomUser.ROLE_CANDIDAT_USER
+            user.save()
+        else:
+            base_email = f"{self.prenom}.{self.nom}".lower().replace(" ", "")
+            base_username = slugify_username(f"{self.prenom}_{self.nom}")
+
+            email = f"{base_email}@exemple.com"
+            username = base_username
+
+            user = CustomUser.objects.create_user_with_role(
+                email=email,
+                username=username,
+                password="changeme123",
+                role=CustomUser.ROLE_CANDIDAT_USER,
+                first_name=self.prenom,
+                last_name=self.nom,
+            )
+            self.compte_utilisateur = user
+            self.save()
+
+        return user
+    
+
+    @property
+    def role_utilisateur(self):
+        if self.compte_utilisateur:
+            return self.compte_utilisateur.get_role_display()
+        return "-"
 
     def clean(self):
         super().clean()

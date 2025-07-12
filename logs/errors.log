@@ -12210,3 +12210,793 @@ Traceback (most recent call last):
                                                   ^^^^^^^^^^^^^^^^^
 AttributeError: 'Candidat' object has no attribute 'ateliers_tre'. Did you mean: 'ateliers_labels'?
 ERROR 2025-07-12 09:58:10,683 basehttp 5973 123145469190144 "GET /admin/rap_app/candidat/ HTTP/1.1" 500 406107
+ERROR 2025-07-12 13:52:38,215 custom_user 12309 123145426812928 Erreur de validation pour l'utilisateur sdemanoca@test.com: {'username': ['Saisissez un nom d’utilisateur valide. Il ne peut contenir que des lettres, des nombres ou les caractères «\xa0@\xa0», «\xa0.\xa0», «\xa0+\xa0», «\xa0-\xa0» et «\xa0_\xa0».']}
+ERROR 2025-07-12 13:52:38,322 log 12309 123145426812928 Internal Server Error: /admin/rap_app/candidat/
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/admin/candidat_admin.py", line 37, in valider_comme_candidatuser
+    user = candidat.valider_comme_candidatuser()
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/models/candidat.py", line 346, in valider_comme_candidatuser
+    user = CustomUser.objects.create_user_with_role(
+        email=email,
+    ...<4 lines>...
+        last_name=self.nom,
+    )
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/models/custom_user.py", line 101, in create_user_with_role
+    return self.create_user(email, username, password, **extra_fields)
+           ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/models/custom_user.py", line 29, in create_user
+    user.save(using=self._db)
+    ~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/models/custom_user.py", line 283, in save
+    self.full_clean()
+    ~~~~~~~~~~~~~~~^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/base.py", line 1502, in full_clean
+    raise ValidationError(errors)
+django.core.exceptions.ValidationError: {'username': ['Saisissez un nom d’utilisateur valide. Il ne peut contenir que des lettres, des nombres ou les caractères «\xa0@\xa0», «\xa0.\xa0», «\xa0+\xa0», «\xa0-\xa0» et «\xa0_\xa0».']}
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/options.py", line 688, in wrapper
+    return self.admin_site.admin_view(view)(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/utils/decorators.py", line 134, in _wrapper_view
+    response = view_func(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/views/decorators/cache.py", line 62, in _wrapper_view_func
+    response = view_func(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/sites.py", line 242, in inner
+    return view(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/utils/decorators.py", line 46, in _wrapper
+    return bound_method(*args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/utils/decorators.py", line 134, in _wrapper_view
+    response = view_func(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/options.py", line 1959, in changelist_view
+    response = self.response_action(
+        request, queryset=cl.get_queryset(request)
+    )
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/options.py", line 1593, in response_action
+    response = func(self, request, queryset)
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/admin/candidat_admin.py", line 40, in valider_comme_candidatuser
+    messages.error(request, _(f"Erreur pour {candidat} : {e.message}"))
+                                                          ^^^^^^^^^
+AttributeError: 'ValidationError' object has no attribute 'message'. Did you mean: 'messages'?
+ERROR 2025-07-12 13:52:38,327 basehttp 12309 123145426812928 "POST /admin/rap_app/candidat/ HTTP/1.1" 500 141476
+ERROR 2025-07-12 13:56:33,889 log 17096 123145498664960 Internal Server Error: /admin/rap_app/candidat/
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/options.py", line 688, in wrapper
+    return self.admin_site.admin_view(view)(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/utils/decorators.py", line 134, in _wrapper_view
+    response = view_func(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/views/decorators/cache.py", line 62, in _wrapper_view_func
+    response = view_func(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/sites.py", line 242, in inner
+    return view(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/utils/decorators.py", line 46, in _wrapper
+    return bound_method(*args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/utils/decorators.py", line 134, in _wrapper_view
+    response = view_func(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/options.py", line 1959, in changelist_view
+    response = self.response_action(
+        request, queryset=cl.get_queryset(request)
+    )
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/options.py", line 1593, in response_action
+    response = func(self, request, queryset)
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/admin/candidat_admin.py", line 37, in valider_comme_candidatuser
+    user = candidat.valider_comme_candidatuser()
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/models/candidat.py", line 355, in valider_comme_candidatuser
+    role=CustomUser.ROLE_CANDIDATUSER,
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: type object 'CustomUser' has no attribute 'ROLE_CANDIDATUSER'. Did you mean: 'ROLE_CANDIDAT'?
+ERROR 2025-07-12 13:56:33,896 basehttp 17096 123145498664960 "POST /admin/rap_app/candidat/ HTTP/1.1" 500 117835
+ERROR 2025-07-12 13:58:49,756 log 19065 123145521451008 Internal Server Error: /admin/rap_app/candidat/
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/options.py", line 688, in wrapper
+    return self.admin_site.admin_view(view)(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/utils/decorators.py", line 134, in _wrapper_view
+    response = view_func(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/views/decorators/cache.py", line 62, in _wrapper_view_func
+    response = view_func(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/sites.py", line 242, in inner
+    return view(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/utils/decorators.py", line 46, in _wrapper
+    return bound_method(*args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/utils/decorators.py", line 134, in _wrapper_view
+    response = view_func(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/options.py", line 1959, in changelist_view
+    response = self.response_action(
+        request, queryset=cl.get_queryset(request)
+    )
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/options.py", line 1593, in response_action
+    response = func(self, request, queryset)
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/admin/candidat_admin.py", line 37, in valider_comme_candidatuser
+    user = candidat.valider_comme_candidatuser()
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/models/candidat.py", line 355, in valider_comme_candidatuser
+    role=CustomUser.ROLE_CANDIDATUSER,
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: type object 'CustomUser' has no attribute 'ROLE_CANDIDATUSER'. Did you mean: 'ROLE_CANDIDAT'?
+ERROR 2025-07-12 13:58:49,763 basehttp 19065 123145521451008 "POST /admin/rap_app/candidat/ HTTP/1.1" 500 117839
+ERROR 2025-07-12 13:58:53,931 log 19065 123145521451008 Internal Server Error: /admin/rap_app/candidat/
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/options.py", line 688, in wrapper
+    return self.admin_site.admin_view(view)(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/utils/decorators.py", line 134, in _wrapper_view
+    response = view_func(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/views/decorators/cache.py", line 62, in _wrapper_view_func
+    response = view_func(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/sites.py", line 242, in inner
+    return view(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/utils/decorators.py", line 46, in _wrapper
+    return bound_method(*args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/utils/decorators.py", line 134, in _wrapper_view
+    response = view_func(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/options.py", line 1959, in changelist_view
+    response = self.response_action(
+        request, queryset=cl.get_queryset(request)
+    )
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/options.py", line 1593, in response_action
+    response = func(self, request, queryset)
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/admin/candidat_admin.py", line 37, in valider_comme_candidatuser
+    user = candidat.valider_comme_candidatuser()
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/models/candidat.py", line 355, in valider_comme_candidatuser
+    role=CustomUser.ROLE_CANDIDATUSER,
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: type object 'CustomUser' has no attribute 'ROLE_CANDIDATUSER'. Did you mean: 'ROLE_CANDIDAT'?
+ERROR 2025-07-12 13:58:53,935 basehttp 19065 123145521451008 "POST /admin/rap_app/candidat/ HTTP/1.1" 500 117839
+ERROR 2025-07-12 14:02:49,582 log 22689 123145588875264 Internal Server Error: /admin/rap_app/candidat/
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/options.py", line 688, in wrapper
+    return self.admin_site.admin_view(view)(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/utils/decorators.py", line 134, in _wrapper_view
+    response = view_func(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/views/decorators/cache.py", line 62, in _wrapper_view_func
+    response = view_func(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/sites.py", line 242, in inner
+    return view(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/utils/decorators.py", line 46, in _wrapper
+    return bound_method(*args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/utils/decorators.py", line 134, in _wrapper_view
+    response = view_func(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/options.py", line 1959, in changelist_view
+    response = self.response_action(
+        request, queryset=cl.get_queryset(request)
+    )
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/options.py", line 1593, in response_action
+    response = func(self, request, queryset)
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/admin/candidat_admin.py", line 37, in valider_comme_candidatuser
+    user = candidat.valider_comme_candidatuser()
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/models/candidat.py", line 355, in valider_comme_candidatuser
+    role=CustomUser.ROLE_CANDIDATUSER,
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: type object 'CustomUser' has no attribute 'ROLE_CANDIDATUSER'. Did you mean: 'ROLE_CANDIDAT_USER'?
+ERROR 2025-07-12 14:02:49,588 basehttp 22689 123145588875264 "POST /admin/rap_app/candidat/ HTTP/1.1" 500 117839
+ERROR 2025-07-12 14:02:52,589 log 22689 123145588875264 Internal Server Error: /admin/rap_app/candidat/
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/options.py", line 688, in wrapper
+    return self.admin_site.admin_view(view)(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/utils/decorators.py", line 134, in _wrapper_view
+    response = view_func(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/views/decorators/cache.py", line 62, in _wrapper_view_func
+    response = view_func(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/sites.py", line 242, in inner
+    return view(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/utils/decorators.py", line 46, in _wrapper
+    return bound_method(*args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/utils/decorators.py", line 134, in _wrapper_view
+    response = view_func(request, *args, **kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/options.py", line 1959, in changelist_view
+    response = self.response_action(
+        request, queryset=cl.get_queryset(request)
+    )
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/options.py", line 1593, in response_action
+    response = func(self, request, queryset)
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/admin/candidat_admin.py", line 37, in valider_comme_candidatuser
+    user = candidat.valider_comme_candidatuser()
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/models/candidat.py", line 355, in valider_comme_candidatuser
+    role=CustomUser.ROLE_CANDIDATUSER,
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: type object 'CustomUser' has no attribute 'ROLE_CANDIDATUSER'. Did you mean: 'ROLE_CANDIDAT_USER'?
+ERROR 2025-07-12 14:02:52,595 basehttp 22689 123145588875264 "POST /admin/rap_app/candidat/ HTTP/1.1" 500 117839
+ERROR 2025-07-12 14:05:20,641 log 24884 123145538260992 Internal Server Error: /admin/rap_app/candidat/
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/options.py", line 681, in get_field
+    return self.fields_map[field_name]
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^
+KeyError: 'est_valide_comme_candidatuser'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/utils.py", line 272, in lookup_field
+    f = _get_non_gfk_field(opts, name)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/utils.py", line 303, in _get_non_gfk_field
+    field = opts.get_field(name)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/options.py", line 683, in get_field
+    raise FieldDoesNotExist(
+        "%s has no field named '%s'" % (self.object_name, field_name)
+    )
+django.core.exceptions.FieldDoesNotExist: Candidat has no field named 'est_valide_comme_candidatuser'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/base.py", line 220, in _get_response
+    response = response.render()
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/response.py", line 114, in render
+    self.content = self.rendered_content
+                   ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/response.py", line 92, in rendered_content
+    return template.render(context, self._request)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/backends/django.py", line 61, in render
+    return self.template.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/base.py", line 175, in render
+    return self._render(context)
+           ~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/base.py", line 167, in _render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/base.py", line 1005, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/base.py", line 966, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/loader_tags.py", line 157, in render
+    return compiled_parent._render(context)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/base.py", line 167, in _render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/base.py", line 1005, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/base.py", line 966, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/loader_tags.py", line 157, in render
+    return compiled_parent._render(context)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/base.py", line 167, in _render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/base.py", line 1005, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/base.py", line 966, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/loader_tags.py", line 63, in render
+    result = block.nodelist.render(context)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/base.py", line 1005, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/base.py", line 966, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/loader_tags.py", line 63, in render
+    result = block.nodelist.render(context)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/base.py", line 1005, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/base.py", line 966, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/templatetags/base.py", line 45, in render
+    return super().render(context)
+           ~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/library.py", line 258, in render
+    _dict = self.func(*resolved_args, **resolved_kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/templatetags/admin_list.py", line 336, in result_list
+    "results": list(results(cl)),
+               ~~~~^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/templatetags/admin_list.py", line 312, in results
+    yield ResultList(None, items_for_result(cl, res, None))
+          ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/templatetags/admin_list.py", line 303, in __init__
+    super().__init__(*items)
+    ~~~~~~~~~~~~~~~~^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/templatetags/admin_list.py", line 213, in items_for_result
+    f, attr, value = lookup_field(field_name, result, cl.model_admin)
+                     ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/utils.py", line 281, in lookup_field
+    value = attr(obj)
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/admin/candidat_admin.py", line 44, in est_valide_comme_candidatuser
+    return obj.est_valide_comme_candidatuser
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/models/candidat.py", line 333, in est_valide_comme_candidatuser
+    return bool(self.compte_utilisateur and self.compte_utilisateur.role == CustomUser.ROLE_CANDIDATUSER)
+                                                                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: type object 'CustomUser' has no attribute 'ROLE_CANDIDATUSER'. Did you mean: 'ROLE_CANDIDAT_USER'?
+ERROR 2025-07-12 14:05:20,653 basehttp 24884 123145538260992 "GET /admin/rap_app/candidat/ HTTP/1.1" 500 402400
+ERROR 2025-07-12 14:15:28,458 log 33942 123145524473856 Internal Server Error: /admin/rap_app/candidat/
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/options.py", line 681, in get_field
+    return self.fields_map[field_name]
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^
+KeyError: 'est_valide_comme_candidatuser'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/utils.py", line 272, in lookup_field
+    f = _get_non_gfk_field(opts, name)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/utils.py", line 303, in _get_non_gfk_field
+    field = opts.get_field(name)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/options.py", line 683, in get_field
+    raise FieldDoesNotExist(
+        "%s has no field named '%s'" % (self.object_name, field_name)
+    )
+django.core.exceptions.FieldDoesNotExist: Candidat has no field named 'est_valide_comme_candidatuser'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/base.py", line 220, in _get_response
+    response = response.render()
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/response.py", line 114, in render
+    self.content = self.rendered_content
+                   ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/response.py", line 92, in rendered_content
+    return template.render(context, self._request)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/backends/django.py", line 61, in render
+    return self.template.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/base.py", line 175, in render
+    return self._render(context)
+           ~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/base.py", line 167, in _render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/base.py", line 1005, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/base.py", line 966, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/loader_tags.py", line 157, in render
+    return compiled_parent._render(context)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/base.py", line 167, in _render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/base.py", line 1005, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/base.py", line 966, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/loader_tags.py", line 157, in render
+    return compiled_parent._render(context)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/base.py", line 167, in _render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/base.py", line 1005, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/base.py", line 966, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/loader_tags.py", line 63, in render
+    result = block.nodelist.render(context)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/base.py", line 1005, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/base.py", line 966, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/loader_tags.py", line 63, in render
+    result = block.nodelist.render(context)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/base.py", line 1005, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/base.py", line 966, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/templatetags/base.py", line 45, in render
+    return super().render(context)
+           ~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/library.py", line 258, in render
+    _dict = self.func(*resolved_args, **resolved_kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/templatetags/admin_list.py", line 336, in result_list
+    "results": list(results(cl)),
+               ~~~~^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/templatetags/admin_list.py", line 312, in results
+    yield ResultList(None, items_for_result(cl, res, None))
+          ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/templatetags/admin_list.py", line 303, in __init__
+    super().__init__(*items)
+    ~~~~~~~~~~~~~~~~^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/templatetags/admin_list.py", line 213, in items_for_result
+    f, attr, value = lookup_field(field_name, result, cl.model_admin)
+                     ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/utils.py", line 281, in lookup_field
+    value = attr(obj)
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/admin/candidat_admin.py", line 50, in est_valide_comme_candidatuser
+    return obj.est_valide_comme_candidatuser
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/models/candidat.py", line 333, in est_valide_comme_candidatuser
+    return bool(self.compte_utilisateur and self.compte_utilisateur.role == CustomUser.ROLE_CANDIDATUSER)
+                                                                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: type object 'CustomUser' has no attribute 'ROLE_CANDIDATUSER'. Did you mean: 'ROLE_CANDIDAT_USER'?
+ERROR 2025-07-12 14:15:28,472 basehttp 33942 123145524473856 "GET /admin/rap_app/candidat/ HTTP/1.1" 500 402225
+ERROR 2025-07-12 14:15:30,521 log 33942 123145524473856 Internal Server Error: /admin/rap_app/candidat/
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/options.py", line 681, in get_field
+    return self.fields_map[field_name]
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^
+KeyError: 'est_valide_comme_candidatuser'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/utils.py", line 272, in lookup_field
+    f = _get_non_gfk_field(opts, name)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/utils.py", line 303, in _get_non_gfk_field
+    field = opts.get_field(name)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/options.py", line 683, in get_field
+    raise FieldDoesNotExist(
+        "%s has no field named '%s'" % (self.object_name, field_name)
+    )
+django.core.exceptions.FieldDoesNotExist: Candidat has no field named 'est_valide_comme_candidatuser'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/base.py", line 220, in _get_response
+    response = response.render()
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/response.py", line 114, in render
+    self.content = self.rendered_content
+                   ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/response.py", line 92, in rendered_content
+    return template.render(context, self._request)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/backends/django.py", line 61, in render
+    return self.template.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/base.py", line 175, in render
+    return self._render(context)
+           ~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/base.py", line 167, in _render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/base.py", line 1005, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/base.py", line 966, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/loader_tags.py", line 157, in render
+    return compiled_parent._render(context)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/base.py", line 167, in _render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/base.py", line 1005, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/base.py", line 966, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/loader_tags.py", line 157, in render
+    return compiled_parent._render(context)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/base.py", line 167, in _render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/base.py", line 1005, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/base.py", line 966, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/loader_tags.py", line 63, in render
+    result = block.nodelist.render(context)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/base.py", line 1005, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/base.py", line 966, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/loader_tags.py", line 63, in render
+    result = block.nodelist.render(context)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/base.py", line 1005, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/base.py", line 966, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/templatetags/base.py", line 45, in render
+    return super().render(context)
+           ~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/library.py", line 258, in render
+    _dict = self.func(*resolved_args, **resolved_kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/templatetags/admin_list.py", line 336, in result_list
+    "results": list(results(cl)),
+               ~~~~^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/templatetags/admin_list.py", line 312, in results
+    yield ResultList(None, items_for_result(cl, res, None))
+          ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/templatetags/admin_list.py", line 303, in __init__
+    super().__init__(*items)
+    ~~~~~~~~~~~~~~~~^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/templatetags/admin_list.py", line 213, in items_for_result
+    f, attr, value = lookup_field(field_name, result, cl.model_admin)
+                     ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/utils.py", line 281, in lookup_field
+    value = attr(obj)
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/admin/candidat_admin.py", line 50, in est_valide_comme_candidatuser
+    return obj.est_valide_comme_candidatuser
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/models/candidat.py", line 333, in est_valide_comme_candidatuser
+    return bool(self.compte_utilisateur and self.compte_utilisateur.role == CustomUser.ROLE_CANDIDATUSER)
+                                                                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: type object 'CustomUser' has no attribute 'ROLE_CANDIDATUSER'. Did you mean: 'ROLE_CANDIDAT_USER'?
+ERROR 2025-07-12 14:15:30,529 basehttp 33942 123145524473856 "GET /admin/rap_app/candidat/ HTTP/1.1" 500 402225
+ERROR 2025-07-12 14:15:32,716 log 33942 123145524473856 Internal Server Error: /admin/rap_app/candidat/
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/options.py", line 681, in get_field
+    return self.fields_map[field_name]
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^
+KeyError: 'est_valide_comme_candidatuser'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/utils.py", line 272, in lookup_field
+    f = _get_non_gfk_field(opts, name)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/utils.py", line 303, in _get_non_gfk_field
+    field = opts.get_field(name)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/options.py", line 683, in get_field
+    raise FieldDoesNotExist(
+        "%s has no field named '%s'" % (self.object_name, field_name)
+    )
+django.core.exceptions.FieldDoesNotExist: Candidat has no field named 'est_valide_comme_candidatuser'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/base.py", line 220, in _get_response
+    response = response.render()
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/response.py", line 114, in render
+    self.content = self.rendered_content
+                   ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/response.py", line 92, in rendered_content
+    return template.render(context, self._request)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/backends/django.py", line 61, in render
+    return self.template.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/base.py", line 175, in render
+    return self._render(context)
+           ~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/base.py", line 167, in _render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/base.py", line 1005, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/base.py", line 966, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/loader_tags.py", line 157, in render
+    return compiled_parent._render(context)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/base.py", line 167, in _render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/base.py", line 1005, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/base.py", line 966, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/loader_tags.py", line 157, in render
+    return compiled_parent._render(context)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/base.py", line 167, in _render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/base.py", line 1005, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/base.py", line 966, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/loader_tags.py", line 63, in render
+    result = block.nodelist.render(context)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/base.py", line 1005, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/base.py", line 966, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/loader_tags.py", line 63, in render
+    result = block.nodelist.render(context)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/base.py", line 1005, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/base.py", line 966, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/templatetags/base.py", line 45, in render
+    return super().render(context)
+           ~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/library.py", line 258, in render
+    _dict = self.func(*resolved_args, **resolved_kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/templatetags/admin_list.py", line 336, in result_list
+    "results": list(results(cl)),
+               ~~~~^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/templatetags/admin_list.py", line 312, in results
+    yield ResultList(None, items_for_result(cl, res, None))
+          ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/templatetags/admin_list.py", line 303, in __init__
+    super().__init__(*items)
+    ~~~~~~~~~~~~~~~~^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/templatetags/admin_list.py", line 213, in items_for_result
+    f, attr, value = lookup_field(field_name, result, cl.model_admin)
+                     ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/utils.py", line 281, in lookup_field
+    value = attr(obj)
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/admin/candidat_admin.py", line 50, in est_valide_comme_candidatuser
+    return obj.est_valide_comme_candidatuser
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/models/candidat.py", line 333, in est_valide_comme_candidatuser
+    return bool(self.compte_utilisateur and self.compte_utilisateur.role == CustomUser.ROLE_CANDIDATUSER)
+                                                                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: type object 'CustomUser' has no attribute 'ROLE_CANDIDATUSER'. Did you mean: 'ROLE_CANDIDAT_USER'?
+ERROR 2025-07-12 14:15:32,723 basehttp 33942 123145524473856 "GET /admin/rap_app/candidat/ HTTP/1.1" 500 402225
+ERROR 2025-07-12 14:15:37,669 log 33942 123145524473856 Internal Server Error: /admin/rap_app/candidat/
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/options.py", line 681, in get_field
+    return self.fields_map[field_name]
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^
+KeyError: 'est_valide_comme_candidatuser'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/utils.py", line 272, in lookup_field
+    f = _get_non_gfk_field(opts, name)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/utils.py", line 303, in _get_non_gfk_field
+    field = opts.get_field(name)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/db/models/options.py", line 683, in get_field
+    raise FieldDoesNotExist(
+        "%s has no field named '%s'" % (self.object_name, field_name)
+    )
+django.core.exceptions.FieldDoesNotExist: Candidat has no field named 'est_valide_comme_candidatuser'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/core/handlers/base.py", line 220, in _get_response
+    response = response.render()
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/response.py", line 114, in render
+    self.content = self.rendered_content
+                   ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/response.py", line 92, in rendered_content
+    return template.render(context, self._request)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/backends/django.py", line 61, in render
+    return self.template.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/base.py", line 175, in render
+    return self._render(context)
+           ~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/base.py", line 167, in _render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/base.py", line 1005, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/base.py", line 966, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/loader_tags.py", line 157, in render
+    return compiled_parent._render(context)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/base.py", line 167, in _render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/base.py", line 1005, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/base.py", line 966, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/loader_tags.py", line 157, in render
+    return compiled_parent._render(context)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/base.py", line 167, in _render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/base.py", line 1005, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/base.py", line 966, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/loader_tags.py", line 63, in render
+    result = block.nodelist.render(context)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/base.py", line 1005, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/base.py", line 966, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/loader_tags.py", line 63, in render
+    result = block.nodelist.render(context)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/base.py", line 1005, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/base.py", line 966, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/templatetags/base.py", line 45, in render
+    return super().render(context)
+           ~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/template/library.py", line 258, in render
+    _dict = self.func(*resolved_args, **resolved_kwargs)
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/templatetags/admin_list.py", line 336, in result_list
+    "results": list(results(cl)),
+               ~~~~^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/templatetags/admin_list.py", line 312, in results
+    yield ResultList(None, items_for_result(cl, res, None))
+          ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/templatetags/admin_list.py", line 303, in __init__
+    super().__init__(*items)
+    ~~~~~~~~~~~~~~~~^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/templatetags/admin_list.py", line 213, in items_for_result
+    f, attr, value = lookup_field(field_name, result, cl.model_admin)
+                     ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django/env/lib/python3.13/site-packages/django/contrib/admin/utils.py", line 281, in lookup_field
+    value = attr(obj)
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/admin/candidat_admin.py", line 50, in est_valide_comme_candidatuser
+    return obj.est_valide_comme_candidatuser
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/models/candidat.py", line 333, in est_valide_comme_candidatuser
+    return bool(self.compte_utilisateur and self.compte_utilisateur.role == CustomUser.ROLE_CANDIDATUSER)
+                                                                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: type object 'CustomUser' has no attribute 'ROLE_CANDIDATUSER'. Did you mean: 'ROLE_CANDIDAT_USER'?
+ERROR 2025-07-12 14:15:37,689 basehttp 33942 123145524473856 "GET /admin/rap_app/candidat/ HTTP/1.1" 500 402234

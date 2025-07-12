@@ -131,6 +131,8 @@ class CustomUser(AbstractUser):
     ROLE_STAGIAIRE = 'stagiaire'
     ROLE_STAFF = 'staff'
     ROLE_TEST = 'test'
+    ROLE_CANDIDAT = 'candidat'
+    ROLE_CANDIDAT_USER = 'candidatuser'
 
     ROLE_CHOICES = [
         (ROLE_SUPERADMIN, "Super administrateur"),
@@ -138,6 +140,8 @@ class CustomUser(AbstractUser):
         (ROLE_STAGIAIRE, "Stagiaire"),
         (ROLE_STAFF, "Membre du staff"),
         (ROLE_TEST, "Test"),
+        (ROLE_CANDIDAT, "candidat"),
+        (ROLE_CANDIDAT_USER, "Candidat validé"), 
     ]
     
     # Constantes pour validation
@@ -241,6 +245,9 @@ class CustomUser(AbstractUser):
         if self.email:
             self.email = self.email.lower().strip()
 
+    def is_candidat(self):
+        return self.role == self.ROLE_CANDIDAT
+    
 
     def save(self, *args, **kwargs):
         """
@@ -437,6 +444,12 @@ class CustomUser(AbstractUser):
             bool: True si staff
         """
         return self.role == self.ROLE_STAFF
+    
+    def is_candidat(self):
+        return self.role == self.ROLE_CANDIDAT
+    
+    def is_candidatuser(self):
+        return self.role == self.ROLE_CANDIDAT_USER
 
     def is_test(self):
         """
