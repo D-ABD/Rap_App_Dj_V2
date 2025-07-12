@@ -15,9 +15,8 @@ class CustomUserAdmin(DjangoUserAdmin):
     model = CustomUser
 
     list_display = (
-        "id",
-        "email",
         "full_name_display",
+         "email",
         "role",
         "is_active",
         "is_staff",

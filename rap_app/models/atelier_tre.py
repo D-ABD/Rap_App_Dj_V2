@@ -9,6 +9,7 @@ class AtelierTRE(BaseModel):
     🧑‍🏫 Atelier TRE collectif (CV, entretien, prospection, etc.)
     Plusieurs candidats peuvent y être inscrits avec indication de présence.
     """
+
     class TypeAtelier(models.TextChoices):
         ATELIER_1 = "atelier_1", _("Atelier 1 - CV et lettre de motivation")
         ATELIER_2 = "atelier_2", _("Atelier 2 - Simulation entretien")
@@ -30,8 +31,6 @@ class AtelierTRE(BaseModel):
         help_text=_("Date à laquelle l'atelier a eu lieu")
     )
 
-
-
     remarque = models.TextField(
         blank=True,
         null=True,
@@ -50,12 +49,14 @@ class AtelierTRE(BaseModel):
     class Meta:
         verbose_name = _("Atelier TRE")
         verbose_name_plural = _("Ateliers TRE")
-        ordering = ['-date',                                ]
-        unique_together = ('type_atelier', 'date')
+        ordering = ['-date']
+        constraints = [
+            models.UniqueConstraint(fields=["type_atelier", "date"], name="unique_atelier_par_date")
+        ]
 
     def __str__(self):
         label = self.get_type_atelier_display()
-        date_str = self.date.strftime('%d/%m/%Y')
+        date_str = self.date.strftime('%d/%m/%Y') if self.date else "?"
         return f"{label} - {date_str}"
 
     @property
@@ -67,9 +68,19 @@ class AtelierTRE(BaseModel):
         return self.participationateliertre_set.filter(present=True).count()
 
 class ParticipationAtelierTRE(models.Model):
-    candidat = models.ForeignKey(Candidat, on_delete=models.CASCADE, related_name="participations_ateliers" )
-    ateliertre = models.ForeignKey(AtelierTRE, on_delete=models.CASCADE)
-    present = models.BooleanField(default=False, verbose_name=_("Présent ?"))
+    candidat = models.ForeignKey(
+        Candidat,
+        on_delete=models.CASCADE,
+        related_name="participations_ateliers"
+    )
+    ateliertre = models.ForeignKey(
+        AtelierTRE,
+        on_delete=models.CASCADE
+    )
+    present = models.BooleanField(
+        default=False,
+        verbose_name=_("Présent ?")
+    )
 
     commentaire_individuel = models.TextField(
         blank=True,
@@ -79,10 +90,13 @@ class ParticipationAtelierTRE(models.Model):
     )
 
     class Meta:
-        unique_together = ('candidat', 'ateliertre')
         verbose_name = _("Participation à un atelier TRE")
         verbose_name_plural = _("Participations à des ateliers TRE")
+        constraints = [
+            models.UniqueConstraint(fields=["candidat", "ateliertre"], name="unique_participation")
+        ]
 
     def __str__(self):
         statut = _("présent") if self.present else _("absent")
-        return f"{self.candidat} - {self.ateliertre} ({statut})"
+        return f"{self.candidat} – {self.ateliertre} ({statut})"
+

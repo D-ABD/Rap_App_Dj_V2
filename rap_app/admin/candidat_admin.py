@@ -8,39 +8,31 @@ from ..models.atelier_tre import AtelierTRE
 from ..models.candidat import Candidat, HistoriquePlacement
 from .appairage_admin import AppairageInline
 
-# ✅ Ajout de la fonction utilitaire
+
 def etoiles(val: int) -> str:
     return "★" * val + "☆" * (5 - val)
-
-
 
 
 class HistoriquePlacementInline(admin.TabularInline):
     model = HistoriquePlacement
     extra = 0
-    fields = ("date", "entreprise", "resultat", "responsable", "commentaire")
+    fields = ("date_placement", "entreprise", "resultat", "responsable", "commentaire")
     autocomplete_fields = ("entreprise", "responsable")
     show_change_link = True
 
 
 class AtelierTREParticipationInline(admin.TabularInline):
-    model = AtelierTRE.candidats.through  # Utilise la table intermédiaire
+    model = AtelierTRE.candidats.through
     extra = 0
     verbose_name = "Atelier TRE"
     verbose_name_plural = "Ateliers TRE suivis"
-    fields = ("ateliertre",)  # Affiche la colonne de liaison
+    fields = ("ateliertre",)
     autocomplete_fields = ("ateliertre",)
 
 
 @admin.register(Candidat)
 class CandidatAdmin(admin.ModelAdmin):
     actions = ["valider_comme_stagiaire", "valider_comme_candidatuser"]
-
-
-    def role_utilisateur(self, obj):
-        return obj.compte_utilisateur.get_role_display() if obj.compte_utilisateur else "-"
-    role_utilisateur.short_description = "Rôle compte"
-
 
     @admin.action(description="Valider comme candidatuser")
     def valider_comme_candidatuser(modeladmin, request, queryset):
@@ -50,17 +42,6 @@ class CandidatAdmin(admin.ModelAdmin):
                 messages.success(request, _(f"{candidat} → {user.email} candidat validé."))
             except ValidationError as e:
                 messages.error(request, _(f"Erreur pour {candidat} : {e.messages[0]}"))
-
-    @admin.action(description="Valider comme 'Candidat utilisateur'")
-    def est_valide_comme_candidatuser(self, obj):
-        return obj.est_valide_comme_candidatuser
-
-
-    def voir_appairages(self, obj):
-        url = f"/admin/rap_app/appairage/?candidat__id__exact={obj.pk}"
-        return format_html(f'<a href="{url}">Voir</a>')
-
-    voir_appairages.short_description = "Appairages"
 
     @admin.action(description="Valider comme stagiaire")
     def valider_comme_stagiaire(modeladmin, request, queryset):
@@ -74,11 +55,15 @@ class CandidatAdmin(admin.ModelAdmin):
     @admin.display(boolean=True, description="Validé stagiaire ?")
     def est_valide_comme_stagiaire(self, obj):
         return obj.est_valide_comme_stagiaire
-    
+
     @admin.display(description="Rôle utilisateur")
     def role_utilisateur(self, obj):
         return obj.role_utilisateur
-    
+
+    def voir_appairages(self, obj):
+        url = f"/admin/rap_app/appairage/?candidat__id__exact={obj.pk}"
+        return format_html(f'<a href="{url}">Voir</a>')
+
     def ateliers_resume(self, obj):
         return obj.ateliers_resume
     ateliers_resume.short_description = "Ateliers suivis"
@@ -94,29 +79,35 @@ class CandidatAdmin(admin.ModelAdmin):
     @admin.display(description="CSP")
     def csp_etoiles(self, obj):
         return etoiles(obj.csp) if obj.csp else "-"
+    
+    @admin.display(description="Appairages")
+    def nb_appairages(self, obj):
+        return obj.nb_appairages
 
 
     list_display = (
-        "role_utilisateur", "prenom", "nom", "statut", "age", "formation", "resultat_placement",
-        "date_inscription", "admissible", "est_valide_comme_candidatuser", "est_valide_comme_stagiaire", "entretien_done", "test_is_ok",
-        "voir_appairages", "vu_par", "responsable_placement", "ateliers_resume",
-        "communication_etoiles", "experience_etoiles", "csp_etoiles", 
+        "prenom", "nom", "role_utilisateur", "statut", "age", "formation", "resultat_placement",
+        "date_inscription", "admissible", "est_valide_comme_candidatuser", "est_valide_comme_stagiaire",
+        "entretien_done", "test_is_ok", "voir_appairages", "vu_par", "responsable_placement",
+        "ateliers_resume", "communication_etoiles", "experience_etoiles", "csp_etoiles", "nb_appairages",
         "date_placement", "contrat_signe", "courrier_rentree", "date_rentree", "origine_sourcing"
     )
-
 
     list_filter = (
         "statut", "formation", "type_contrat", "disponibilite", "admissible",
         "entretien_done", "test_is_ok", "rqth", "permis_b",
         "resultat_placement", "contrat_signe", "vu_par", "origine_sourcing", "responsable_placement",
     )
+
     search_fields = ("prenom", "nom", "email", "telephone", "ville", "code_postal")
     readonly_fields = ("date_inscription", "age")
+
     autocomplete_fields = (
         "formation", "evenement", "compte_utilisateur",
         "entreprise_placement", "entreprise_validee",
         "vu_par", "responsable_placement",
     )
+
     ordering = ("-date_inscription",)
     inlines = [HistoriquePlacementInline, AppairageInline, AtelierTREParticipationInline]
 
@@ -153,15 +144,12 @@ class CandidatAdmin(admin.ModelAdmin):
             "fields": ("notes",)
         }),
     )
-    def etoiles(val: int) -> str:
-        return "★" * val + "☆" * (5 - val)
+
 
 @admin.register(HistoriquePlacement)
 class HistoriquePlacementAdmin(admin.ModelAdmin):
-    list_display = ("candidat", "date", "entreprise", "resultat", "responsable")
+    list_display = ("candidat", "date_placement", "entreprise", "resultat", "responsable")
     list_filter = ("resultat", "entreprise", "responsable")
-    search_fields = (
-        "candidat__nom", "candidat__prenom", "entreprise__nom", "commentaire"
-    ) 
+    search_fields = ("candidat__nom", "candidat__prenom", "entreprise__nom", "commentaire")
     autocomplete_fields = ("candidat", "entreprise", "responsable")
-    ordering = ("-date",)
+    ordering = ("-date_placement",)

@@ -17,25 +17,25 @@ class AtelierTREAdmin(admin.ModelAdmin):
     list_display = (
         "type_atelier",
         "date",
-        "nb_participants_prevus",
-        "nb_participants_presents",
+        "get_nb_participants_prevus",
+        "get_nb_participants_presents",
         "remarque_courte",
     )
-    list_filter = ("type_atelier", "date")
+    list_filter = ("type_atelier",)
     search_fields = ("remarque",)
     inlines = [ParticipationAtelierTREInline]
     ordering = ("-date",)
 
-    def nb_participants_prevus(self, obj):
+    @admin.display(description=_("Prévu"))
+    def get_nb_participants_prevus(self, obj):
         return obj.nb_participants_prevus
-    nb_participants_prevus.short_description = _("Prévu")
 
-    def nb_participants_presents(self, obj):
+    @admin.display(description=_("Présents"))
+    def get_nb_participants_presents(self, obj):
         return obj.nb_participants_presents
-    nb_participants_presents.short_description = _("Présents")
 
+    @admin.display(description=_("Remarque courte"))
     def remarque_courte(self, obj):
         if obj.remarque:
-            return (obj.remarque[:40] + "...") if len(obj.remarque) > 40 else obj.remarque
-        return ""
-    remarque_courte.short_description = _("Remarque courte")
+            return f"{obj.remarque[:40]}…" if len(obj.remarque) > 40 else obj.remarque
+        return "-"

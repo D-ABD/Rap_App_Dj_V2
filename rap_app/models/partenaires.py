@@ -613,6 +613,18 @@ class Partenaire(BaseModel):
         if with_list:
             info["formations"] = queryset
         return info
+    
+    @property
+    def nb_appairages(self) -> int:
+        return self.appairages.count()
+
+    @property
+    def nb_prospections(self) -> int:
+        return self.prospections.count()
+
+    @property
+    def nb_formations(self) -> int:
+        return self.formations.count()
         
     def to_serializable_dict(self, include_relations: bool = False) -> dict:
         """

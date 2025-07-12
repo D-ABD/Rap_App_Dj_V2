@@ -6,9 +6,10 @@ from rest_framework.views import APIView
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from rest_framework.permissions import AllowAny
+from django_filters.rest_framework import DjangoFilterBackend
 
 from ..permissions import ReadWriteAdminReadStaff
-from ..serializers.user_profil_serializers import CustomUserSerializer, RegistrationSerializer, RoleChoiceSerializer
+from ..serializers.user_profil_serializers import CustomUserSerializer, RegistrationSerializer, RoleChoiceSerializer, UserFilterSet
 from ...models.custom_user import CustomUser
 from ...models.logs import LogUtilisateur
 
@@ -73,10 +74,11 @@ class CustomUserViewSet(viewsets.ModelViewSet):
     Fournit les actions CRUD + une action `me` pour l’utilisateur connecté.
     """
 
-    queryset = CustomUser.objects.filter(is_active=True)
+    queryset = CustomUser.objects.all()      
     serializer_class = CustomUserSerializer
     permission_classes = [ReadWriteAdminReadStaff]
-    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter, DjangoFilterBackend]
+    filterset_class = UserFilterSet
     search_fields = ["email", "username", "first_name", "last_name"]
     ordering_fields = ["email", "date_joined", "role"]
     ordering = ["-date_joined"]

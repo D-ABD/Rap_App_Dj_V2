@@ -1,8 +1,8 @@
-import logging
 from django.conf import settings
 from django.db import models, transaction
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
+import logging
 
 from .candidat import Candidat
 from .partenaires import Partenaire
@@ -17,6 +17,7 @@ class AppairageStatut(models.TextChoices):
     ACCEPTE = "accepte", _("Accepté")
     REFUSE = "refuse", _("Refusé")
     ANNULE = "annule", _("Annulé")
+    A_FAIRE = "a_faire", _("À faire")
 
 
 class Appairage(models.Model):
@@ -27,7 +28,10 @@ class Appairage(models.Model):
     partenaire = models.ForeignKey(Partenaire, on_delete=models.CASCADE, related_name="appairages")
     formation = models.ForeignKey(Formation, on_delete=models.CASCADE, related_name="appairages", null=True, blank=True)
 
-    date_appairage = models.DateTimeField(default=timezone.now, verbose_name=_("Date de mise en relation"))
+    date_appairage = models.DateTimeField(
+        default=timezone.now,
+        verbose_name=_("Date de mise en relation")
+    )
 
     statut = models.CharField(
         max_length=20,
@@ -38,7 +42,12 @@ class Appairage(models.Model):
 
     commentaire = models.TextField(blank=True, null=True, verbose_name=_("Commentaire"))
     retour_partenaire = models.TextField(blank=True, null=True, verbose_name=_("Retour du partenaire"))
-    date_retour = models.DateTimeField(default=timezone.now, verbose_name=_("Date du retour du partenaire"))
+
+    date_retour = models.DateTimeField(
+        blank=True,
+        null=True,
+        verbose_name=_("Date du retour du partenaire")
+    )
 
     class Meta:
         verbose_name = _("Appairage")
@@ -50,6 +59,10 @@ class Appairage(models.Model):
 
     def __str__(self):
         return f"{self.candidat} → {self.partenaire} ({self.get_statut_display()})"
+
+    def set_user(self, user):
+        """Permet d'enregistrer l'utilisateur actif pour la traçabilité dans `save()`."""
+        self._user = user
 
     def save(self, *args, **kwargs):
         is_new = self.pk is None
@@ -95,10 +108,18 @@ class Appairage(models.Model):
             logger.info(f"✏️ Appairage modifié (id={self.pk}) – " + "; ".join(changements))
 
 class HistoriqueAppairage(models.Model):
-    appairage = models.ForeignKey(Appairage, on_delete=models.CASCADE, related_name="historiques")
+    appairage = models.ForeignKey(
+        Appairage,
+        on_delete=models.CASCADE,
+        related_name="historiques"
+    )
     date = models.DateTimeField(auto_now_add=True)
-    statut = models.CharField(max_length=20, choices=AppairageStatut.choices)
+    statut = models.CharField(
+        max_length=20,
+        choices=AppairageStatut.choices
+    )
     commentaire = models.TextField(blank=True, verbose_name=_("Commentaire"))
+
     auteur = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         null=True,

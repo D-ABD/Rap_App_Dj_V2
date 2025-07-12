@@ -12,9 +12,12 @@ class PartenaireAdmin(admin.ModelAdmin):
     """
     🏢 Interface d'administration avancée pour les partenaires.
     """
+    @admin.display(description="Appairages")
+    def nb_appairages(self, obj):
+        return obj.nb_appairages
 
     list_display = (
-        "id",
+        
         "nom",
         "type",
         "secteur_activite",
@@ -23,6 +26,7 @@ class PartenaireAdmin(admin.ModelAdmin):
         "has_web_presence_display",
         "nb_formations",
         "nb_prospections",
+        "nb_appairages",
         "created_at_display",
     )
     list_filter = (

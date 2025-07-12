@@ -2,7 +2,7 @@ from rest_framework import serializers
 from drf_spectacular.utils import extend_schema_serializer, extend_schema_field, OpenApiExample
 from django.utils.translation import gettext_lazy as _
 from ...models.custom_user import CustomUser
-
+from django_filters import rest_framework as filters
 
 @extend_schema_serializer(
     examples=[
@@ -116,3 +116,12 @@ class RegistrationSerializer(serializers.ModelSerializer):
             role='stagiaire',  # 👤 rôle par défaut
             **validated_data
         )
+class UserFilterSet(filters.FilterSet):
+    role = filters.CharFilter(field_name="role", lookup_expr="exact")
+    is_active = filters.BooleanFilter(field_name="is_active")
+    date_joined_min = filters.DateFilter(field_name="date_joined", lookup_expr="gte")
+    date_joined_max = filters.DateFilter(field_name="date_joined", lookup_expr="lte")
+
+    class Meta:
+        model = CustomUser
+        fields = ["role", "is_active", "date_joined"]
