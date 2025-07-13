@@ -1,13 +1,11 @@
 from rest_framework.routers import DefaultRouter
 from django.urls import path
 
-
-
-
+from .viewsets.appairage_viewsets import AppairageViewSet, HistoriqueAppairageViewSet
+from .viewsets.candidat_viewsets import CandidatViewSet, HistoriquePlacementViewSet
+from .viewsets.atelier_tre_viewsets import AtelierTREViewSet, ParticipationAtelierTREViewSet
 from .viewsets.commentaires_viewsets import CommentaireViewSet
-
 from .viewsets.search_viewset import SearchView
-
 from .viewsets.auth_viewset import EmailTokenObtainPairView
 from .viewsets.temporaire_viewset import test_token_view
 from .viewsets.rapports_viewsets import RapportViewSet  
@@ -19,14 +17,13 @@ from .viewsets.partenaires_viewsets import PartenaireViewSet
 from .viewsets.evenements_viewsets import EvenementViewSet 
 from .viewsets.documents_viewsets import DocumentViewSet
 from .viewsets.formations_viewsets import FormationViewSet, HistoriqueFormationViewSet
-
 from .viewsets.types_offre_viewsets import TypeOffreViewSet
 from .viewsets.statut_viewsets import StatutViewSet
 from .viewsets.centres_viewsets import CentreViewSet
 from .viewsets.user_viewsets import CustomUserViewSet, RegisterView 
 from .viewsets.login_logout_viewset import LoginAPIView, LogoutAPIView
 
-router = DefaultRouter()
+router = DefaultRouter() 
 
 # ✅ Ajoute ce path AVANT le register du ViewSet "users"
 urlpatterns = [
@@ -72,6 +69,17 @@ router.register("rapports", RapportViewSet, basename="rapport")
 
 router.register(r"historiques", HistoriqueFormationViewSet, basename="historiques")
 
+router.register(r"atelierstre", AtelierTREViewSet, basename="atelierstre")
+
+router.register(r"participations-atelierstre", ParticipationAtelierTREViewSet, basename="participations-atelierstre")
+
+router.register(r'candidats', CandidatViewSet, basename='candidat')
+
+router.register(r'historiques-placements', HistoriquePlacementViewSet, basename='historiqueplacement')
+
+router.register(r"appairages", AppairageViewSet, basename="appairage")
+
+router.register(r"historiques-appairages", HistoriqueAppairageViewSet, basename="historique-appairage")
 
 
 # Autres endpoints manuels
