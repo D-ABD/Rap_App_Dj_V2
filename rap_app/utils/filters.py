@@ -1,5 +1,7 @@
 import django_filters
 
+from ..models.formations import HistoriqueFormation
+
 from ..models.candidat import Candidat
 from ..models.atelier_tre import AtelierTRE
 
@@ -25,3 +27,20 @@ class CandidatFilter(django_filters.FilterSet):
             "entretien_done", "test_is_ok", "contrat_signe", "resultat_placement",
             "entreprise_placement", "entreprise_validee"
         ]
+
+
+
+
+class HistoriqueFormationFilter(django_filters.FilterSet):
+    centre_id = django_filters.NumberFilter(field_name="formation__centre_id")
+    type_offre_id = django_filters.NumberFilter(field_name="formation__type_offre_id")
+    statut_id = django_filters.NumberFilter(field_name="formation__statut_id")
+    formation_id = django_filters.NumberFilter(field_name="formation_id")
+    formation_etat = django_filters.CharFilter(method="filter_etat")
+
+    class Meta:
+        model = HistoriqueFormation
+        fields = []
+
+    def filter_etat(self, queryset, name, value):
+        return queryset.filter(formation__etat=value)

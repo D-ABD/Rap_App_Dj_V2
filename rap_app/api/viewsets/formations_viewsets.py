@@ -8,8 +8,11 @@ from rest_framework.response import Response
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiResponse
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters
+from rest_framework.views import APIView
 
-from ...models.formations import Formation
+from ...utils.filters import HistoriqueFormationFilter
+
+from ...models.formations import Formation, HistoriqueFormation
 from ...api.paginations import RapAppPagination
 from ...api.permissions import ReadWriteAdminReadStaff
 from ...api.serializers.formations_serializers import (
@@ -305,23 +308,133 @@ class FormationViewSet(viewsets.ModelViewSet):
         ]
         return Response({"success": True, "data": data})
 
+    @action(detail=False, methods=["get"], url_path="historique")
+    def all_historique(self, request):
+        """🔁 Retourne l’historique de toutes les formations"""
+        historique = HistoriqueFormation.objects.select_related("formation", "created_by").order_by("-created_at")
+        serializer = HistoriqueFormationSerializer(historique, many=True)
+        return Response({"success": True, "data": serializer.data}, status=status.HTTP_200_OK)
 
-from drf_spectacular.utils import extend_schema
-from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import filters
-from ...models.formations import HistoriqueFormation
-from ...api.serializers.formations_serializers import HistoriqueFormationSerializer
-
+        
 @extend_schema(
     tags=["Historique des formations"],
     summary="Lister tous les historiques",
     description="Retourne tous les historiques de modifications (même si la formation n'existe plus)."
 )
+
 class HistoriqueFormationViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = HistoriqueFormation.objects.select_related('formation', 'created_by').all()
+    """
+    ViewSet en lecture seule pour l'historique des formations.
+
+    Permet de rechercher, trier, filtrer, et paginer les modifications
+    liées à une formation.
+    """
+    queryset = HistoriqueFormation.objects.select_related(
+        'formation__centre',
+        'formation__statut',
+        'formation__type_offre',
+        'created_by',
+        'modified_by'
+    ).order_by('-created_at')
+
     serializer_class = HistoriqueFormationSerializer
     permission_classes = [IsAuthenticated]
+
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter, filters.SearchFilter]
-    filterset_fields = ['formation', 'action']
-    ordering_fields = ['created_at']
+    filterset_class = HistoriqueFormationFilter
+
+    ordering_fields = ['created_at', 'champ_modifie']
     search_fields = ['champ_modifie', 'ancienne_valeur', 'nouvelle_valeur']
+    pagination_class = RapAppPagination  # ou pagination par défaut de DRF
+
+    def list(self, request, *args, **kwargs):
+        print("✅ Query params :", request.query_params)
+
+        queryset = self.filter_queryset(self.get_queryset())
+
+        print("✅ Nombre après filtre :", queryset.count())
+        print("✅ Requête SQL :", str(queryset.query))
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response({
+                "success": True,
+                "message": "Historique paginé",
+                "data": serializer.data
+            })
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response({
+            "success": True,
+            "message": "Historique complet",
+            "data": serializer.data,
+            "count": len(serializer.data)
+        })
+    
+    def get_queryset(self):
+        print("✅ Params reçus :", self.request.query_params)
+        return super().get_queryset()
+
+class HistoriqueFormationGroupedView(APIView):
+    """
+    Vue personnalisée qui retourne l’historique groupé par formation.
+    Chaque entrée contient les informations de la formation et ses derniers changements.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        queryset = HistoriqueFormation.objects.select_related(
+            'formation__centre',
+            'formation__statut',
+            'formation__type_offre',
+            'created_by',
+            'modified_by'
+        )
+
+        # 🔍 Appliquer les filtres DRF à la main (car ce n’est pas un ViewSet)
+        filtre = HistoriqueFormationFilter(request.GET, queryset=queryset)
+        if not filtre.is_valid():
+            return Response({
+                "success": False,
+                "message": "Filtres invalides",
+                "errors": filtre.errors
+            }, status=400)
+
+        filtered_qs = filtre.qs
+
+        # 🧠 Groupement par formation
+        grouped_data = {}
+        for obj in filtered_qs:
+            fid = obj.formation_id
+            formation = obj.formation
+            if fid not in grouped_data:
+                grouped_data[fid] = {
+                    "formation_id": fid,
+                    "formation_nom": formation.nom,
+                    "centre_nom": formation.centre.nom if formation.centre else "",
+                    "type_offre_nom": formation.type_offre.nom if formation.type_offre else "",
+                    "type_offre_couleur": formation.type_offre.couleur if formation.type_offre else "",
+                    "statut_nom": formation.statut.nom if formation.statut else "",
+                    "statut_couleur": formation.statut.couleur if formation.statut else "",
+                    "numero_offre": formation.num_offre,
+                    "total_modifications": 0,
+                    "derniers_historiques": [],
+                }
+
+            grouped_data[fid]["total_modifications"] += 1
+            if len(grouped_data[fid]["derniers_historiques"]) < 5:
+                grouped_data[fid]["derniers_historiques"].append({
+                    "id": obj.id,
+                    "champ_modifie": obj.champ_modifie,
+                    "ancienne_valeur": obj.ancienne_valeur,
+                    "nouvelle_valeur": obj.nouvelle_valeur,
+                    "commentaire": obj.commentaire,
+                    "created_at": obj.created_at,
+                })
+
+        return Response({
+            "success": True,
+            "message": "Historique groupé par formation",
+            "data": list(grouped_data.values())
+        })

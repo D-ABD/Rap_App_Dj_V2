@@ -488,35 +488,91 @@ class Formation(BaseModel):
             **kwargs: Arguments nommés, notamment user
         """
         user = kwargs.pop("user", None)
-        skip_history = kwargs.pop("skip_history", False)  # Option pour désactiver l'historique
-        update_fields = kwargs.get("update_fields", None)  # Champs à mettre à jour
+        skip_history = kwargs.pop("skip_history", False)
+        update_fields = kwargs.get("update_fields", None)
 
         is_new = self.pk is None
         original = None if is_new else self.__class__.objects.filter(pk=self.pk).first()
 
-        # Validation des données
+        # Validation
         self.full_clean()
 
-        # ➕ Met à jour automatiquement la saturation avant la sauvegarde
+        # ➕ Met à jour la saturation actuelle
         self.saturation = self.taux_saturation
 
         with transaction.atomic():
-            # Transmission de l'utilisateur au BaseModel si fourni
+            # Transmission de l'utilisateur au BaseModel
             if user:
                 self._user = user
 
-            # Journalisation de l'action
             if is_new:
                 logger.info(f"[Formation] Créée : {self.nom}")
             else:
                 logger.info(f"[Formation] Modifiée : {self.nom} (#{self.pk})")
 
-            # Sauvegarde
             super().save(*args, **kwargs)
 
-            # Création de l'historique pour chaque champ modifié
+            # 🔁 Historique des modifications
             if not skip_history and original:
                 self._create_history_entries(original, user, update_fields)
+
+    def _create_history_entries(self, original, user=None, update_fields=None):
+        """
+        Crée les entrées d'historique pour les champs modifiés,
+        en incluant l'état actuel de la saturation et du taux de transformation.
+        """
+
+        fields_to_check = update_fields or [
+            f.name for f in self._meta.fields
+            if f.name not in ("id", "created_at", "updated_at")
+        ]
+
+        for field in fields_to_check:
+            old_value = getattr(original, field)
+            new_value = getattr(self, field)
+
+            if old_value != new_value:
+                historique = HistoriqueFormation(
+                    formation=self,
+                    champ_modifie=field,
+                    ancienne_valeur=str(old_value) if old_value is not None else None,
+                    nouvelle_valeur=str(new_value) if new_value is not None else None,
+                    created_by=user if user and hasattr(user, "pk") else None,
+                    commentaire=f"Changement dans le champ {field}",
+                )
+
+                # 🔍 Ajout des stats d'état pour suivi dans le frontend
+                historique.details = {
+                    "saturation": self.saturation,
+                    "saturation_badge": self.get_saturation_badge() if hasattr(self, "get_saturation_badge") else None,
+                    "taux_transformation": self.taux_transformation,
+                    "transformation_badge": self.get_transformation_badge() if hasattr(self, "get_transformation_badge") else None,
+                }
+
+                historique.save(skip_duplicate_check=True)
+
+    def get_saturation_badge(self):
+        if self.saturation is None:
+            return "badge-dark"
+        if self.saturation >= 80:
+            return "badge-success"
+        elif self.saturation >= 60:
+            return "badge-info"
+        elif self.saturation >= 40:
+            return "badge-warning"
+        else:
+            return "badge-danger"
+
+    def get_transformation_badge(self):
+        if self.taux_transformation is None:
+            return "badge-dark"
+        if self.taux_transformation >= 60:
+            return "badge-success"
+        elif self.taux_transformation >= 40:
+            return "badge-warning"
+        else:
+            return "badge-danger"
+
 
     def get_resume_info(self):
         """
@@ -569,7 +625,13 @@ class Formation(BaseModel):
                     nouvelle_valeur=new_val_str,
                     commentaire=f"Changement dans le champ {field}",
                     created_by=user,
-                    details={"user": user.pk if user else None}
+                    details={
+                        "user": user.pk if user else None,
+                        "saturation": self.saturation,
+                        "saturation_badge": self.get_saturation_badge(),
+                        "taux_transformation": self.taux_transformation,
+                        "transformation_badge": self.get_transformation_badge(),
+                    }
                 )
 
                 logger.debug(f"[Formation] Historique créé pour {field}: {old_val_str} → {new_val_str}")
@@ -1263,7 +1325,7 @@ logger = logging.getLogger("rap_app.historiqueformation")
 class HistoriqueFormation(BaseModel):
     ACTION_MAX_LENGTH = 100
     CHAMP_MAX_LENGTH = 100
-
+    details = models.JSONField(null=True, blank=True) 
     class ActionType(models.TextChoices):
         MODIFICATION = 'modification', _('Modification')
         AJOUT = 'ajout', _('Ajout')
@@ -1371,20 +1433,19 @@ class HistoriqueFormation(BaseModel):
 
     def to_serializable_dict(self):
         return {
-            "id": self.pk,
-            "formation_id": self.formation_id,
-            "formation_nom": str(self.formation) if self.formation else "Formation supprimée",
+            "id": self.id,
+            "created_at": self.created_at.isoformat(),
+            "utilisateur": str(self.created_by) if self.created_by else None,
             "champ": self.champ_modifie,
             "ancienne_valeur": self.ancienne_valeur,
             "nouvelle_valeur": self.nouvelle_valeur,
             "commentaire": self.commentaire,
-            "action": self.action,
-            "action_display": self.get_action_display(),
-            "created_at": self.created_at.strftime('%Y-%m-%d %H:%M'),
-            "utilisateur": self.utilisateur_nom,
-            "details": self.details,
+            "saturation": self.details.get("saturation"),
+            "saturation_badge": self.details.get("saturation_badge"),
+            "taux_transformation": self.details.get("taux_transformation"),
+            "transformation_badge": self.details.get("transformation_badge"),
         }
-
+    from django.db import models, transaction
     @property
     def utilisateur_nom(self):
         if self.created_by:

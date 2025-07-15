@@ -6,7 +6,7 @@ from rest_framework.decorators import action
 
 from ...models.statut import calculer_couleur_texte, get_default_color, Statut
 from ..serializers.statut_serializers import StatutChoiceSerializer, StatutSerializer
-from ...api.permissions import ReadOnlyOrAdmin
+from ...api.permissions import IsAdmin, ReadOnlyOrAdmin
 
 logger = logging.getLogger("application.statut")
 
@@ -52,7 +52,7 @@ class StatutViewSet(viewsets.ModelViewSet):
     """
     queryset = Statut.objects.all()
     serializer_class = StatutSerializer
-    permission_classes = [ReadOnlyOrAdmin]
+    permission_classes = [IsAdmin]
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)

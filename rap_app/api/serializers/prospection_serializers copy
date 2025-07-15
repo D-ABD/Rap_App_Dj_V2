@@ -2,19 +2,24 @@ from rest_framework import serializers
 from drf_spectacular.utils import extend_schema_serializer, extend_schema_field, OpenApiExample
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
-
-from ...models.prospection import Prospection, ProspectionChoices, HistoriqueProspection
+from ...models.prospection import Prospection, HistoriqueProspection
+from ...models.prospection import ProspectionChoices
 
 
 class BaseProspectionSerializer(serializers.ModelSerializer):
+    """
+    Serializer de base pour la prospection.
+    Contient les champs communs à la lecture, les noms liés et les affichages user-friendly.
+    """
+
     partenaire_nom = serializers.CharField(source="partenaire.nom", read_only=True)
     formation_nom = serializers.CharField(source="formation.nom", read_only=True)
 
-    # Champs display
+    # Champs display pour les enums
     statut_display = serializers.CharField(source="get_statut_display", read_only=True)
     objectif_display = serializers.CharField(source="get_objectif_display", read_only=True)
+    type_contact_display = serializers.CharField(source="get_type_contact_display", read_only=True)
     motif_display = serializers.CharField(source="get_motif_display", read_only=True)
-    type_prospection_display = serializers.CharField(source="get_type_prospection_display", read_only=True)
 
     # Champs calculés
     prochain_contact = serializers.SerializerMethodField()
@@ -27,6 +32,7 @@ class BaseProspectionSerializer(serializers.ModelSerializer):
 
     @extend_schema_field(serializers.DateTimeField(allow_null=True))
     def get_prochain_contact(self, obj) -> str | None:
+        """Retourne la date du prochain contact si défini (ISO format)"""
         return obj.prochain_contact.isoformat() if obj.prochain_contact else None
 
 
@@ -38,7 +44,7 @@ class BaseProspectionSerializer(serializers.ModelSerializer):
                 "partenaire": 1,
                 "formation": 2,
                 "date_prospection": "2025-05-10T14:00:00",
-                "type_prospection": "premier_contact",
+                "type_contact": "premier_contact",
                 "motif": "partenariat",
                 "statut": "en_cours",
                 "objectif": "presentation_offre",
@@ -49,13 +55,18 @@ class BaseProspectionSerializer(serializers.ModelSerializer):
     ]
 )
 class ProspectionSerializer(BaseProspectionSerializer):
+    """
+    Serializer principal pour les objets de prospection.
+    Gère la validation métier liée au statut et à la date.
+    """
+
     class Meta:
         model = Prospection
         fields = [
             "id", "partenaire", "partenaire_nom",
             "formation", "formation_nom",
             "date_prospection",
-            "type_prospection", "type_prospection_display",
+            "type_contact", "type_contact_display",
             "motif", "motif_display",
             "statut", "statut_display",
             "objectif", "objectif_display",
@@ -67,14 +78,14 @@ class ProspectionSerializer(BaseProspectionSerializer):
             "id", "created_at", "updated_at", "created_by",
             "partenaire_nom", "formation_nom",
             "statut_display", "objectif_display", 
-            "type_prospection_display", "motif_display",
+            "type_contact_display", "motif_display",
             "prochain_contact", "is_active", "relance_necessaire"
         ]
         extra_kwargs = {
             "partenaire": {"help_text": "ID du partenaire concerné"},
             "formation": {"help_text": "ID de la formation associée (optionnelle)"},
             "date_prospection": {"help_text": "Date et heure de la prospection"},
-            "type_prospection": {"help_text": "Type de prospection (ex: premier_contact)"},
+            "type_contact": {"help_text": "Type de contact (ex: premier_contact)"},
             "motif": {"help_text": "Motif de la prospection"},
             "statut": {"help_text": "Statut actuel de la prospection"},
             "objectif": {"help_text": "Objectif visé par la prospection"},
@@ -82,6 +93,7 @@ class ProspectionSerializer(BaseProspectionSerializer):
         }
 
     def validate(self, data):
+        """Valide les règles métier (statut/objectif et commentaire obligatoire)"""
         if data.get('statut') == ProspectionChoices.STATUT_ACCEPTEE and \
            data.get('objectif') != ProspectionChoices.OBJECTIF_CONTRAT:
             raise serializers.ValidationError(
@@ -97,60 +109,49 @@ class ProspectionSerializer(BaseProspectionSerializer):
         return data
 
     def validate_date_prospection(self, value):
+        """Empêche les dates de prospection dans le futur"""
         if value > timezone.now():
             raise serializers.ValidationError("La date de prospection ne peut pas être dans le futur.")
         return value
 
 
 class ChangerStatutSerializer(serializers.Serializer):
+    """
+    Serializer pour le changement de statut d’une prospection.
+    Utilisé lors d’une action explicite par l’utilisateur.
+    """
+
     statut = serializers.ChoiceField(choices=ProspectionChoices.PROSPECTION_STATUS_CHOICES)
     commentaire = serializers.CharField(required=False, allow_blank=True)
     moyen_contact = serializers.ChoiceField(choices=ProspectionChoices.MOYEN_CONTACT_CHOICES, required=False)
     prochain_contact = serializers.DateField(required=False)
 
     def validate(self, data):
+        """Ajoute une date de relance par défaut si nécessaire"""
         if data['statut'] == ProspectionChoices.STATUT_A_RELANCER and not data.get('prochain_contact'):
             data['prochain_contact'] = timezone.now().date() + timezone.timedelta(days=7)
         return data
 
 
-class ProspectionListSerializer(BaseProspectionSerializer):
-    class Meta:
-        model = Prospection
-        fields = [
-            "id", "partenaire_nom", "formation_nom",
-            "date_prospection",
-            "type_prospection", "type_prospection_display",
-            "statut", "statut_display",
-            "objectif", "objectif_display",
-            "prochain_contact", "relance_necessaire",
-        ]
+from rest_framework import serializers
+from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
+from ...models.prospection import HistoriqueProspection, ProspectionChoices
 
-
-
-class ProspectionDetailSerializer(BaseProspectionSerializer):
-    class Meta:
-        model = Prospection
-        fields = [
-            "id", "partenaire", "partenaire_nom",
-            "formation", "formation_nom",
-            "date_prospection",
-            "type_prospection", "type_prospection_display",
-            "motif", "motif_display",
-            "statut", "statut_display",
-            "objectif", "objectif_display",
-            "commentaire",
-            "prochain_contact", "is_active", "relance_necessaire",
-            "created_by", "created_at", "updated_at"
-        ]
-        read_only_fields = fields  # tout en lecture seule ici
 
 class HistoriqueProspectionSerializer(serializers.ModelSerializer):
-    type_prospection_display = serializers.CharField(source="get_type_prospection_display", read_only=True)
+    """
+    Serializer pour l'historique des modifications de prospection.
+    Fournit les champs formatés et calculés utiles à l'affichage.
+    """
+
+    # === Champs display ===
+    type_contact_display = serializers.CharField(source="get_type_contact_display", read_only=True)
     ancien_statut_display = serializers.CharField(source="get_ancien_statut_display", read_only=True)
     nouveau_statut_display = serializers.CharField(source="get_nouveau_statut_display", read_only=True)
     moyen_contact_display = serializers.CharField(source="get_moyen_contact_display", read_only=True)
 
+    # === Champs calculés ===
     jours_avant_relance = serializers.IntegerField(read_only=True)
     relance_urgente = serializers.BooleanField(read_only=True)
     est_recent = serializers.BooleanField(read_only=True)
@@ -158,18 +159,23 @@ class HistoriqueProspectionSerializer(serializers.ModelSerializer):
 
     statut_avec_icone = serializers.SerializerMethodField()
 
-    type_prospection = serializers.ChoiceField(
-        choices=ProspectionChoices.TYPE_PROSPECTION_CHOICES
+    # === Correction des ChoiceFields ===
+    type_contact = serializers.ChoiceField(
+        choices=ProspectionChoices.TYPE_CONTACT_CHOICES,
+        allow_blank=False
     )
     ancien_statut = serializers.ChoiceField(
-        choices=ProspectionChoices.PROSPECTION_STATUS_CHOICES
+        choices=ProspectionChoices.PROSPECTION_STATUS_CHOICES,
+        allow_blank=False
     )
     nouveau_statut = serializers.ChoiceField(
-        choices=ProspectionChoices.PROSPECTION_STATUS_CHOICES
+        choices=ProspectionChoices.PROSPECTION_STATUS_CHOICES,
+        allow_blank=False
     )
     moyen_contact = serializers.ChoiceField(
         choices=ProspectionChoices.MOYEN_CONTACT_CHOICES,
-        required=False
+        required=False,
+        allow_blank=False
     )
 
     class Meta:
@@ -179,7 +185,7 @@ class HistoriqueProspectionSerializer(serializers.ModelSerializer):
             "date_modification",
             "ancien_statut", "ancien_statut_display",
             "nouveau_statut", "nouveau_statut_display",
-            "type_prospection", "type_prospection_display",
+            "type_contact", "type_contact_display",
             "commentaire", "resultat",
             "prochain_contact",
             "moyen_contact", "moyen_contact_display",
@@ -189,22 +195,23 @@ class HistoriqueProspectionSerializer(serializers.ModelSerializer):
         read_only_fields = [
             "id", "date_modification",
             "ancien_statut_display", "nouveau_statut_display",
-            "type_prospection_display", "moyen_contact_display",
+            "type_contact_display", "moyen_contact_display",
             "jours_avant_relance", "relance_urgente", "est_recent",
             "created_by", "statut_avec_icone"
         ]
         extra_kwargs = {
             "prospection": {"help_text": "ID de la prospection concernée"},
-            "type_prospection": {"help_text": "Type de prospection (premier_contact, relance...)"},
-            "ancien_statut": {"help_text": "Statut précédent"},
-            "nouveau_statut": {"help_text": "Nouveau statut"},
-            "commentaire": {"help_text": "Commentaire sur la modification"},
-            "resultat": {"help_text": "Résultat obtenu"},
-            "prochain_contact": {"help_text": "Date du prochain contact"},
-            "moyen_contact": {"help_text": "Moyen de communication"},
+            "ancien_statut": {"help_text": "Ancien statut avant modification"},
+            "nouveau_statut": {"help_text": "Nouveau statut après modification"},
+            "type_contact": {"help_text": "Type de contact (premier_contact / relance)"},
+            "commentaire": {"help_text": "Commentaire facultatif"},
+            "resultat": {"help_text": "Résultat de l'action"},
+            "prochain_contact": {"help_text": "Date de relance prévue"},
+            "moyen_contact": {"help_text": "Moyen de contact utilisé"},
         }
 
     def get_statut_avec_icone(self, obj) -> dict:
+        """Renvoie un objet avec le nom du statut + icône + couleur CSS"""
         return {
             "statut": obj.get_nouveau_statut_display(),
             "icone": "fas fa-check" if obj.nouveau_statut == ProspectionChoices.STATUT_ACCEPTEE else "fas fa-clock",
@@ -212,6 +219,7 @@ class HistoriqueProspectionSerializer(serializers.ModelSerializer):
         }
 
     def validate_prochain_contact(self, value):
+        """Valide que la date de relance est future"""
         if value and value < timezone.now().date():
             raise serializers.ValidationError(
                 _("La date de relance doit être dans le futur.")
@@ -223,10 +231,9 @@ class EnumChoiceSerializer(serializers.Serializer):
     value = serializers.CharField(help_text="Valeur brute utilisée en base")
     label = serializers.CharField(help_text="Libellé affiché (traduction)")
 
-
 class ProspectionChoiceListSerializer(serializers.Serializer):
     statut = EnumChoiceSerializer(many=True)
     objectif = EnumChoiceSerializer(many=True)
-    type_prospection = EnumChoiceSerializer(many=True)
+    type_contact = EnumChoiceSerializer(many=True)
     motif = EnumChoiceSerializer(many=True)
     moyen_contact = EnumChoiceSerializer(many=True)
