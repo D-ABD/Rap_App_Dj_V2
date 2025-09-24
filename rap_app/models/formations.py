@@ -8,6 +8,7 @@ from django.db.models import F, Q, Sum, Count, Case, When, Value, ExpressionWrap
 from django.utils.translation import gettext_lazy as _
 from django.utils.functional import cached_property
 
+from typing import Optional, Dict
 
 from .base import BaseModel
 from .partenaires import Partenaire
@@ -32,6 +33,8 @@ class FormationManager(models.Manager):
     - Trier les formations selon différents critères
     - Identifier les formations avec des places disponibles
     """
+
+    
 
     def formations_actives(self):
         """
@@ -515,6 +518,98 @@ class Formation(BaseModel):
             # 🔁 Historique des modifications
             if not skip_history and original:
                 self._create_history_entries(original, user, update_fields)
+
+
+
+
+
+    # ---------- helpers ----------
+    @staticmethod
+    def _as_label(value) -> Optional[str]:
+        """
+        Convertit un Enum/FK/objet 'Statut' en étiquette string.
+        Essaie dans l'ordre: get_*_display(), .label/.libelle/.nom/.name/.value/.code, sinon str(value).
+        """
+        if value is None:
+            return None
+        if isinstance(value, (str, int, float, bool)):
+            return str(value)
+
+        for attr in ("label", "libelle", "nom", "name", "value", "code"):
+            v = getattr(value, attr, None)
+            if v is not None:
+                s = str(v).strip()
+                if s:
+                    return s
+
+        try:
+            s = str(value).strip()
+            return s or None
+        except Exception:
+            return None
+
+    @staticmethod
+    def _fmt_date_iso(d):
+        """Retourne YYYY-MM-DD (ou ISO 8601 si datetime) ou None."""
+        if not d:
+            return None
+        try:
+            return d.isoformat()
+        except Exception:
+            return None
+
+    # ======= NOMS CANONIQUES UTILISÉS PAR LE FRONT =======
+    def get_formation_identite_complete(self) -> Dict[str, Optional[str]]:
+        """
+        Nom + centre + type + n°offre + dates (début/fin) + statut (texte).
+        Clés attendues par le front :
+          formation_nom, centre_nom, type_offre, num_offre, start_date, end_date, statut
+        """
+        # Si jamais un get_statut_display existait
+        statut_txt = None
+        get_disp = getattr(self, "get_statut_display", None)
+        if callable(get_disp):
+            try:
+                statut_txt = (get_disp() or "").strip() or None
+            except Exception:
+                statut_txt = None
+        if not statut_txt:
+            statut_txt = self._as_label(getattr(self, "statut", None))
+
+        return {
+            "formation_nom": getattr(self, "nom", None) or None,
+             "centre_id": getattr(self.centre, "id", None), 
+            "centre_nom": getattr(getattr(self, "centre", None), "nom", None) or None
+                          if getattr(self, "centre", None) is not None
+                          else None,
+            "type_offre": getattr(getattr(self, "type_offre", None), "nom", None) or None
+                          if getattr(self, "type_offre", None) is not None
+                          else None,
+            "num_offre": getattr(self, "num_offre", None) or None,
+            "start_date": self._fmt_date_iso(getattr(self, "start_date", None)),
+            "end_date": self._fmt_date_iso(getattr(self, "end_date", None)),
+            "statut": statut_txt,
+        }
+
+    def get_formation_identite_bref(self) -> Dict[str, Optional[str]]:
+        """
+        Nom + centre + n°offre + dates (début/fin).
+        Clés attendues par le front :
+          formation_nom, centre_nom, num_offre, start_date, end_date
+        """
+        return {
+            "formation_nom": getattr(self, "nom", None) or None,
+             "centre_id": getattr(self.centre, "id", None), 
+            "centre_nom": getattr(getattr(self, "centre", None), "nom", None) or None
+                          if getattr(self, "centre", None) is not None
+                          else None,
+            "num_offre": getattr(self, "num_offre", None) or None,
+            "start_date": self._fmt_date_iso(getattr(self, "start_date", None)),
+            "end_date": self._fmt_date_iso(getattr(self, "end_date", None)),
+        }
+
+
+
 
     def _create_history_entries(self, original, user=None, update_fields=None):
         """

@@ -28,6 +28,8 @@ def get_default_color(statut_nom):
     """
     COULEURS_PREDEFINIES = {
         'non_defini': "#080807",             # Jaune
+        'projet_de_developpement': "#0E0E11",
+        'a_recruter': "#051401",             # vert foncé
         'recrutement_en_cours': "#0A54F4",   # Vert
         'formation_en_cours': "#110452",     # Bleu
         'formation_a_annuler': "#FD570A",    # Orange
@@ -77,6 +79,8 @@ class Statut(BaseModel):
 
     # Choix de statuts
     NON_DEFINI = 'non_defini'
+    PROJET_DE_DEVELOPPEMENT = 'projet_de_developpement'
+    A_RECRUTER = 'a_recruter'
     RECRUTEMENT_EN_COURS = 'recrutement_en_cours'
     FORMATION_EN_COURS = 'formation_en_cours'
     FORMATION_A_ANNULER = 'formation_a_annuler'
@@ -88,6 +92,8 @@ class Statut(BaseModel):
 
     STATUT_CHOICES = [
         (NON_DEFINI, 'Non défini'),
+        (PROJET_DE_DEVELOPPEMENT, ' Projet de developpement'),
+        (A_RECRUTER, 'A recruter'),
         (RECRUTEMENT_EN_COURS, 'Recrutement en cours'),
         (FORMATION_EN_COURS, 'Formation en cours'),
         (FORMATION_A_ANNULER, 'Formation à annuler'),

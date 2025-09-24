@@ -2,6 +2,7 @@ import logging
 import unicodedata
 import re
 from datetime import date
+
 from django.conf import settings
 from django.db import models, transaction
 from django.utils.translation import gettext_lazy as _
@@ -13,14 +14,19 @@ from .custom_user import CustomUser
 from .formations import Formation
 from .base import BaseModel
 from .evenements import Evenement
+# ⚠️ pas d'import Appairage ici pour éviter les imports circulaires ;
+#    on référence le modèle via la chaîne "Appairage" dans le FK.
 
 logger = logging.getLogger("application.candidats")
+
 NIVEAU_CHOICES = [(i, f"{i} ★") for i in range(1, 6)]
+
 
 def slugify_username(value: str) -> str:
     value = unicodedata.normalize("NFKD", value).encode("ascii", "ignore").decode("ascii")
     value = re.sub(r"[^\w.@+-]", "", value)
     return value.lower()
+
 
 def generate_unique_username(base: str) -> str:
     User = get_user_model()
@@ -31,6 +37,7 @@ def generate_unique_username(base: str) -> str:
         suffix += 1
     return username
 
+
 class ResultatPlacementChoices(models.TextChoices):
     ADMIS = "admis", _("Admis")
     NON_ADMIS = "non_admis", _("Non admis")
@@ -40,10 +47,13 @@ class ResultatPlacementChoices(models.TextChoices):
     ABANDON_ETS = "abandon_ets", _("Abandon entreprise")
     DEJA_PLACE = "deja_place", _("Déjà placé")
     ABSENT = "absent", _("Absent")
+    APPAIRAGE_EN_COURS = "appairage_en_cours", _("Appairage en cours")
+
 
 class Candidat(BaseModel):
     class StatutCandidat(models.TextChoices):
         EN_ATTENTE_ENTRETIEN = "att_entretien", _("En attente d'entretien")
+        EN_ATTENTE_RENTREE = "att_rentee", _("En attente de rentrée")  # (valeur conservée pour rétro-compatibilité)
         EN_ATTENTE_COMMISSION = "att_commission", _("En attente de commission")
         EN_ACCOMPAGNEMENT = "accompagnement", _("En accompagnement")
         EN_APPAIRAGE = "appairage", _("En appairage")
@@ -55,8 +65,8 @@ class Candidat(BaseModel):
         APPRENTISSAGE = "apprentissage", _("Apprentissage")
         PROFESSIONNALISATION = "professionnalisation", _("Professionnalisation")
         SANS_CONTRAT = "sans_contrat", _("Sans contrat")
-        POEI = "poei", _("POEI")
-        POEC = "poec", _("POEC")
+        POEI_POEC  = "poei_poec", _("POEI / POEC")
+        CRIF = "crif", _("Crif")
         AUTRE = "autre", _("Autre")
 
     class Disponibilite(models.TextChoices):
@@ -69,6 +79,13 @@ class Candidat(BaseModel):
         OUI = "oui", _("Oui")
         NON = "non", _("Non")
 
+    # ✅ Nouveau : statut du CV
+    class CVStatut(models.TextChoices):
+        OUI = "oui", _("Oui")
+        EN_COURS = "en_cours", _("En cours")
+        A_MODIFIER = "a_modifier", _("À modifier")
+
+    # ----------------- Identité & contact -----------------
     nom = models.CharField(max_length=100, verbose_name=_("Nom"))
     prenom = models.CharField(max_length=100, verbose_name=_("Prénom"))
     email = models.EmailField(blank=True, null=True, verbose_name=_("Email"))
@@ -85,36 +102,155 @@ class Candidat(BaseModel):
         verbose_name=_("Compte utilisateur"),
     )
 
+    # ----------------- Statut & formation -----------------
     entretien_done = models.BooleanField(default=False, verbose_name=_("Entretien réalisé"))
     test_is_ok = models.BooleanField(default=False, verbose_name=_("Test d'entrée réussi"))
 
-    statut = models.CharField(max_length=30, choices=StatutCandidat.choices, default=StatutCandidat.EN_ACCOMPAGNEMENT, verbose_name=_("Statut"), db_index=True)
-    formation = models.ForeignKey(Formation, on_delete=models.SET_NULL, null=True, blank=True, related_name="candidats", verbose_name=_("Formation"))
-    evenement = models.ForeignKey(Evenement, on_delete=models.CASCADE, null=True, blank=True, related_name="candidats", verbose_name=_("Événement"))
+    # ✅ Nouveau champ : statut du CV
+    cv_statut = models.CharField(
+        max_length=15,
+        choices=CVStatut.choices,
+        null=True,
+        blank=True,
+        db_index=True,
+        verbose_name=_("CV"),
+    )
+
+    statut = models.CharField(
+        max_length=30,
+        choices=StatutCandidat.choices,
+        default=StatutCandidat.AUTRE,
+        verbose_name=_("Statut"),
+        db_index=True,
+    )
+
+    formation = models.ForeignKey(
+        Formation,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="candidats",
+        verbose_name=_("Formation"),
+    )
+    evenement = models.ForeignKey(
+        Evenement,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="candidats",
+        verbose_name=_("Événement"),
+    )
+
     notes = models.TextField(blank=True, null=True, verbose_name=_("Notes"))
     origine_sourcing = models.CharField(max_length=255, blank=True, null=True, verbose_name=_("Origine du sourcing"))
-    date_inscription = models.DateTimeField(auto_now_add=True, verbose_name=_("Date d’inscription"), db_index=True)
 
+    date_inscription = models.DateTimeField(auto_now_add=True, verbose_name=_("Date d’inscription"), db_index=True)
     date_naissance = models.DateField(null=True, blank=True, verbose_name=_("Date de naissance"))
     rqth = models.BooleanField(default=False, verbose_name=_("RQTH"))
-    type_contrat = models.CharField(max_length=30, choices=TypeContrat.choices, blank=True, null=True, verbose_name=_("Type de contrat"))
-    disponibilite = models.CharField(max_length=30, choices=Disponibilite.choices, blank=True, null=True, verbose_name=_("Disponibilité"))
+
+    type_contrat = models.CharField(
+        max_length=30, choices=TypeContrat.choices, blank=True, null=True, verbose_name=_("Type de contrat")
+    )
+    disponibilite = models.CharField(
+        max_length=30, choices=Disponibilite.choices, blank=True, null=True, verbose_name=_("Disponibilité")
+    )
     permis_b = models.BooleanField(default=False, verbose_name=_("Permis B"))
 
-    communication = models.PositiveSmallIntegerField(null=True, blank=True, verbose_name=_("Communication (étoiles)"), validators=[MinValueValidator(1), MaxValueValidator(5)], choices=NIVEAU_CHOICES)
-    experience = models.PositiveSmallIntegerField(null=True, blank=True, verbose_name=_("Expérience (étoiles)"), validators=[MinValueValidator(1), MaxValueValidator(5)], choices=NIVEAU_CHOICES)
-    csp = models.PositiveSmallIntegerField(null=True, blank=True, verbose_name=_("CSP (étoiles)"), validators=[MinValueValidator(1), MaxValueValidator(5)], choices=NIVEAU_CHOICES)
+    communication = models.PositiveSmallIntegerField(
+        null=True,
+        blank=True,
+        verbose_name=_("Communication (étoiles)"),
+        validators=[MinValueValidator(1), MaxValueValidator(5)],
+        choices=NIVEAU_CHOICES,
+    )
+    experience = models.PositiveSmallIntegerField(
+        null=True,
+        blank=True,
+        verbose_name=_("Expérience (étoiles)"),
+        validators=[MinValueValidator(1), MaxValueValidator(5)],
+        choices=NIVEAU_CHOICES,
+    )
+    csp = models.PositiveSmallIntegerField(
+        null=True,
+        blank=True,
+        verbose_name=_("CSP (étoiles)"),
+        validators=[MinValueValidator(1), MaxValueValidator(5)],
+        choices=NIVEAU_CHOICES,
+    )
 
-    vu_par = models.ForeignKey(get_user_model(), null=True, blank=True, on_delete=models.SET_NULL, related_name="candidats_vus", verbose_name=_("Vu par (staff)"))
-    responsable_placement = models.ForeignKey(get_user_model(), null=True, blank=True, on_delete=models.SET_NULL, related_name="candidats_gérés", verbose_name=_("Responsable placement"))
+    vu_par = models.ForeignKey(
+        get_user_model(),
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="candidats_vus",
+        verbose_name=_("Vu par (staff)"),
+    )
+
+    # ----------------- Champs "placement" (gardés pour le front) -----------------
+    responsable_placement = models.ForeignKey(
+        get_user_model(),
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="candidats_gérés",
+        verbose_name=_("Responsable placement"),
+    )
     date_placement = models.DateField(null=True, blank=True, verbose_name=_("Date de placement"))
-    entreprise_placement = models.ForeignKey("Partenaire", null=True, blank=True, on_delete=models.SET_NULL, related_name="placements", verbose_name=_("Entreprise de placement"))
-    resultat_placement = models.CharField(max_length=30, choices=ResultatPlacementChoices.choices, null=True, blank=True, verbose_name=_("Résultat du placement"))
-    entreprise_validee = models.ForeignKey("Partenaire", null=True, blank=True, on_delete=models.SET_NULL, related_name="entreprises_validees", verbose_name=_("Entreprise validée"))
-    contrat_signe = models.CharField(max_length=10, choices=ContratSigne.choices, null=True, blank=True, verbose_name=_("Contrat signé"))
+    entreprise_placement = models.ForeignKey(
+        "Partenaire",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="placements",
+        verbose_name=_("Entreprise de placement"),
+    )
+    resultat_placement = models.CharField(
+        max_length=30,
+        choices=ResultatPlacementChoices.choices,
+        null=True,
+        blank=True,
+        verbose_name=_("Résultat du placement"),
+    )
+    entreprise_validee = models.ForeignKey(
+        "Partenaire",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="entreprises_validees",
+        verbose_name=_("Entreprise validée"),
+    )
+    contrat_signe = models.CharField(
+        max_length=10, choices=ContratSigne.choices, null=True, blank=True, verbose_name=_("Contrat signé")
+    )
+
+    inscrit_gespers = models.BooleanField(
+        default=False,
+        verbose_name=_("Inscrit GESPERS"),
+        help_text="Indique si le candidat est inscrit dans GESPERS."
+    )
+
     courrier_rentree = models.BooleanField(default=False, verbose_name=_("Courrier de rentrée envoyé"))
     date_rentree = models.DateField(null=True, blank=True, verbose_name=_("Date de rentrée"))
     admissible = models.BooleanField(default=False, verbose_name=_("Admissible"))
+
+    numero_osia = models.CharField(
+        max_length=64,
+        blank=True,
+        null=True,
+        unique=True,  # un OSIA unique au niveau base (autorise plusieurs NULL)
+        help_text="Numéro OSIA du contrat signé",
+    )
+
+    # ----------------- Nouveau: pointeur vers l'appairage courant -----------------
+    placement_appairage = models.ForeignKey(
+        "Appairage",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="as_current_for",
+        verbose_name=_("Appairage courant (placement)"),
+    )
 
     class Meta:
         verbose_name = _("Candidat")
@@ -123,17 +259,29 @@ class Candidat(BaseModel):
         indexes = [
             models.Index(fields=["evenement"]),
             models.Index(fields=["nom", "prenom"]),
+            # Petit plus pour les filtres/tri par appairage courant
+            models.Index(fields=["placement_appairage"]),
         ]
+
+    # ----------------- Lifecycle / utils -----------------
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._initial = {f.name: getattr(self, f.name) for f in self._meta.fields}
+        # ⚠️ ne PAS utiliser getattr (les FKs sont stockés en *_id dans __dict__)
+        init = {}
+        for f in self._meta.concrete_fields:
+            init[f.name] = self.__dict__.get(f.attname, None)
+        self._initial = init
 
     def __str__(self):
         return self.nom_complet
 
     def __repr__(self):
         return f"<Candidat id={self.pk} nom='{self.nom}' prenom='{self.prenom}'>"
+
+    @property
+    def cv_statut_display(self):
+        return self.get_cv_statut_display() if self.cv_statut else None
 
     @property
     def nom_complet(self):
@@ -143,18 +291,57 @@ class Candidat(BaseModel):
     def age(self):
         if self.date_naissance:
             today = date.today()
-            return today.year - self.date_naissance.year - ((today.month, today.day) < (self.date_naissance.month, self.date_naissance.day))
+            return today.year - self.date_naissance.year - (
+                (today.month, today.day) < (self.date_naissance.month, self.date_naissance.day)
+            )
         return None
-    
+
     @property
     def nb_appairages(self) -> int:
         return self.appairages.count()
 
+    # --------- Accesseurs pratiques depuis l'appairage courant ---------
+
+    @property
+    def placement_statut(self):
+        a = getattr(self, "placement_appairage", None)
+        return getattr(a, "statut", None) if a else None
+
+    @property
+    def placement_statut_display(self):
+        a = getattr(self, "placement_appairage", None)
+        return a.get_statut_display() if a else None
+
+    @property
+    def placement_partenaire(self):
+        a = getattr(self, "placement_appairage", None)
+        return getattr(a, "partenaire", None) if a else None
+
+    @property
+    def placement_partenaire_nom(self):
+        p = self.placement_partenaire
+        return getattr(p, "nom", None) if p else None
+
+    @property
+    def placement_responsable(self):
+        a = getattr(self, "placement_appairage", None)
+        if not a:
+            return None
+        return getattr(a, "created_by", None) or getattr(a, "updated_by", None)
+
+    @property
+    def placement_responsable_nom(self):
+        u = self.placement_responsable
+        if not u:
+            return None
+        full = u.get_full_name()
+        return full or getattr(u, "email", None) or getattr(u, "username", None)
+
+    # -------------------------------------------------------------------
 
     def valider_comme_stagiaire(self):
         if not self.admissible:
             raise ValidationError(_("Ce candidat n'est pas admissible."))
-
         if self.compte_utilisateur:
             user = self.compte_utilisateur
             user.role = CustomUser.ROLE_STAGIAIRE
@@ -163,9 +350,7 @@ class Candidat(BaseModel):
             email = f"{self.prenom.lower()}.{self.nom.lower()}@exemple.com"
             if CustomUser.objects.filter(email=email).exists():
                 raise ValidationError(_("Un utilisateur avec cet email existe déjà."))
-
             username = generate_unique_username(f"{self.prenom.lower()}_{self.nom.lower()}")
-
             user = CustomUser.objects.create_user_with_role(
                 email=email,
                 username=username,
@@ -176,7 +361,6 @@ class Candidat(BaseModel):
             )
             self.compte_utilisateur = user
             self.save()
-
         return user
 
     def valider_comme_candidatuser(self):
@@ -189,10 +373,8 @@ class Candidat(BaseModel):
             email = f"{base_email}@exemple.com"
             if CustomUser.objects.filter(email=email).exists():
                 raise ValidationError(_("Un utilisateur avec cet email existe déjà."))
-
             base_username = slugify_username(f"{self.prenom}_{self.nom}")
             username = generate_unique_username(base_username)
-
             user = CustomUser.objects.create_user_with_role(
                 email=email,
                 username=username,
@@ -229,31 +411,50 @@ class Candidat(BaseModel):
             raise ValidationError(_("Un compte utilisateur nécessite une adresse email."))
 
     def save(self, *args, **kwargs):
+        """
+        - Remonte `user` à BaseModel.save(user=...) pour setter created_by/updated_by
+        - Log les changements
+        - Crée un HistoriquePlacement si les infos de placement changent
+          (et, à la création, seulement si au moins un champ de placement est renseigné)
+        """
         user = kwargs.pop("user", None)
         is_new = self.pk is None
         original = None if is_new else self.__class__.objects.filter(pk=self.pk).first()
 
+        # Validation avant enregistrement
         self.full_clean()
+
         with transaction.atomic():
-            super().save(*args, **kwargs)
+            # IMPORTANT : propager user à BaseModel.save
+            super().save(*args, user=user, **kwargs)
+
             if original:
                 self._log_changes()
-                champs_placement = [
-                    "entreprise_placement_id",
-                    "resultat_placement",
-                    "date_placement",
-                    "responsable_placement_id",
-                    "contrat_signe",
-                ]
-                if any(getattr(original, champ) != getattr(self, champ) for champ in champs_placement):
-                    HistoriquePlacement.objects.create(
-                        candidat=self,
-                        date_placement=self.date_placement or date.today(),
-                        entreprise=self.entreprise_placement,
-                        resultat=self.resultat_placement or ResultatPlacementChoices.EN_ATTENTE,
-                        responsable=self.responsable_placement,
-                        commentaire="📌 Historique créé automatiquement à la modification du placement."
-                    )
+
+            champs_placement = [
+                "entreprise_placement_id",
+                "resultat_placement",
+                "date_placement",
+                "responsable_placement_id",
+                "contrat_signe",
+            ]
+
+            if original:
+                changed = any(getattr(original, f) != getattr(self, f) for f in champs_placement)
+            else:
+                def _is_set(v):
+                    return v not in (None, "", False)
+                changed = any(_is_set(getattr(self, f)) for f in champs_placement)
+
+            if changed:
+                HistoriquePlacement.objects.create(
+                    candidat=self,
+                    date_placement=self.date_placement or date.today(),
+                    entreprise=self.entreprise_placement,
+                    resultat=self.resultat_placement or ResultatPlacementChoices.EN_ATTENTE,
+                    responsable=self.responsable_placement,
+                    commentaire="📌 Historique créé automatiquement à la modification du placement.",
+                )
 
     def delete(self, *args, **kwargs):
         logger.warning(f"❌ Suppression du candidat : {self} (id={self.pk})")
@@ -271,11 +472,11 @@ class Candidat(BaseModel):
 
     @property
     def ateliers_effectues(self):
-        return self.ateliers_tre_collectifs.count()
+        return self.ateliers_tre.count()
 
     @property
     def ateliers_labels(self):
-        return [a.get_type_atelier_display() for a in self.ateliers_tre_collectifs.all()]
+        return [a.get_type_atelier_display() for a in self.ateliers_tre.all()]
 
     @property
     def ateliers_resume(self):
@@ -290,10 +491,7 @@ class Candidat(BaseModel):
         if User.objects.filter(email=self.email).exists():
             raise ValueError("Un utilisateur avec cette adresse email existe déjà.")
         utilisateur = User.objects.create_user(
-            email=self.email,
-            password=mot_de_passe,
-            first_name=self.prenom,
-            last_name=self.nom
+            email=self.email, password=mot_de_passe, first_name=self.prenom, last_name=self.nom
         )
         self.compte_utilisateur = utilisateur
         self.save()
@@ -301,11 +499,27 @@ class Candidat(BaseModel):
 
 
 class HistoriquePlacement(BaseModel):
-    candidat = models.ForeignKey("Candidat", on_delete=models.CASCADE, related_name="historique_placements", verbose_name=_("Candidat"))
+    candidat = models.ForeignKey(
+        "Candidat", on_delete=models.CASCADE, related_name="historique_placements", verbose_name=_("Candidat")
+    )
     date_placement = models.DateField(verbose_name=_("Date du placement"))
-    entreprise = models.ForeignKey("Partenaire", on_delete=models.SET_NULL, null=True, blank=True, related_name="placements_historique", verbose_name=_("Entreprise"))
+    entreprise = models.ForeignKey(
+        "Partenaire",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="placements_historique",
+        verbose_name=_("Entreprise"),
+    )
     resultat = models.CharField(max_length=30, choices=ResultatPlacementChoices.choices, verbose_name=_("Résultat"))
-    responsable = models.ForeignKey(get_user_model(), on_delete=models.SET_NULL, null=True, blank=True, related_name="placements_realises", verbose_name=_("Responsable"))
+    responsable = models.ForeignKey(
+        get_user_model(),
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="placements_realises",
+        verbose_name=_("Responsable"),
+    )
     commentaire = models.TextField(blank=True, null=True, verbose_name=_("Commentaire"))
 
     class Meta:

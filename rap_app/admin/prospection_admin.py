@@ -1,189 +1,304 @@
-from django.contrib import admin
-from django.utils.html import format_html
-from django.utils.translation import gettext_lazy as _
-from django.forms import HiddenInput  
+# rap_app/admin/prospection_admin.py
+from datetime import timedelta
 
-from ..models.prospection import HistoriqueProspection, Prospection
+from django.contrib import admin, messages
+from django.utils import timezone
+from django.utils.html import format_html
+
+from ..models.prospection import Prospection, HistoriqueProspection
 from ..models.prospection_choices import ProspectionChoices
 
+
+# ───────────────────────── Inlines ─────────────────────────
 
 class HistoriqueProspectionInline(admin.TabularInline):
     model = HistoriqueProspection
     extra = 0
     can_delete = False
-    show_change_link = True
-    ordering = ("-date_modification",)
-    verbose_name = _("Historique")
-    verbose_name_plural = _("Historique de la prospection")
+    ordering = ("-date_modification", "-id")
+    show_change_link = False
 
-    # Ne pas inclure created_by / updated_by ici
     readonly_fields = (
         "date_modification",
+        "champ_modifie",
+        "ancienne_valeur",
+        "nouvelle_valeur",
         "ancien_statut",
         "nouveau_statut",
         "type_prospection",
+        "commentaire",
         "resultat",
         "prochain_contact",
         "moyen_contact",
-        "commentaire",
+        "created_by",
+        "created_at",
+        "updated_at",
     )
-
-    # Masque tous les champs non éditables
-    def has_add_permission(self, request, obj=None):
-        return False
-
-    def has_change_permission(self, request, obj=None):
-        return False
-@admin.action(description=_("Marquer comme à relancer"))
-def marquer_a_relancer(modeladmin, request, queryset):
-    updated = queryset.update(statut=ProspectionChoices.STATUT_A_RELANCER)
-    modeladmin.message_user(request, f"{updated} prospections mises à relancer.")
+    fields = readonly_fields
+    verbose_name = "Historique"
+    verbose_name_plural = "Historiques (lecture seule)"
 
 
-@admin.register(HistoriqueProspection)
-class HistoriqueProspectionAdmin(admin.ModelAdmin):
-    list_display = (
-        "id", "prospection",  "ancien_statut",
-        "nouveau_statut", "type_prospection", "prochain_contact",
-        "created_by", "est_recent", "relance_urgente"
-    )
-    list_filter = (
-        "type_prospection", "ancien_statut", "nouveau_statut",
-        "moyen_contact", "created_by"
-    )
-    search_fields = (
-        "prospection__partenaire__nom", "commentaire", "resultat"
-    )
-    ordering = ("-date_modification",)
-    date_hierarchy = "date_modification"
-    list_per_page = 50
-    autocomplete_fields = ("prospection",)
+# ─────────────────────── Filtres custom ─────────────────────
 
-    readonly_fields = (
-        "created_at", "updated_at", "updated_by", "created_by", 
-    )
+class RelanceEtatFilter(admin.SimpleListFilter):
+    """Filtre pratique pour l’état de relance."""
+    title = "Relance"
+    parameter_name = "relance_etat"
 
-    fieldsets = (
-        (_("Informations"), {
-            "fields": (
-                "prospection",  "ancien_statut", "nouveau_statut",
-                "type_prospection", "moyen_contact", "resultat", "prochain_contact",
-                "commentaire"
-            )
-        }),
-        (_("Métadonnées"), {
-            "classes": ("collapse",),
-            "fields": ("created_by", "updated_by", "created_at", "updated_at")
-        }),
-    )
+    def lookups(self, request, model_admin):
+        return (
+            ("a_relancer", "À relancer (échu)"),
+            ("planifiee", "Relance planifiée"),
+            ("sans", "Sans relance"),
+        )
 
-    def get_queryset(self, request):
-        return super().get_queryset(request).select_related("prospection", "created_by")
+    def queryset(self, request, queryset):
+        today = timezone.now().date()
+        v = self.value()
+        if v == "a_relancer":
+            return queryset.filter(relance_prevue__isnull=False, relance_prevue__lte=today) \
+                           .exclude(statut__in=[ProspectionChoices.STATUT_REFUSEE, ProspectionChoices.STATUT_ANNULEE])
+        if v == "planifiee":
+            return queryset.filter(relance_prevue__gt=today)
+        if v == "sans":
+            return queryset.filter(relance_prevue__isnull=True)
+        return queryset
 
-    def save_model(self, request, obj, form, change):
-        """Définit automatiquement le user qui modifie"""
-        if not obj.pk:
-            obj.created_by = request.user
-        obj.updated_by = request.user
-        super().save_model(request, obj, form, change)
 
-    def get_form(self, request, obj=None, **kwargs):
-        """Masque les champs created_by et updated_by en admin"""
-        form = super().get_form(request, obj, **kwargs)
-        for field in ("created_by", "updated_by"):
-            if field in form.base_fields:
-                form.base_fields[field].widget = HiddenInput()  # ✅ Plus d'erreur ici
-        return form
-
+# ─────────────────────── Admin principal ────────────────────
 
 @admin.register(Prospection)
 class ProspectionAdmin(admin.ModelAdmin):
-    list_display = (
-        "id", "partenaire_link", "formation_link", "statut_badge", "objectif",
-        "type_prospection", "date_prospection", "created_by", "prochain_contact",
-        "relance_necessaire", "is_active"
-    )
-    list_display_links = ("id", "partenaire_link", "formation_link")
-    list_filter = (
-        "statut", "objectif", "type_prospection", "motif", "created_by", "formation", "partenaire"
-    )
-    search_fields = ("partenaire__nom", "formation__nom", "commentaire")
-    ordering = ("-date_prospection",)
     date_hierarchy = "date_prospection"
-    list_per_page = 50
-    autocomplete_fields = ("formation", "partenaire")
-    actions = [marquer_a_relancer]
+
+    list_display = (
+        "id",
+        "partenaire",
+        "formation",
+        "centre",            # ✅ nouveau : afficher le centre
+        "owner",
+        "statut_badge",
+        "type_prospection",
+        "objectif",
+        "motif",
+        "moyen_contact",
+        "date_prospection",
+        "relance_prevue",
+        "relance_etat",
+        "created_by",
+        "created_at",
+    )
+
+    list_filter = (
+        "statut",
+        RelanceEtatFilter,
+        "type_prospection",
+        "objectif",
+        "motif",
+        "moyen_contact",
+        "owner",
+        "partenaire",
+        "formation",
+        "centre",            # ✅ nouveau : filtre par centre
+        ("date_prospection", admin.DateFieldListFilter),
+        ("relance_prevue", admin.DateFieldListFilter),
+    )
+
+    search_fields = (
+        "id",
+        "commentaire",
+        "partenaire__nom",
+        "formation__nom",
+        "centre__nom",       # ✅ nouveau : recherche par nom de centre
+        "created_by__username",
+        "owner__username",
+    )
+
+    ordering = ("-date_prospection", "-id")
+
+    raw_id_fields = ("partenaire", "formation", "centre", "owner", "created_by", "updated_by")  # ✅ centre ajouté
+    readonly_fields = ("created_by", "created_at", "updated_at")
+
+    fieldsets = (
+        ("Ciblage", {
+            "fields": ("partenaire", "formation", "centre", "owner"),  # ✅ centre visible/éditable
+        }),
+        ("Détails prospection", {
+            "fields": (
+                "date_prospection",
+                "type_prospection",
+                "motif",
+                "objectif",
+                "statut",
+                "moyen_contact",
+                "commentaire",
+            )
+        }),
+        ("Relance", {
+            "fields": ("relance_prevue",),
+        }),
+        ("Métadonnées", {
+            "fields": ("created_by", "created_at", "updated_at"),
+        }),
+    )
+
     inlines = [HistoriqueProspectionInline]
 
-    # Champs en lecture seule (non modifiables)
-    readonly_fields = (
-        "created_at", "updated_at", "created_by", "updated_by", "prochain_contact"
+    # Perf
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        return qs.select_related(
+            "partenaire", "formation", "centre", "owner", "created_by", "updated_by"  # ✅ centre préchargé
+        )
+
+    # Badge coloré de statut
+    def statut_badge(self, obj: Prospection):
+        colors = {
+            ProspectionChoices.STATUT_A_FAIRE: "#6b7280",      # gris
+            ProspectionChoices.STATUT_EN_COURS: "#2563eb",     # bleu
+            ProspectionChoices.STATUT_A_RELANCER: "#d97706",   # orange
+            ProspectionChoices.STATUT_ACCEPTEE: "#16a34a",     # vert
+            ProspectionChoices.STATUT_REFUSEE: "#b91c1c",      # rouge
+            ProspectionChoices.STATUT_ANNULEE: "#374151",      # gris foncé
+            ProspectionChoices.STATUT_NON_RENSEIGNE: "#9ca3af",
+        }
+        color = colors.get(obj.statut, "#9ca3af")
+        label = obj.get_statut_display()
+        return format_html(
+            '<span style="display:inline-block;padding:.15rem .5rem;border-radius:9999px;'
+            'background:{bg};color:#fff;font-size:12px">{label}</span>',
+            bg=color, label=label
+        )
+    statut_badge.short_description = "Statut"
+
+    # État de relance (affichage)
+    def relance_etat(self, obj: Prospection):
+        today = timezone.now().date()
+        if not obj.relance_prevue:
+            return "—"
+        delta = (obj.relance_prevue - today).days
+        if delta < 0:
+            return f"⚠️ Échue (J{delta})"
+        if delta == 0:
+            return "⏰ Aujourd’hui"
+        return f"📆 J+{delta}"
+    relance_etat.short_description = "Relance"
+
+    # Propager l’utilisateur à la sauvegarde
+    def save_model(self, request, obj: Prospection, form, change):
+        # Transmet à la fois user (BaseModel) et updated_by (logique Prospection.save)
+        # NB: Prospection.save() resynchronise centre à partir de formation/default_centre si nécessaire.
+        obj.save(user=request.user, updated_by=request.user)
+
+    def save_formset(self, request, form, formset, change):
+        # Inline RO, mais on garde le pattern
+        instances = formset.save(commit=False)
+        for inst in instances:
+            try:
+                inst.save(user=request.user)
+            except TypeError:
+                inst.save()
+        formset.save_m2m()
+
+    # ───────────── Actions de masse (créent l’historique) ─────────────
+
+    def _bulk_apply(self, request, queryset, **changes):
+        n = 0
+        for obj in queryset:
+            for k, v in changes.items():
+                setattr(obj, k, v)
+            obj.save(user=request.user, updated_by=request.user)  # garde l’historique
+            n += 1
+        self.message_user(request, f"{n} prospection(s) mises à jour.", level=messages.SUCCESS)
+
+    @admin.action(description="Statut → À faire")
+    def act_statut_a_faire(self, request, queryset):
+        self._bulk_apply(request, queryset, statut=ProspectionChoices.STATUT_A_FAIRE)
+
+    @admin.action(description="Statut → En cours")
+    def act_statut_en_cours(self, request, queryset):
+        self._bulk_apply(request, queryset, statut=ProspectionChoices.STATUT_EN_COURS)
+
+    @admin.action(description="Statut → À relancer (J+7)")
+    def act_statut_a_relancer_7(self, request, queryset):
+        d = timezone.now().date() + timedelta(days=7)
+        # la logique save() basculera statut → A_RELANCER si relance_prevue est posée
+        self._bulk_apply(request, queryset, relance_prevue=d)
+
+    @admin.action(description="Statut → Acceptée")
+    def act_statut_acceptee(self, request, queryset):
+        self._bulk_apply(request, queryset, statut=ProspectionChoices.STATUT_ACCEPTEE)
+
+    @admin.action(description="Statut → Refusée")
+    def act_statut_refusee(self, request, queryset):
+        self._bulk_apply(request, queryset, statut=ProspectionChoices.STATUT_REFUSEE)
+
+    @admin.action(description="Statut → Annulée")
+    def act_statut_annulee(self, request, queryset):
+        self._bulk_apply(request, queryset, statut=ProspectionChoices.STATUT_ANNULEE)
+
+    @admin.action(description="Planifier relance J+3")
+    def act_relance_j3(self, request, queryset):
+        d = timezone.now().date() + timedelta(days=3)
+        self._bulk_apply(request, queryset, relance_prevue=d)
+
+    @admin.action(description="Planifier relance J+14")
+    def act_relance_j14(self, request, queryset):
+        d = timezone.now().date() + timedelta(days=14)
+        self._bulk_apply(request, queryset, relance_prevue=d)
+
+    @admin.action(description="Annuler la relance (retour à En cours)")
+    def act_annuler_relance(self, request, queryset):
+        # save() remettra le statut à EN_COURS si relance_prevue est null
+        self._bulk_apply(request, queryset, relance_prevue=None)
+
+    actions = (
+        "act_statut_a_faire",
+        "act_statut_en_cours",
+        "act_statut_a_relancer_7",
+        "act_statut_acceptee",
+        "act_statut_refusee",
+        "act_statut_annulee",
+        "act_relance_j3",
+        "act_relance_j14",
+        "act_annuler_relance",
     )
 
-    # Champs affichés dans l’admin
-    fieldsets = (
-        (_("Informations principales"), {
-            "fields": ("partenaire", "formation", "date_prospection", "type_prospection", "motif")
-        }),
-        (_("Statut et objectif"), {
-            "fields": ("statut", "objectif")
-        }),
-        (_("Commentaire"), {
-            "fields": ("commentaire",)
-        }),
-        (_("Suivi interne"), {
-            "classes": ("collapse",),
-            "fields": ("prochain_contact", "created_by", "updated_by", "created_at", "updated_at")
-        }),
+
+# ───────────────────── Historique (admin direct) ─────────────────────
+
+@admin.register(HistoriqueProspection)
+class HistoriqueProspectionAdmin(admin.ModelAdmin):
+    date_hierarchy = "date_modification"
+    list_display = (
+        "id",
+        "prospection",
+        "date_modification",
+        "champ_modifie",
+        "ancien_statut",
+        "nouveau_statut",
+        "type_prospection",
+        "prochain_contact",
+        "moyen_contact",
+        "created_by",
+        "created_at",
     )
+    list_filter = (
+        "nouveau_statut",
+        "type_prospection",
+        ("date_modification", admin.DateFieldListFilter),
+        ("prochain_contact", admin.DateFieldListFilter),
+    )
+    search_fields = ("id", "prospection__partenaire__nom", "prospection__formation__nom", "champ_modifie", "commentaire")
+    ordering = ("-date_modification", "-id")
+    raw_id_fields = ("prospection", "created_by", "updated_by")
+    readonly_fields = ("created_by", "created_at", "updated_at")
 
     def get_queryset(self, request):
-        return super().get_queryset(request).select_related("formation", "partenaire", "created_by")
+        qs = super().get_queryset(request)
+        return qs.select_related("prospection", "prospection__partenaire", "prospection__formation", "created_by", "updated_by")
 
     def save_model(self, request, obj, form, change):
-        """Attribue automatiquement l'utilisateur en modification/création"""
-        if not obj.pk:
-            obj.created_by = request.user
-        obj.updated_by = request.user
-        super().save_model(request, obj, form, change)
-
-    def get_form(self, request, obj=None, **kwargs):
-        """Cache les champs created_by / updated_by si présents dans le form"""
-        form = super().get_form(request, obj, **kwargs)
-        for field in ("created_by", "updated_by"):
-            if field in form.base_fields:
-                form.base_fields[field].widget = admin.widgets.AdminHiddenInput()
-        return form
-
-    def formation_link(self, obj):
-        if obj.formation:
-            return format_html('<a href="/admin/{}/{}/{}/change/">{}</a>',
-                               obj.formation._meta.app_label,
-                               obj.formation._meta.model_name,
-                               obj.formation.id,
-                               obj.formation.nom)
-        return "-"
-    formation_link.short_description = _("Formation")
-
-    def partenaire_link(self, obj):
-        return format_html('<a href="/admin/{}/{}/{}/change/">{}</a>',
-                           obj.partenaire._meta.app_label,
-                           obj.partenaire._meta.model_name,
-                           obj.partenaire.id,
-                           obj.partenaire.nom)
-    partenaire_link.short_description = _("Partenaire")
-
-    def statut_badge(self, obj):
-        label = obj.get_statut_display()
-        couleur = {
-            ProspectionChoices.STATUT_A_FAIRE: "gray",
-            ProspectionChoices.STATUT_EN_COURS: "blue",
-            ProspectionChoices.STATUT_A_RELANCER: "orange",
-            ProspectionChoices.STATUT_ACCEPTEE: "green",
-            ProspectionChoices.STATUT_REFUSEE: "red",
-            ProspectionChoices.STATUT_ANNULEE: "black",
-            ProspectionChoices.STATUT_NON_RENSEIGNE: "lightgray",
-        }.get(obj.statut, "lightgray")
-        return format_html('<span style="color: {}; font-weight: bold;">{}</span>', couleur, label)
-    statut_badge.short_description = _("Statut")
-    statut_badge.admin_order_field = "statut"
+        # Historique est normalement RO, mais si besoin…
+        obj.save(user=request.user)

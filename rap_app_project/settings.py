@@ -222,6 +222,8 @@ LOGIN_URL = '/login/'
 # SECTION LOGGING
 # ======================
 
+
+
 # Configuration des logs sensibles
 LOG_SENSITIVE_FIELDS = [
     'password',
@@ -234,7 +236,11 @@ LOG_SENSITIVE_FIELDS = [
 ]
 LOG_SANITIZATION_WARNINGS = True  # Active les logs lorsque des données sont masquées
 
-# Configuration du système de logging
+# Création des répertoires de logs si inexistants
+LOG_DIR = os.path.join(BASE_DIR, 'logs')
+Path(LOG_DIR).mkdir(exist_ok=True)
+
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -247,8 +253,12 @@ LOGGING = {
             'format': '{levelname} {message}',
             'style': '{',
         },
+        # Formatter audit : on ne référence plus directement user/action/object
         'audit': {
-            'format': '{asctime} | {levelname} | {module} | User:{user} | Action:{action} | Object:{object} | {message}',
+            'format': (
+                '{asctime} | {levelname} | {module} | '
+                '{message}'
+            ),
             'style': '{',
         },
     },
@@ -287,6 +297,19 @@ LOGGING = {
             'level': 'INFO',
             'propagate': False,
         },
+        # logs détaillés pour le ViewSet Candidats
+'rap_app.candidats': {
+    'handlers': ['console', 'audit_file'],  # console + audit si tu veux
+    'level': 'DEBUG',                        # <— permet de voir nos logger.debug(...)
+    'propagate': False,
+},
+# (optionnel) SQL si besoin
+# 'django.db.backends': {
+#     'handlers': ['console'],
+#     'level': 'INFO',  # ou 'DEBUG' pour toutes les requêtes
+#     'propagate': False,
+# },
+
     },
 }
 
@@ -295,10 +318,9 @@ ENABLE_MODEL_LOGGING = not DEBUG  # Désactiver en debug pour éviter le bruit
 LOG_MODELS = [
     'rap_app.ImportantModel',
     'rap_app.CriticalModel',
-    # Ajoutez d'autres modèles critiques ici
 ]
 LOG_EXCLUDED_MODELS = [
-    'auth.User',  # Exemple: éviter de logger les modifications de User
+    'auth.User',
     'sessions.Session',
     'contenttypes.ContentType',
 ]
@@ -309,7 +331,3 @@ if 'test' in sys.argv:
     LOGGING['loggers']['rap_app']['level'] = 'CRITICAL'
 else:
     DISABLE_MODEL_LOGS = False
-
-# Création des répertoires de logs si inexistants
-LOG_DIR = os.path.join(BASE_DIR, 'logs')
-Path(LOG_DIR).mkdir(exist_ok=True)

@@ -21,5 +21,6 @@ from .user_admin import *
 from .vae_jury_admin import *
 from .appairage_admin import *
 from .atelier_tre_admin import *
-from .atelier_tre_admin import ParticipationAtelierTREInline
 from .candidat_admin import *
+from .prospection_comments_admin import *
+from .appairage_commentaires_admin import * 

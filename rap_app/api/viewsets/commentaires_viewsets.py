@@ -3,58 +3,103 @@ from rest_framework import viewsets, status, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from drf_spectacular.utils import extend_schema, OpenApiResponse, OpenApiParameter
-from rest_framework.exceptions import ValidationError
+from rest_framework.exceptions import ValidationError, PermissionDenied
 from django.http import Http404
 from django.http import HttpResponse
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
 
-
 from ...models.commentaires import Commentaire
 from ...models.logs import LogUtilisateur
 from ...api.serializers.commentaires_serializers import CommentaireMetaSerializer, CommentaireSerializer
 from ...api.paginations import RapAppPagination
-from ...api.permissions import IsOwnerOrStaffOrAbove
+from ...api.permissions import IsStaffOrAbove  # <-- réservé au staff/admin/superadmin
 from ...utils.exporter import Exporter
 
- 
+
 @extend_schema(tags=["Commentaires"])
 class CommentaireViewSet(viewsets.ModelViewSet):
     """
     API CRUD pour les commentaires liés aux formations.
     Permet la création, l’édition, la suppression, la recherche et l’export.
+    Accès réservé aux utilisateurs staff/admin/superadmin.
+
+    ⚠️ Scope centres :
+      - Admin/Superadmin : accès global
+      - Staff : limité aux commentaires dont la formation appartient à leurs centres
     """
     queryset = Commentaire.objects.select_related(
-        "formation", "formation__type_offre", "formation__statut", "created_by"
+        "formation", "formation__type_offre", "formation__statut", "formation__centre", "created_by"
     ).all()
     serializer_class = CommentaireSerializer
     pagination_class = RapAppPagination
-    permission_classes = [IsOwnerOrStaffOrAbove]
+    permission_classes = [IsStaffOrAbove]
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ["contenu", "formation__nom", "formation__num_offre", "created_by__username"]
     ordering = ["-created_at"]
+
+    # --------------------- helpers scope/permissions ---------------------
+
+    def _is_admin_like(self, user) -> bool:
+        # Utilise tes helpers de CustomUser si présents (is_admin()); sinon flags Django
+        return getattr(user, "is_superuser", False) or (hasattr(user, "is_admin") and user.is_admin())
+
+    def _staff_centre_ids(self, user):
+        """Liste des centres du staff (None si admin-like = accès global)."""
+        if self._is_admin_like(user):
+            return None
+        if getattr(user, "is_staff", False):
+            # nécessite le M2M user.centres déjà mis en place
+            return list(user.centres.values_list("id", flat=True))
+        return []
+
+    def _scope_qs_to_user_centres(self, qs):
+        user = self.request.user
+        centre_ids = self._staff_centre_ids(user)
+        if centre_ids is None:
+            return qs  # admin/superadmin
+        if centre_ids:
+            return qs.filter(formation__centre_id__in=centre_ids)
+        return qs.none()
+
+    def _assert_staff_can_use_formation(self, formation):
+        """Empêche un staff d'écrire hors de son périmètre (centre de la formation)."""
+        if not formation:
+            return
+        user = self.request.user
+        if self._is_admin_like(user):
+            return
+        if getattr(user, "is_staff", False):
+            allowed = set(user.centres.values_list("id", flat=True))
+            if getattr(formation, "centre_id", None) not in allowed:
+                raise PermissionDenied("Formation hors de votre périmètre (centre).")
+
+    # ------------------------------ context ------------------------------
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
         context["include_full_content"] = True
         return context
 
-    @action(detail=False, methods=["get"], url_path="export")
+    # ------------------------------ export -------------------------------
+
+    @action(detail=False, methods=["get"], url_path="export", permission_classes=[IsStaffOrAbove])
     def export(self, request):
         """
         Export des commentaires en PDF/CSV/Word
+        (Scope centres appliqué via get_queryset() + filter_queryset())
         """
         format = request.query_params.get('format', 'pdf')
         ids = request.query_params.get('ids', '')
         export_all = request.query_params.get('all', 'false').lower() == 'true'
 
         queryset = self.filter_queryset(self.get_queryset())
-        
+
         # Filtre par IDs si spécifié
         if ids:
             id_list = [int(id) for id in ids.split(',') if id.isdigit()]
             queryset = queryset.filter(id__in=id_list)
-        
+
         # Si 'all' n'est pas true et aucun ID spécifié, retourner vide
         if not export_all and not ids:
             return Response({"detail": "Aucun commentaire sélectionné"}, status=400)
@@ -77,11 +122,17 @@ class CommentaireViewSet(viewsets.ModelViewSet):
             if y < 100:  # Nouvelle page si on arrive en bas
                 p.showPage()
                 y = A4[1] - 50
-            
+
             p.setFont("Helvetica", 10)
-            p.drawString(50, y, f"{commentaire.formation_nom} - {commentaire.auteur}")
+            # Ces attributs supposent des propriétés sur le modèle ; fallback si besoin
+            formation_nom = getattr(commentaire, "formation_nom", None) or (
+                getattr(getattr(commentaire, "formation", None), "nom", "") or ""
+            )
+            auteur = getattr(commentaire, "auteur", None) or getattr(getattr(commentaire, "created_by", None), "username", "")
+            p.drawString(50, y, f"{formation_nom} - {auteur}")
             y -= 15
-            p.drawString(50, y, commentaire.contenu[:100])  # Limite à 100 caractères
+            contenu = (commentaire.contenu or "")[:100]
+            p.drawString(50, y, contenu)
             y -= 30
 
         p.save()
@@ -104,12 +155,17 @@ class CommentaireViewSet(viewsets.ModelViewSet):
         writer.writerow(['ID', 'Formation', 'Auteur', 'Contenu', 'Date'])
 
         for commentaire in queryset:
+            formation_nom = getattr(commentaire, "formation_nom", None) or (
+                getattr(getattr(commentaire, "formation", None), "nom", "") or ""
+            )
+            auteur = getattr(commentaire, "auteur", None) or getattr(getattr(commentaire, "created_by", None), "username", "")
+            date_val = getattr(commentaire, "date", None) or getattr(commentaire, "created_at", None)
             writer.writerow([
                 commentaire.id,
-                commentaire.formation_nom,
-                commentaire.auteur,
+                formation_nom,
+                auteur,
                 commentaire.contenu,
-                commentaire.date
+                date_val,
             ])
 
         return response
@@ -122,10 +178,16 @@ class CommentaireViewSet(viewsets.ModelViewSet):
         document.add_heading('Export des commentaires', 0)
 
         for commentaire in queryset:
+            formation_nom = getattr(commentaire, "formation_nom", None) or (
+                getattr(getattr(commentaire, "formation", None), "nom", "") or ""
+            )
+            auteur = getattr(commentaire, "auteur", None) or getattr(getattr(commentaire, "created_by", None), "username", "")
+            date_val = getattr(commentaire, "date", None) or getattr(commentaire, "created_at", None)
+
             document.add_paragraph(f"ID: {commentaire.id}", style='Heading2')
-            document.add_paragraph(f"Formation: {commentaire.formation_nom}")
-            document.add_paragraph(f"Auteur: {commentaire.auteur}")
-            document.add_paragraph(f"Date: {commentaire.date}")
+            document.add_paragraph(f"Formation: {formation_nom}")
+            document.add_paragraph(f"Auteur: {auteur}")
+            document.add_paragraph(f"Date: {date_val}")
             document.add_paragraph(f"Contenu: {commentaire.contenu}")
             document.add_paragraph("-" * 50)
 
@@ -139,17 +201,12 @@ class CommentaireViewSet(viewsets.ModelViewSet):
             headers={"Content-Disposition": 'attachment; filename="commentaires.docx"'}
         )
 
+    # ------------------------------ queryset ------------------------------
+
     def get_queryset(self):
         """
-        Récupère les commentaires en fonction des filtres :
-        - formation
-        - auteur
-        - centre
-        - type_offre
-        - statut
-        - date_min / date_max
-        - saturation_min / saturation_max
-        - formation_etat : actives / a_venir / terminees / a_recruter
+        Récupère les commentaires (filtrés par query params), puis applique
+        le scope centres en fonction de l'utilisateur.
         """
         queryset = Commentaire.objects.select_related(
             "formation", "formation__centre", "formation__type_offre", "formation__statut", "created_by"
@@ -193,7 +250,7 @@ class CommentaireViewSet(viewsets.ModelViewSet):
         saturation_max = self.request.query_params.get("saturation_max")
         if saturation_max:
             queryset = queryset.filter(saturation_formation__lte=saturation_max)
-        
+
         from ...models.formations import Formation
 
         # 🎯 Filtre supplémentaire : état de la formation associée
@@ -207,38 +264,39 @@ class CommentaireViewSet(viewsets.ModelViewSet):
         elif formation_etat == "a_recruter":
             queryset = queryset.filter(formation_id__in=Formation.objects.formations_a_recruter().values("id"))
 
-        # 🔍 Log de doublons
+        # ✅ Scope centres appliqué ici
+        queryset = self._scope_qs_to_user_centres(queryset)
+
+        # 🔍 Log (doublons éventuels)
         ids = list(queryset.values_list('id', flat=True))
         duplicates = [i for i in set(ids) if ids.count(i) > 1]
         if duplicates:
             print(f"🚨 Doublons Commentaire IDs (x{len(duplicates)}) détectés : {duplicates}")
 
-        # ✅ Supprime les doublons potentiels
         return queryset.distinct()
+
+    # ------------------------------ filtres UI ----------------------------
 
     @extend_schema(
         summary="Récupérer les filtres disponibles pour les commentaires",
         responses={200: OpenApiResponse(description="Filtres disponibles")}
     )
-    @action(detail=False, methods=["get"], url_path="filtres")
+    @action(detail=False, methods=["get"], url_path="filtres", permission_classes=[IsStaffOrAbove])
     def get_filtres(self, request):
         """
         Renvoie les options de filtres disponibles pour les commentaires.
+        (Sur la base du queryset **déjà scopé**)
         """
-        centres = Commentaire.objects \
-            .filter(formation__centre__isnull=False) \
-            .values_list("formation__centre_id", "formation__centre__nom") \
-            .distinct()
+        scoped = self.get_queryset()
 
-        statuts = Commentaire.objects \
-            .filter(formation__statut__isnull=False) \
-            .values_list("formation__statut_id", "formation__statut__nom") \
-            .distinct()
+        centres = scoped.filter(formation__centre__isnull=False) \
+            .values_list("formation__centre_id", "formation__centre__nom").distinct()
 
-        type_offres = Commentaire.objects \
-            .filter(formation__type_offre__isnull=False) \
-            .values_list("formation__type_offre_id", "formation__type_offre__nom") \
-            .distinct()
+        statuts = scoped.filter(formation__statut__isnull=False) \
+            .values_list("formation__statut_id", "formation__statut__nom").distinct()
+
+        type_offres = scoped.filter(formation__type_offre__isnull=False) \
+            .values_list("formation__type_offre_id", "formation__type_offre__nom").distinct()
 
         formation_etats = [
             {"value": "actives", "label": "Formations actives"},
@@ -258,6 +316,7 @@ class CommentaireViewSet(viewsets.ModelViewSet):
             }
         })
 
+    # --------------------------- CRUD standard ----------------------------
 
     @extend_schema(summary="Lister les commentaires actifs")
     def list(self, request, *args, **kwargs):
@@ -271,6 +330,11 @@ class CommentaireViewSet(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+
+        # 🔐 Contrôle périmètre formation avant save
+        formation = serializer.validated_data.get("formation", None)
+        self._assert_staff_can_use_formation(formation)
+
         commentaire = serializer.save()
 
         LogUtilisateur.log_action(
@@ -290,8 +354,14 @@ class CommentaireViewSet(viewsets.ModelViewSet):
     def update(self, request, *args, **kwargs):
         partial = kwargs.pop("partial", False)
         instance = self.get_object()
+
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
         serializer.is_valid(raise_exception=True)
+
+        # 🔐 Contrôle périmètre (nouvelle formation si fournie, sinon formation existante)
+        new_formation = serializer.validated_data.get("formation", instance.formation)
+        self._assert_staff_can_use_formation(new_formation)
+
         commentaire = serializer.save()
 
         LogUtilisateur.log_action(
@@ -310,6 +380,10 @@ class CommentaireViewSet(viewsets.ModelViewSet):
     @extend_schema(summary="Supprimer un commentaire")
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
+
+        # 🔐 Optionnel : verrouille la suppression à son centre
+        self._assert_staff_can_use_formation(getattr(instance, "formation", None))
+
         instance.delete()
 
         LogUtilisateur.log_action(
@@ -327,14 +401,9 @@ class CommentaireViewSet(viewsets.ModelViewSet):
 
     @extend_schema(
         summary="Récupérer les statistiques de saturation des commentaires",
-        responses={
-            200: OpenApiResponse(
-                description="Données de saturation pour une formation",
-                response=None
-            )
-        }
+        responses={200: OpenApiResponse(description="Données de saturation pour une formation", response=None)}
     )
-    @action(detail=False, methods=["get"], url_path="saturation-stats")
+    @action(detail=False, methods=["get"], url_path="saturation-stats", permission_classes=[IsStaffOrAbove])
     def saturation_stats(self, request):
         """
         Renvoie les statistiques de saturation pour une formation donnée.
@@ -347,11 +416,3 @@ class CommentaireViewSet(viewsets.ModelViewSet):
             "message": "Statistiques de saturation récupérées avec succès.",
             "data": stats
         })
-
-
-
-
-
-
-
-

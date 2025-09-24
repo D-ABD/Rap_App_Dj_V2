@@ -7,6 +7,7 @@ from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
 from rest_framework.decorators import action
+from django.db.models import Q
 
 from ..serializers.centres_serializers import CentreConstantsSerializer, CentreSerializer
 from ...models.centres import Centre
@@ -40,6 +41,26 @@ class CentreViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return Centre.objects.all().order_by("nom")
+
+    @action(detail=False, methods=["get"], url_path="liste-simple")
+    def liste_simple(self, request):
+        """
+        Renvoie une liste légère: {results: [{id, label}]}
+        Paramètres acceptés: ?search=...&page_size=...
+        """
+        search = request.query_params.get("search") or request.query_params.get("q") or ""
+        try:
+            page_size = int(request.query_params.get("page_size", 200))
+        except ValueError:
+            page_size = 200
+
+        qs = self.get_queryset()
+        if search:
+            qs = qs.filter(Q(nom__icontains=search) | Q(code_postal__icontains=search))
+
+        qs = qs.order_by("nom")[:page_size]
+        data = [{"id": c.id, "label": c.nom} for c in qs]
+        return Response({"results": data})        
 
     def create(self, request, *args, **kwargs):
         """

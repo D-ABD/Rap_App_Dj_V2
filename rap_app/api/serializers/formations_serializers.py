@@ -4,6 +4,8 @@ from drf_spectacular.utils import extend_schema_serializer, OpenApiExample, exte
 from django.utils.translation import gettext_lazy as _
 from django.core.exceptions import ValidationError
 
+from ..serializers.centres_serializers import CentreSerializer
+
 from ...models.centres import Centre
 from ...models.statut import Statut
 from ...models.types_offre import TypeOffre
@@ -305,6 +307,15 @@ class FormationListSerializer(serializers.Serializer):
         )
     ]
 )
+
+class FormationLightSerializer(serializers.ModelSerializer):
+    type_offre = TypeOffreSerializer(read_only=True)
+    centre = CentreSerializer(read_only=True)
+
+    class Meta:
+        model = Formation
+        fields = ["id", "nom", "type_offre", "centre", "num_offre"]
+
 
 class FormationDetailSerializer(serializers.Serializer):
     """

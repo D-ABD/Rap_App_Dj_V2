@@ -1,9 +1,25 @@
 from django.urls import path
 from rest_framework.routers import DefaultRouter
 
+
+
+from .viewsets.stats_viewsets.prospection_comment_stats_viewset import ProspectionCommentStatsViewSet
+from .viewsets.stats_viewsets.commentaires_stats_viewsets import CommentaireStatsViewSet
+from .viewsets.stats_viewsets.atelier_tre_stats_viewset import AtelierTREStatsViewSet
+from .viewsets.stats_viewsets.appairages_stats_viewsets import AppairageStatsViewSet
+from .viewsets.stats_viewsets.partenaires_stats_viewsets import PartenaireStatsViewSet
+from .viewsets.stats_viewsets.candidats_stats_viewsets import CandidatStatsViewSet
+from .viewsets.stats_viewsets.prospection_stats_viewsets import ProspectionStatsViewSet
+from .viewsets.stats_viewsets.formation_stats_viewsets import FormationStatsViewSet
+from .viewsets.stats_viewsets.appairage_comment_stats_viewset import AppairageCommentaireStatsViewSet
+
+
+
+
 # ViewSets
 from .viewsets.appairage_viewsets import AppairageViewSet, HistoriqueAppairageViewSet
-from .viewsets.atelier_tre_viewsets import AtelierTREViewSet, ParticipationAtelierTREViewSet
+from .viewsets.appairage_commentaires_viewset import CommentaireAppairageViewSet
+from .viewsets.atelier_tre_viewsets import AtelierTREViewSet
 from .viewsets.auth_viewset import EmailTokenObtainPairView
 from .viewsets.candidat_viewsets import CandidatViewSet, HistoriquePlacementViewSet
 from .viewsets.centres_viewsets import CentreViewSet
@@ -16,6 +32,7 @@ from .viewsets.logs_viewsets import LogUtilisateurViewSet
 from .viewsets.partenaires_viewsets import PartenaireViewSet
 from .viewsets.prepacomp_viewsets import PrepaCompGlobalViewSet, SemaineViewSet
 from .viewsets.prospection_viewsets import HistoriqueProspectionViewSet, ProspectionViewSet
+from .viewsets.prospection_comment_viewsets import ProspectionCommentViewSet
 from .viewsets.rapports_viewsets import RapportViewSet
 from .viewsets.search_viewset import SearchView
 from .viewsets.statut_viewsets import StatutViewSet
@@ -59,13 +76,15 @@ router.register(r'appairages', AppairageViewSet, basename='appairage')
 router.register(r'historiques-appairages', HistoriqueAppairageViewSet, basename='historique-appairage')
 
 # 🧑‍🏫 Ateliers TRE
-router.register(r'atelierstre', AtelierTREViewSet, basename='atelierstre')
-router.register(r'participations-atelierstre', ParticipationAtelierTREViewSet, basename='participations-atelierstre')
+router.register(r'ateliers-tre', AtelierTREViewSet, basename='ateliers-tre')
+# router.register(r'participations-ateliers-tre', ParticipationAtelierTREViewSet, basename='participations-ateliers-tre')
 
 # 🧭 Prospection & partenaires
 router.register(r'partenaires', PartenaireViewSet, basename='partenaire')
 router.register(r'prospections', ProspectionViewSet, basename='prospection')
 router.register(r'historiques-prospection', HistoriqueProspectionViewSet, basename='historiqueprospection')
+router.register(r"prospection-comments", ProspectionCommentViewSet, basename="prospection-comment")
+router.register(r"prospection-commentaires", ProspectionCommentViewSet, basename="prospection-comment-fr")
 
 # 🧾 Suivi jury & VAE
 router.register(r'suivis-jury', SuiviJuryViewSet, basename='suivijury')
@@ -84,6 +103,20 @@ router.register(r'rapports', RapportViewSet, basename='rapport')
 urlpatterns += [
     path("search/", SearchView.as_view(), name="search"),
 ]
+
+# Stats / KPIS
+router.register(r'formation-stats', FormationStatsViewSet, basename='formation-stats')
+router.register(r'prospection-stats', ProspectionStatsViewSet, basename='prospection-stats')
+router.register(r'candidat-stats', CandidatStatsViewSet, basename='candidat-stats')
+router.register(r'partenaire-stats', PartenaireStatsViewSet, basename='partenaire-stats')
+router.register(r"ateliertre-stats", AtelierTREStatsViewSet, basename="ateliertre-stats")
+router.register(r'appairage-stats', AppairageStatsViewSet, basename='appairage-stats')
+router.register(r"commentaire-stats", CommentaireStatsViewSet, basename="commentaire-stats")
+router.register(r"prospection-comment-stats", ProspectionCommentStatsViewSet, basename="prospection-comment-stats")
+router.register(r"appairage-commentaires", CommentaireAppairageViewSet, basename="appairage-commentaire")
+router.register(r"appairage-commentaire-stats", AppairageCommentaireStatsViewSet, basename="appairage-commentaire-stats")
+router.register(r"appairage-comment-stats", AppairageCommentaireStatsViewSet, basename="appairage-comment-stats")
+
 
 # 🔗 Ajout des routes REST
 urlpatterns += router.urls

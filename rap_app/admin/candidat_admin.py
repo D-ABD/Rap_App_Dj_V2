@@ -1,155 +1,217 @@
-from django.contrib import messages
-from django.contrib import admin
-from django.utils.translation import gettext_lazy as _
-from django.utils.html import format_html
-from django.core.exceptions import ValidationError
+# rap_app/admin/candidat_admin.py
+from django.contrib import admin, messages
+from django.contrib.admin.sites import NotRegistered
 
-from ..models.atelier_tre import AtelierTRE
-from ..models.candidat import Candidat, HistoriquePlacement
-from .appairage_admin import AppairageInline
-
-
-def etoiles(val: int) -> str:
-    return "★" * val + "☆" * (5 - val)
+from ..models.candidat import (
+    Candidat as CandidatModel,
+    HistoriquePlacement,
+)
 
 
 class HistoriquePlacementInline(admin.TabularInline):
     model = HistoriquePlacement
     extra = 0
-    fields = ("date_placement", "entreprise", "resultat", "responsable", "commentaire")
-    autocomplete_fields = ("entreprise", "responsable")
-    show_change_link = True
+    can_delete = False
+    ordering = ("-date_placement", "-id")
+    readonly_fields = (
+        "date_placement",
+        "entreprise",
+        "resultat",
+        "responsable",
+        "commentaire",
+        "created_by",
+        "created_at",
+        "updated_at",
+    )
+    fields = readonly_fields
+    verbose_name = "Historique de placement"
+    verbose_name_plural = "Historique de placements"
 
 
-class AtelierTREParticipationInline(admin.TabularInline):
-    model = AtelierTRE.candidats.through
-    extra = 0
-    verbose_name = "Atelier TRE"
-    verbose_name_plural = "Ateliers TRE suivis"
-    fields = ("ateliertre",)
-    autocomplete_fields = ("ateliertre",)
+# Évite AlreadyRegistered si un autre module a déjà enregistré Candidat
+try:
+    admin.site.unregister(CandidatModel)
+except NotRegistered:
+    pass
 
 
-@admin.register(Candidat)
+@admin.register(CandidatModel)
 class CandidatAdmin(admin.ModelAdmin):
-    actions = ["valider_comme_stagiaire", "valider_comme_candidatuser"]
-
-    @admin.action(description="Valider comme candidatuser")
-    def valider_comme_candidatuser(modeladmin, request, queryset):
-        for candidat in queryset:
-            try:
-                user = candidat.valider_comme_candidatuser()
-                messages.success(request, _(f"{candidat} → {user.email} candidat validé."))
-            except ValidationError as e:
-                messages.error(request, _(f"Erreur pour {candidat} : {e.messages[0]}"))
-
-    @admin.action(description="Valider comme stagiaire")
-    def valider_comme_stagiaire(modeladmin, request, queryset):
-        for candidat in queryset:
-            try:
-                user = candidat.valider_comme_stagiaire()
-                messages.success(request, _(f"{candidat} → {user.email} stagiaire validé."))
-            except ValidationError as e:
-                messages.error(request, _(f"Erreur pour {candidat} : {e.message}"))
-
-    @admin.display(boolean=True, description="Validé stagiaire ?")
-    def est_valide_comme_stagiaire(self, obj):
-        return obj.est_valide_comme_stagiaire
-
-    @admin.display(description="Rôle utilisateur")
-    def role_utilisateur(self, obj):
-        return obj.role_utilisateur
-
-    def voir_appairages(self, obj):
-        url = f"/admin/rap_app/appairage/?candidat__id__exact={obj.pk}"
-        return format_html(f'<a href="{url}">Voir</a>')
-
-    def ateliers_resume(self, obj):
-        return obj.ateliers_resume
-    ateliers_resume.short_description = "Ateliers suivis"
-
-    @admin.display(description="Communication")
-    def communication_etoiles(self, obj):
-        return etoiles(obj.communication) if obj.communication else "-"
-
-    @admin.display(description="Expérience")
-    def experience_etoiles(self, obj):
-        return etoiles(obj.experience) if obj.experience else "-"
-
-    @admin.display(description="CSP")
-    def csp_etoiles(self, obj):
-        return etoiles(obj.csp) if obj.csp else "-"
-    
-    @admin.display(description="Appairages")
-    def nb_appairages(self, obj):
-        return obj.nb_appairages
-
+    date_hierarchy = "date_inscription"
 
     list_display = (
-        "prenom", "nom", "role_utilisateur", "statut", "age", "formation", "resultat_placement",
-        "date_inscription", "admissible", "est_valide_comme_candidatuser", "est_valide_comme_stagiaire",
-        "entretien_done", "test_is_ok", "voir_appairages", "vu_par", "responsable_placement",
-        "ateliers_resume", "communication_etoiles", "experience_etoiles", "csp_etoiles", "nb_appairages",
-        "date_placement", "contrat_signe", "courrier_rentree", "date_rentree", "origine_sourcing"
+        "id", "nom_complet", "email", "telephone", "statut", "formation",
+        "cv_statut", "entretien_done", "test_is_ok", "rqth",
+        "resultat_placement", "entreprise_placement", "date_placement",
+        "nb_appairages", "created_by", "created_at",
     )
-
     list_filter = (
-        "statut", "formation", "type_contrat", "disponibilite", "admissible",
-        "entretien_done", "test_is_ok", "rqth", "permis_b",
-        "resultat_placement", "contrat_signe", "vu_par", "origine_sourcing", "responsable_placement",
+        "statut", "cv_statut", "type_contrat", "disponibilite", "rqth",
+        "admissible", "entretien_done", "test_is_ok",
+        "formation", "entreprise_placement", "entreprise_validee", "resultat_placement",
+        ("date_inscription", admin.DateFieldListFilter),
+        ("date_placement", admin.DateFieldListFilter),
+    )
+    search_fields = ("id", "nom", "prenom", "email", "telephone", "ville", "code_postal", "numero_osia")
+    ordering = ("-date_inscription", "-id")
+
+    raw_id_fields = (
+        "compte_utilisateur", "vu_par", "formation", "evenement",
+        "responsable_placement", "entreprise_placement", "entreprise_validee",
+        "placement_appairage", "created_by", "updated_by",
     )
 
-    search_fields = ("prenom", "nom", "email", "telephone", "ville", "code_postal")
-    readonly_fields = ("date_inscription", "age")
-
-    autocomplete_fields = (
-        "formation", "evenement", "compte_utilisateur",
-        "entreprise_placement", "entreprise_validee",
-        "vu_par", "responsable_placement",
+    readonly_fields = (
+        "id", "date_inscription", "created_by", "created_at", "updated_by", "updated_at"
     )
-
-    ordering = ("-date_inscription",)
-    inlines = [HistoriquePlacementInline, AppairageInline, AtelierTREParticipationInline]
 
     fieldsets = (
-        (_("Identité"), {
+        ("Identité & contact", {
+            "fields": ("nom", "prenom", "email", "telephone", "ville", "code_postal", "compte_utilisateur"),
+        }),
+        ("Parcours", {
             "fields": (
-                ("prenom", "nom"), "date_naissance", "age", "email",
-                "telephone", "ville", "code_postal", "origine_sourcing"
+                "statut", "formation", "evenement", "cv_statut",
+                "entretien_done", "test_is_ok", "rqth", "admissible",
+                "date_naissance", "type_contrat", "disponibilite", "permis_b",
+                "communication", "experience", "csp",
+                "origine_sourcing", "notes",
             )
         }),
-        (_("Compte et inscription"), {
-            "fields": ("compte_utilisateur", "date_inscription")
-        }),
-        (_("Formation et accompagnement"), {
+        ("Placement (snapshot)", {
             "fields": (
-                "statut", "formation", "evenement",
-                "entretien_done", "test_is_ok", "admissible"
+                "responsable_placement", "date_placement", "entreprise_placement",
+                "resultat_placement", "entreprise_validee", "contrat_signe",
+                "numero_osia", "placement_appairage",
             )
         }),
-        (_("Placement"), {
-            "fields": (
-                "date_placement", "entreprise_placement", "entreprise_validee",
-                "resultat_placement", "responsable_placement",
-                "contrat_signe", "courrier_rentree", "date_rentree"
-            )
+        ("Métadonnées", {
+            "fields": ("vu_par", "date_inscription", "created_by", "created_at", "updated_by", "updated_at"),
         }),
-        (_("Informations socio-pro & dispo"), {
-            "fields": (
-                "type_contrat", "disponibilite", "permis_b", "rqth",
-                "csp", "communication", "experience", "vu_par"
-            )
-        }),
-        (_("Notes"), {
-            "fields": ("notes",)
-        }),
+    )
+
+    inlines = [HistoriquePlacementInline]
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        return qs.select_related(
+            "formation", "evenement", "entreprise_placement", "entreprise_validee",
+            "responsable_placement", "compte_utilisateur", "vu_par",
+            "placement_appairage", "created_by", "updated_by",
+        )
+
+    def save_model(self, request, obj, form, change):
+        obj.save(user=request.user)
+
+    def save_formset(self, request, form, formset, change):
+        instances = formset.save(commit=False)
+        for inst in instances:
+            try:
+                inst.save(user=request.user)
+            except TypeError:
+                inst.save()
+        formset.save_m2m()
+
+    # -------- Actions utilitaires --------
+
+    def _bulk_set(self, request, qs, field: str, value):
+        updated = 0
+        for c in qs:
+            setattr(c, field, value)
+            c.save(user=request.user)
+            updated += 1
+        self.message_user(request, f"{updated} candidat(s) mis à jour ({field} = {value}).")
+
+    @admin.action(description="Statut → En appairage")
+    def act_statut_appairage(self, request, queryset):
+        self._bulk_set(request, queryset, "statut", CandidatModel.StatutCandidat.EN_APPAIRAGE)
+
+    @admin.action(description="Statut → En formation")
+    def act_statut_formation(self, request, queryset):
+        self._bulk_set(request, queryset, "statut", CandidatModel.StatutCandidat.EN_FORMATION)
+
+    @admin.action(description="Statut → Abandon")
+    def act_statut_abandon(self, request, queryset):
+        self._bulk_set(request, queryset, "statut", CandidatModel.StatutCandidat.ABANDON)
+
+    @admin.action(description="CV → Oui")
+    def act_cv_oui(self, request, queryset):
+        self._bulk_set(request, queryset, "cv_statut", CandidatModel.CVStatut.OUI)
+
+    @admin.action(description="CV → En cours")
+    def act_cv_en_cours(self, request, queryset):
+        self._bulk_set(request, queryset, "cv_statut", CandidatModel.CVStatut.EN_COURS)
+
+    @admin.action(description="CV → À modifier")
+    def act_cv_a_modifier(self, request, queryset):
+        self._bulk_set(request, queryset, "cv_statut", CandidatModel.CVStatut.A_MODIFIER)
+
+    @admin.action(description="Entretien réalisé → Oui")
+    def act_entretien_on(self, request, queryset):
+        self._bulk_set(request, queryset, "entretien_done", True)
+
+    @admin.action(description="Entretien réalisé → Non")
+    def act_entretien_off(self, request, queryset):
+        self._bulk_set(request, queryset, "entretien_done", False)
+
+    @admin.action(description="Test OK → Oui")
+    def act_test_on(self, request, queryset):
+        self._bulk_set(request, queryset, "test_is_ok", True)
+
+    @admin.action(description="Test OK → Non")
+    def act_test_off(self, request, queryset):
+        self._bulk_set(request, queryset, "test_is_ok", False)
+
+    @admin.action(description="Admissible → Oui")
+    def act_admissible_on(self, request, queryset):
+        self._bulk_set(request, queryset, "admissible", True)
+
+    @admin.action(description="Admissible → Non")
+    def act_admissible_off(self, request, queryset):
+        self._bulk_set(request, queryset, "admissible", False)
+
+    @admin.action(description="Créer/poser un compte Stagiaire")
+    def act_valider_stagiaire(self, request, queryset):
+        ok = ko = 0
+        for c in queryset:
+            try:
+                c.valider_comme_stagiaire()
+                ok += 1
+            except Exception as e:
+                ko += 1
+                self.message_user(request, f"#{c.id} {c.nom_complet}: {e}", level=messages.ERROR)
+        self.message_user(request, f"Stagiaire: {ok} OK, {ko} erreur(s).")
+
+    @admin.action(description="Créer/poser un compte Candidat-User")
+    def act_valider_candidat_user(self, request, queryset):
+        ok = ko = 0
+        for c in queryset:
+            try:
+                c.valider_comme_candidatuser()
+                ok += 1
+            except Exception as e:
+                ko += 1
+                self.message_user(request, f"#{c.id} {c.nom_complet}: {e}", level=messages.ERROR)
+        self.message_user(request, f"Candidat-User: {ok} OK, {ko} erreur(s).")
+
+    actions = (
+        "act_statut_appairage", "act_statut_formation", "act_statut_abandon",
+        "act_cv_oui", "act_cv_en_cours", "act_cv_a_modifier",
+        "act_entretien_on", "act_entretien_off", "act_test_on", "act_test_off",
+        "act_admissible_on", "act_admissible_off",
+        "act_valider_stagiaire", "act_valider_candidat_user",
     )
 
 
 @admin.register(HistoriquePlacement)
 class HistoriquePlacementAdmin(admin.ModelAdmin):
-    list_display = ("candidat", "date_placement", "entreprise", "resultat", "responsable")
-    list_filter = ("resultat", "entreprise", "responsable")
-    search_fields = ("candidat__nom", "candidat__prenom", "entreprise__nom", "commentaire")
-    autocomplete_fields = ("candidat", "entreprise", "responsable")
-    ordering = ("-date_placement",)
+    date_hierarchy = "date_placement"
+    list_display = ("id", "candidat", "entreprise", "resultat", "responsable", "date_placement", "created_by", "created_at")
+    list_filter = ("resultat", ("date_placement", admin.DateFieldListFilter), "entreprise", "responsable")
+    search_fields = ("id", "candidat__nom", "candidat__prenom", "entreprise__nom")
+    ordering = ("-date_placement", "-id")
+    raw_id_fields = ("candidat", "entreprise", "responsable", "created_by", "updated_by")
+    readonly_fields = ("id", "created_by", "created_at", "updated_at")
+
+    def save_model(self, request, obj, form, change):
+        obj.save(user=request.user)

@@ -94,3 +94,24 @@ class ProspectionChoices:
     @classmethod
     def get_objectifs_labels(cls):
         return dict(cls.PROSPECTION_OBJECTIF_CHOICES)
+
+
+    @staticmethod
+    def get_statut_choices():
+        return [{"value": val, "label": label} for val, label in ProspectionChoices.PROSPECTION_STATUS_CHOICES]
+
+    @staticmethod
+    def get_objectif_choices():
+        return [{"value": val, "label": label} for val, label in ProspectionChoices.PROSPECTION_OBJECTIF_CHOICES]
+
+    @staticmethod
+    def get_motif_choices():
+        return [{"value": val, "label": label} for val, label in ProspectionChoices.PROSPECTION_MOTIF_CHOICES]
+
+    @staticmethod
+    def get_type_choices():
+        return [{"value": val, "label": label} for val, label in ProspectionChoices.TYPE_PROSPECTION_CHOICES]
+
+    @staticmethod
+    def get_moyen_contact_choices():
+        return [{"value": val, "label": label} for val, label in ProspectionChoices.MOYEN_CONTACT_CHOICES]

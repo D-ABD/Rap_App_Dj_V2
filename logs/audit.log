@@ -1239,3 +1239,1022 @@
 2025-07-12 09:46:34,113 | INFO | centres_signals | User:system | Action:création | Object:Centre #1 - Nanterre | Nouveau centre créé
 2025-07-12 09:47:02,790 | INFO | centres_signals | User:system | Action:création | Object:Centre #2 - Meudon | Nouveau centre créé
 2025-07-12 09:47:10,966 | INFO | centres_signals | User:system | Action:création | Object:Centre #3 - Paris | Nouveau centre créé
+2025-07-19 15:20:21,535 | INFO | prospections_signals | [Signal] Modification prospection #12 pour partenaire Coca cola
+2025-07-19 15:20:21,540 | WARNING | prospection | Historique sans changement de statut pour prospection #12
+2025-07-19 15:42:42,316 | INFO | prospections_signals | [Signal] Modification prospection #12 pour partenaire Coca cola
+2025-07-19 15:42:42,328 | WARNING | prospection | Historique sans changement de statut pour prospection #12
+2025-07-19 15:42:42,329 | WARNING | prospection | Historique sans changement de statut pour prospection #12
+2025-07-19 15:42:42,348 | INFO | prospections_signals | [Signal] Historique ajouté pour prospection #12 – Changement de statut : À relancer → À relancer (Prochain contact : 19/07/2025)
+2025-07-19 15:42:42,355 | INFO | prospection | [Historique] #24 pour prospection #12 : a_relancer → a_relancer
+2025-07-20 01:51:44,251 | INFO | prospections_signals | [Signal] Création prospection #13 pour partenaire Adsev
+2025-07-20 16:56:52,552 | INFO | prospections_signals | [Signal] Modification prospection #12 pour partenaire Coca cola
+2025-07-20 17:09:23,265 | INFO | prospections_signals | [Signal] Modification prospection #12 pour partenaire Coca cola
+2025-07-20 17:09:26,426 | INFO | prospections_signals | [Signal] Modification prospection #12 pour partenaire Coca cola
+2025-07-20 17:09:52,011 | INFO | prospections_signals | [Signal] Modification prospection #12 pour partenaire Coca cola
+2025-07-20 17:12:15,797 | INFO | prospections_signals | [Signal] Modification prospection #12 pour partenaire Coca cola
+2025-07-20 17:12:15,799 | WARNING | prospection | Historique sans changement de statut pour prospection #12
+2025-07-20 17:12:15,800 | WARNING | prospection | Historique sans changement de statut pour prospection #12
+2025-07-20 17:12:15,823 | INFO | prospections_signals | [Signal] Historique ajouté pour prospection #12 – Changement de statut : À relancer → À relancer (Prochain contact : 27/07/2025)
+2025-07-20 17:12:15,834 | INFO | prospection | [Historique] #25 pour prospection #12 : a_relancer → a_relancer
+2025-07-20 17:12:38,264 | INFO | prospections_signals | [Signal] Modification prospection #12 pour partenaire Coca cola
+2025-07-20 17:12:38,267 | WARNING | prospection | Historique sans changement de statut pour prospection #12
+2025-07-20 17:12:38,267 | WARNING | prospection | Historique sans changement de statut pour prospection #12
+2025-07-20 17:12:38,269 | INFO | prospections_signals | [Signal] Historique ajouté pour prospection #12 – Changement de statut : À relancer → À relancer (Prochain contact : 27/07/2025)
+2025-07-20 17:12:38,278 | INFO | prospection | [Historique] #26 pour prospection #12 : a_relancer → a_relancer
+2025-07-20 17:22:47,218 | INFO | prospections_signals | [Signal] Modification prospection #12 pour partenaire Coca cola
+2025-07-20 17:22:47,226 | WARNING | prospection | Historique sans changement de statut pour prospection #12
+2025-07-20 17:22:47,228 | WARNING | prospection | Historique sans changement de statut pour prospection #12
+2025-07-20 17:22:47,246 | INFO | prospections_signals | [Signal] Historique ajouté pour prospection #12 – Changement de statut : À relancer → À relancer (Prochain contact : 27/07/2025)
+2025-07-20 17:22:47,257 | INFO | prospection | [Historique] #27 pour prospection #12 : a_relancer → a_relancer
+2025-07-20 17:26:37,228 | INFO | prospections_signals | [Signal] Modification prospection #12 pour partenaire Coca cola
+2025-07-20 17:26:37,230 | WARNING | prospection | Historique sans changement de statut pour prospection #12
+2025-07-20 17:26:37,230 | WARNING | prospection | Historique sans changement de statut pour prospection #12
+2025-07-20 17:26:37,236 | INFO | prospections_signals | [Signal] Historique ajouté pour prospection #12 – Changement de statut : À relancer → À relancer (Prochain contact : 27/07/2025)
+2025-07-20 17:26:37,242 | INFO | prospection | [Historique] #28 pour prospection #12 : a_relancer → a_relancer
+2025-07-20 17:32:52,299 | INFO | prospections_signals | [Signal] Modification prospection #12 pour partenaire Coca cola
+2025-07-20 17:32:52,302 | WARNING | prospection | Historique sans changement de statut pour prospection #12
+2025-07-20 17:32:52,303 | WARNING | prospection | Historique sans changement de statut pour prospection #12
+2025-07-20 17:32:52,326 | INFO | prospections_signals | [Signal] Historique ajouté pour prospection #12 – Changement de statut : À relancer → À relancer (Prochain contact : 27/07/2025)
+2025-07-20 17:32:52,343 | INFO | prospection | [Historique] #29 pour prospection #12 : a_relancer → a_relancer
+2025-07-20 17:36:37,388 | INFO | prospections_signals | [Signal] Modification prospection #12 pour partenaire Coca cola
+2025-07-20 17:36:37,390 | WARNING | prospection | Historique sans changement de statut pour prospection #12
+2025-07-20 17:36:37,390 | WARNING | prospection | Historique sans changement de statut pour prospection #12
+2025-07-20 17:36:37,395 | INFO | prospections_signals | [Signal] Historique ajouté pour prospection #12 – Changement de statut : À relancer → À relancer (Prochain contact : 27/07/2025)
+2025-07-20 17:36:37,401 | INFO | prospection | [Historique] #30 pour prospection #12 : a_relancer → a_relancer
+2025-07-20 17:42:05,889 | INFO | prospections_signals | [Signal] Modification prospection #12 pour partenaire Coca cola
+2025-07-20 17:42:05,892 | WARNING | prospection | Historique sans changement de statut pour prospection #12
+2025-07-20 17:42:05,892 | WARNING | prospection | Historique sans changement de statut pour prospection #12
+2025-07-20 17:42:05,901 | INFO | prospections_signals | [Signal] Historique ajouté pour prospection #12 – Changement de statut : À relancer → À relancer (Prochain contact : 27/07/2025)
+2025-07-20 17:42:05,910 | INFO | prospection | [Historique] #31 pour prospection #12 : a_relancer → a_relancer
+2025-07-20 18:32:54,821 | INFO | prospections_signals | [Signal] Modification prospection #13 pour partenaire Adsev
+2025-07-20 18:33:33,755 | INFO | prospections_signals | [Signal] Modification prospection #13 pour partenaire Adsev
+2025-07-20 18:33:33,757 | INFO | prospection | [Prospection #13] Changements par testgirl : commentaire: →test commentaire
+2025-07-20 18:33:33,762 | WARNING | prospection | Historique sans changement de statut pour prospection #13
+2025-07-20 18:33:33,763 | WARNING | prospection | Historique sans changement de statut pour prospection #13
+2025-07-20 18:33:33,771 | INFO | prospections_signals | [Signal] Historique ajouté pour prospection #13 – Changement de statut : À faire → À faire
+2025-07-20 18:33:33,787 | INFO | prospection | [Historique] #32 pour prospection #13 : a_faire → a_faire
+2025-07-20 18:48:29,295 | INFO | prospections_signals | [Signal] Modification prospection #13 pour partenaire Adsev
+2025-07-20 18:48:29,296 | INFO | prospection | [Prospection #13] Changements par testgirl : formation_id: None→2
+2025-07-20 18:48:29,304 | WARNING | prospection | Historique sans changement de statut pour prospection #13
+2025-07-20 18:48:29,305 | WARNING | prospection | Historique sans changement de statut pour prospection #13
+2025-07-20 18:48:29,321 | INFO | prospections_signals | [Signal] Historique ajouté pour prospection #13 – Changement de statut : À faire → À faire
+2025-07-20 18:48:29,339 | INFO | prospection | [Historique] #33 pour prospection #13 : a_faire → a_faire
+2025-07-20 18:50:43,211 | INFO | formations | [Formation] Créée : Formation Test
+2025-07-20 18:50:43,252 | INFO | formations_signals | [Signal] Formation créée : Formation Test (ID=3) par ABD
+2025-07-20 18:50:43,304 | INFO | formations_signals | [Signal] Historique enregistré pour formation #3 par ABD – création du champ 'formation' : — → Formation Test
+2025-07-20 18:50:43,306 | INFO | formations | [Historique] Modification de formation le 20/07/2025 à 16:50
+2025-07-20 19:33:29,115 | INFO | prospections_signals | [Signal] Modification prospection #10 pour partenaire test entreprise
+2025-07-20 19:33:29,118 | WARNING | prospection | Historique sans changement de statut pour prospection #10
+2025-07-20 19:33:29,119 | WARNING | prospection | Historique sans changement de statut pour prospection #10
+2025-07-20 19:33:29,126 | WARNING | prospections_signals | ⚠️ Impossible de journaliser historique #34 : 'HistoriqueProspection' object has no attribute 'prochain_contact_calcule'
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/signals/prospections_signals.py", line 82, in log_historique_prospection_save
+    if instance.prochain_contact_calcule:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'HistoriqueProspection' object has no attribute 'prochain_contact_calcule'
+2025-07-20 19:33:29,139 | INFO | prospection | [Historique] #34 pour prospection #10 : a_relancer → a_relancer
+2025-07-20 19:33:55,776 | INFO | prospections_signals | [Signal] Modification prospection #12 pour partenaire Coca cola
+2025-07-20 19:33:55,778 | WARNING | prospection | Historique sans changement de statut pour prospection #12
+2025-07-20 19:33:55,779 | WARNING | prospection | Historique sans changement de statut pour prospection #12
+2025-07-20 19:33:55,781 | WARNING | prospections_signals | ⚠️ Impossible de journaliser historique #35 : 'HistoriqueProspection' object has no attribute 'prochain_contact_calcule'
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/signals/prospections_signals.py", line 82, in log_historique_prospection_save
+    if instance.prochain_contact_calcule:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'HistoriqueProspection' object has no attribute 'prochain_contact_calcule'
+2025-07-20 19:33:55,784 | INFO | prospection | [Historique] #35 pour prospection #12 : a_relancer → a_relancer
+2025-07-20 19:44:06,724 | INFO | prospections_signals | [Signal] Modification prospection #13 pour partenaire Adsev
+2025-07-20 19:59:51,299 | INFO | prospections_signals | [Signal] Création prospection #14 pour partenaire test entreprise
+2025-07-20 21:01:53,688 | INFO | prospections_signals | [Signal] Modification prospection #14 pour partenaire test entreprise
+2025-07-20 21:01:53,691 | INFO | prospection | [Prospection #14] Changements par ABD : statut: a_faire→a_relancer
+2025-07-20 21:01:53,735 | WARNING | prospections_signals | ⚠️ Impossible de journaliser historique #36 : 'HistoriqueProspection' object has no attribute 'prochain_contact_calcule'
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/signals/prospections_signals.py", line 82, in log_historique_prospection_save
+    if instance.prochain_contact_calcule:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'HistoriqueProspection' object has no attribute 'prochain_contact_calcule'
+2025-07-20 21:01:53,786 | INFO | prospection | [Historique] #36 pour prospection #14 : a_faire → a_relancer
+2025-07-20 21:01:53,796 | WARNING | prospections_signals | ⚠️ Impossible de journaliser historique #37 : 'HistoriqueProspection' object has no attribute 'prochain_contact_calcule'
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/signals/prospections_signals.py", line 82, in log_historique_prospection_save
+    if instance.prochain_contact_calcule:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'HistoriqueProspection' object has no attribute 'prochain_contact_calcule'
+2025-07-20 21:01:53,800 | INFO | prospection | [Historique] #37 pour prospection #14 : a_faire → a_relancer
+2025-07-20 21:03:39,938 | INFO | prospections_signals | [Signal] Modification prospection #14 pour partenaire test entreprise
+2025-07-20 21:03:39,940 | WARNING | prospection | Historique sans changement de statut pour prospection #14
+2025-07-20 21:03:39,941 | WARNING | prospection | Historique sans changement de statut pour prospection #14
+2025-07-20 21:03:39,946 | WARNING | prospections_signals | ⚠️ Impossible de journaliser historique #38 : 'HistoriqueProspection' object has no attribute 'prochain_contact_calcule'
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/signals/prospections_signals.py", line 82, in log_historique_prospection_save
+    if instance.prochain_contact_calcule:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'HistoriqueProspection' object has no attribute 'prochain_contact_calcule'
+2025-07-20 21:03:39,948 | INFO | prospection | [Historique] #38 pour prospection #14 : a_relancer → a_relancer
+2025-07-20 21:04:09,319 | INFO | prospections_signals | [Signal] Modification prospection #14 pour partenaire test entreprise
+2025-07-20 21:04:09,321 | WARNING | prospection | Historique sans changement de statut pour prospection #14
+2025-07-20 21:04:09,322 | WARNING | prospection | Historique sans changement de statut pour prospection #14
+2025-07-20 21:04:09,325 | WARNING | prospections_signals | ⚠️ Impossible de journaliser historique #39 : 'HistoriqueProspection' object has no attribute 'prochain_contact_calcule'
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/signals/prospections_signals.py", line 82, in log_historique_prospection_save
+    if instance.prochain_contact_calcule:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'HistoriqueProspection' object has no attribute 'prochain_contact_calcule'
+2025-07-20 21:04:09,329 | INFO | prospection | [Historique] #39 pour prospection #14 : a_relancer → a_relancer
+2025-07-20 21:09:06,729 | INFO | prospections_signals | [Signal] Modification prospection #14 pour partenaire test entreprise
+2025-07-20 21:09:06,745 | WARNING | prospection | Historique sans changement de statut pour prospection #14
+2025-07-20 21:09:06,746 | WARNING | prospection | Historique sans changement de statut pour prospection #14
+2025-07-20 21:09:10,751 | INFO | prospections_signals | [Signal] Modification prospection #14 pour partenaire test entreprise
+2025-07-20 21:09:10,756 | WARNING | prospection | Historique sans changement de statut pour prospection #14
+2025-07-20 21:09:10,761 | WARNING | prospection | Historique sans changement de statut pour prospection #14
+2025-07-20 21:10:38,326 | INFO | prospections_signals | [Signal] Modification prospection #14 pour partenaire test entreprise
+2025-07-20 21:10:38,329 | WARNING | prospection | Historique sans changement de statut pour prospection #14
+2025-07-20 21:10:38,330 | WARNING | prospection | Historique sans changement de statut pour prospection #14
+2025-07-20 21:43:56,151 | INFO | prospections_signals | [Signal] Modification prospection #14 pour partenaire test entreprise
+2025-07-20 21:43:56,154 | WARNING | prospection | Historique sans changement de statut pour prospection #14
+2025-07-20 21:43:56,154 | WARNING | prospection | Historique sans changement de statut pour prospection #14
+2025-07-20 21:43:56,165 | INFO | prospections_signals | [Signal] Historique ajouté pour prospection #14 – Changement de statut : À relancer → À relancer
+2025-07-20 21:43:56,186 | INFO | prospection | [Historique] #40 pour prospection #14 : a_relancer → a_relancer
+2025-07-20 21:56:00,548 | INFO | prospections_signals | [Signal] Modification prospection #14 pour partenaire test entreprise
+2025-07-20 21:56:00,552 | WARNING | prospection | Historique sans changement de statut pour prospection #14
+2025-07-20 21:56:00,552 | WARNING | prospection | Historique sans changement de statut pour prospection #14
+2025-07-20 21:56:00,557 | INFO | prospections_signals | [Signal] Historique ajouté pour prospection #14 – Changement de statut : À relancer → À relancer
+2025-07-20 21:56:00,562 | INFO | prospection | [Historique] #41 pour prospection #14 : a_relancer → a_relancer
+2025-07-20 21:57:30,831 | INFO | prospections_signals | [Signal] Modification prospection #14 pour partenaire test entreprise
+2025-07-20 21:57:30,834 | WARNING | prospection | Historique sans changement de statut pour prospection #14
+2025-07-20 21:57:30,834 | WARNING | prospection | Historique sans changement de statut pour prospection #14
+2025-07-20 21:57:30,839 | INFO | prospections_signals | [Signal] Historique ajouté pour prospection #14 – Changement de statut : À relancer → À relancer
+2025-07-20 21:57:30,848 | INFO | prospection | [Historique] #42 pour prospection #14 : a_relancer → a_relancer
+2025-07-20 22:02:59,650 | WARNING | prospection | Historique sans changement de statut pour prospection #14
+2025-07-20 22:02:59,653 | WARNING | prospection | Historique sans changement de statut pour prospection #14
+2025-07-20 22:02:59,680 | INFO | prospections_signals | [Signal] Historique ajouté pour prospection #14 – Changement de statut : À relancer → À relancer
+2025-07-20 22:02:59,706 | INFO | prospection | [Historique] #43 pour prospection #14 : a_relancer → a_relancer
+2025-07-20 22:02:59,751 | INFO | prospections_signals | [Signal] Modification prospection #14 pour partenaire test entreprise
+2025-07-20 22:02:59,753 | WARNING | prospection | Historique sans changement de statut pour prospection #14
+2025-07-20 22:02:59,754 | WARNING | prospection | Historique sans changement de statut pour prospection #14
+2025-07-20 22:02:59,759 | INFO | prospections_signals | [Signal] Historique ajouté pour prospection #14 – Changement de statut : À relancer → À relancer
+2025-07-20 22:02:59,791 | INFO | prospection | [Historique] #44 pour prospection #14 : a_relancer → a_relancer
+2025-07-20 22:05:09,298 | INFO | prospections_signals | [Signal] Modification prospection #14 pour partenaire test entreprise
+2025-07-20 22:05:09,303 | WARNING | prospection | Historique sans changement de statut pour prospection #14
+2025-07-20 22:05:09,303 | WARNING | prospection | Historique sans changement de statut pour prospection #14
+2025-07-20 22:05:09,311 | INFO | prospections_signals | [Signal] Historique ajouté pour prospection #14 – Changement de statut : À relancer → À relancer
+2025-07-20 22:05:09,315 | INFO | prospection | [Historique] #45 pour prospection #14 : a_relancer → a_relancer
+2025-07-20 22:08:51,273 | INFO | prospections_signals | [Signal] Modification prospection #14 pour partenaire test entreprise
+2025-07-20 22:08:51,280 | WARNING | prospection | Historique sans changement de statut pour prospection #14
+2025-07-20 22:08:51,383 | WARNING | prospection | Historique sans changement de statut pour prospection #14
+2025-07-20 22:08:51,526 | INFO | prospections_signals | [Signal] Historique ajouté pour prospection #14 – Changement de statut : À relancer → À relancer
+2025-07-20 22:08:51,637 | INFO | prospection | [Historique] #46 pour prospection #14 : a_relancer → a_relancer
+2025-07-21 01:04:48,008 | INFO | prospections_signals | [Signal] Modification prospection #14 pour partenaire test entreprise
+2025-07-21 01:04:48,014 | WARNING | prospection | Historique sans changement de statut pour prospection #14
+2025-07-21 01:04:48,015 | WARNING | prospection | Historique sans changement de statut pour prospection #14
+2025-07-21 01:04:48,032 | INFO | prospections_signals | [Signal] Historique ajouté pour prospection #14 – Changement de statut : À relancer → À relancer
+2025-07-21 01:04:48,053 | INFO | prospection | [Historique] #47 pour prospection #14 : a_relancer → a_relancer
+2025-07-21 01:20:51,118 | INFO | prospections_signals | [Signal] Modification prospection #14 pour partenaire test entreprise
+2025-07-21 01:20:51,118 | INFO | prospection | [Prospection #14] Changements par ABD : commentaire: →test
+2025-07-21 01:20:51,121 | WARNING | prospection | Historique sans changement de statut pour prospection #14
+2025-07-21 01:20:51,122 | WARNING | prospection | Historique sans changement de statut pour prospection #14
+2025-07-21 01:20:51,132 | INFO | prospections_signals | [Signal] Historique ajouté pour prospection #14 – Changement de statut : À relancer → À relancer
+2025-07-21 01:20:51,136 | INFO | prospection | [Historique] #48 pour prospection #14 : a_relancer → a_relancer
+2025-07-21 01:20:51,141 | WARNING | prospection | Historique sans changement de statut pour prospection #14
+2025-07-21 01:20:51,142 | WARNING | prospection | Historique sans changement de statut pour prospection #14
+2025-07-21 01:20:51,143 | INFO | prospections_signals | [Signal] Historique ajouté pour prospection #14 – Changement de statut : À relancer → À relancer
+2025-07-21 01:20:51,148 | INFO | prospection | [Historique] #49 pour prospection #14 : a_relancer → a_relancer
+2025-07-21 01:21:05,713 | INFO | prospections_signals | [Signal] Modification prospection #11 pour partenaire Envergure
+2025-07-21 01:21:05,715 | INFO | prospection | [Prospection #11] Changements par ABD : commentaire: →test commentaire
+2025-07-21 01:21:05,717 | WARNING | prospection | Historique sans changement de statut pour prospection #11
+2025-07-21 01:21:05,718 | WARNING | prospection | Historique sans changement de statut pour prospection #11
+2025-07-21 01:21:05,803 | INFO | prospections_signals | [Signal] Historique ajouté pour prospection #11 – Changement de statut : À faire → À faire
+2025-07-21 01:21:05,806 | INFO | prospection | [Historique] #50 pour prospection #11 : a_faire → a_faire
+2025-07-21 01:53:34,363 | INFO | prospections_signals | [Signal] Modification prospection #13 pour partenaire Adsev
+2025-07-21 01:53:34,365 | INFO | prospection | [Prospection #13] Changements par testgirl : statut: a_faire→annulee
+2025-07-21 01:53:34,382 | INFO | prospections_signals | [Signal] Historique ajouté pour prospection #13 – Changement de statut : À faire → Annulée
+2025-07-21 01:53:34,388 | INFO | prospection | [Historique] #51 pour prospection #13 : a_faire → annulee
+2025-07-21 01:53:37,012 | INFO | prospections_signals | [Signal] Modification prospection #13 pour partenaire Adsev
+2025-07-21 01:53:37,016 | WARNING | prospection | Historique sans changement de statut pour prospection #13
+2025-07-21 01:53:37,730 | INFO | prospections_signals | [Signal] Modification prospection #13 pour partenaire Adsev
+2025-07-21 01:53:37,732 | WARNING | prospection | Historique sans changement de statut pour prospection #13
+2025-07-21 01:53:38,065 | INFO | prospections_signals | [Signal] Modification prospection #13 pour partenaire Adsev
+2025-07-21 01:53:38,067 | WARNING | prospection | Historique sans changement de statut pour prospection #13
+2025-07-21 01:54:05,252 | INFO | prospections_signals | [Signal] Modification prospection #13 pour partenaire Adsev
+2025-07-21 01:54:05,256 | WARNING | prospection | Historique sans changement de statut pour prospection #13
+2025-07-21 02:06:35,069 | INFO | prospections_signals | [Signal] Modification prospection #13 pour partenaire Adsev
+2025-07-21 02:06:35,078 | WARNING | prospection | Historique sans changement de statut pour prospection #13
+2025-07-21 02:06:35,078 | WARNING | prospection | Historique sans changement de statut pour prospection #13
+2025-07-21 02:06:35,125 | INFO | prospections_signals | [Signal] Historique ajouté pour prospection #13 – Changement de statut : Annulée → Annulée
+2025-07-21 02:06:35,146 | INFO | prospection | [Historique] #52 pour prospection #13 : annulee → annulee
+2025-07-21 02:07:25,425 | INFO | prospections_signals | [Signal] Modification prospection #13 pour partenaire Adsev
+2025-07-21 02:07:25,433 | WARNING | prospection | Historique sans changement de statut pour prospection #13
+2025-07-21 02:07:25,433 | WARNING | prospection | Historique sans changement de statut pour prospection #13
+2025-07-21 02:07:25,442 | INFO | prospections_signals | [Signal] Historique ajouté pour prospection #13 – Changement de statut : Annulée → Annulée
+2025-07-21 02:07:25,444 | ERROR | base | Erreur de validation pour Prospection (ID: 9): {'commentaire': ['Un commentaire est obligatoire pour un refus ou une annulation.']}
+2025-07-21 02:07:25,451 | INFO | prospection | [Historique] #53 pour prospection #13 : annulee → annulee
+2025-07-21 02:07:25,469 | ERROR | base | Erreur de validation pour Prospection (ID: 6): {'commentaire': ['Un commentaire est obligatoire pour un refus ou une annulation.']}
+2025-07-21 02:10:38,011 | INFO | prospections_signals | [Signal] Modification prospection #6 pour partenaire Adsev
+2025-07-21 02:10:38,014 | INFO | prospections_signals | [Signal] Modification prospection #9 pour partenaire Adsev
+2025-07-21 02:10:38,015 | INFO | prospection | [Prospection #9] Changements par ABD : statut: a_faire→annulee; commentaire: →Annulation automatique
+2025-07-21 02:10:38,014 | INFO | prospection | [Prospection #6] Changements par ABD : statut: a_relancer→annulee; commentaire: →Annulation automatique
+2025-07-21 02:10:38,022 | INFO | prospections_signals | [Signal] Modification prospection #13 pour partenaire Adsev
+2025-07-21 02:10:38,035 | WARNING | prospection | Historique sans changement de statut pour prospection #13
+2025-07-21 02:10:38,036 | WARNING | prospection | Historique sans changement de statut pour prospection #13
+2025-07-21 02:10:38,040 | INFO | prospections_signals | [Signal] Historique ajouté pour prospection #9 – Changement de statut : À faire → Annulée
+2025-07-21 02:10:38,046 | INFO | prospections_signals | [Signal] Historique ajouté pour prospection #6 – Changement de statut : À relancer → Annulée
+2025-07-21 02:10:38,048 | INFO | prospections_signals | [Signal] Historique ajouté pour prospection #13 – Changement de statut : Annulée → Annulée
+2025-07-21 02:10:38,063 | INFO | prospection | [Historique] #54 pour prospection #9 : a_faire → annulee
+2025-07-21 02:10:38,064 | INFO | prospection | [Historique] #56 pour prospection #13 : annulee → annulee
+2025-07-21 02:10:38,068 | INFO | prospection | [Historique] #55 pour prospection #6 : a_relancer → annulee
+2025-07-21 02:10:38,077 | WARNING | prospection | Historique sans changement de statut pour prospection #9
+2025-07-21 02:10:38,078 | WARNING | prospection | Historique sans changement de statut pour prospection #9
+2025-07-21 02:10:38,084 | INFO | prospections_signals | [Signal] Historique ajouté pour prospection #9 – Changement de statut : Annulée → Annulée
+2025-07-21 02:10:38,087 | WARNING | prospection | Historique sans changement de statut pour prospection #6
+2025-07-21 02:10:38,088 | WARNING | prospection | Historique sans changement de statut pour prospection #6
+2025-07-21 02:10:38,089 | INFO | prospection | [Historique] #57 pour prospection #9 : annulee → annulee
+2025-07-21 02:10:38,094 | INFO | prospections_signals | [Signal] Historique ajouté pour prospection #6 – Changement de statut : Annulée → Annulée
+2025-07-21 02:10:38,113 | INFO | prospections_signals | [Signal] Historique ajouté pour prospection #9 – Changement de statut : À faire → Annulée
+2025-07-21 02:10:38,115 | INFO | prospection | [Historique] #58 pour prospection #6 : annulee → annulee
+2025-07-21 02:10:38,122 | INFO | prospection | [Historique] #59 pour prospection #9 : a_faire → annulee
+2025-07-21 02:10:38,130 | INFO | prospections_signals | [Signal] Historique ajouté pour prospection #6 – Changement de statut : À relancer → Annulée
+2025-07-21 02:10:38,146 | INFO | prospection | [Historique] #60 pour prospection #6 : a_relancer → annulee
+2025-07-21 02:11:19,097 | INFO | prospections_signals | [Signal] Modification prospection #9 pour partenaire Adsev
+2025-07-21 02:11:19,112 | WARNING | prospection | Historique sans changement de statut pour prospection #9
+2025-07-21 02:11:19,115 | WARNING | prospection | Historique sans changement de statut pour prospection #9
+2025-07-21 02:11:19,115 | INFO | prospections_signals | [Signal] Modification prospection #6 pour partenaire Adsev
+2025-07-21 02:11:19,121 | INFO | prospections_signals | [Signal] Historique ajouté pour prospection #9 – Changement de statut : Annulée → Annulée
+2025-07-21 02:11:19,122 | INFO | prospections_signals | [Signal] Modification prospection #13 pour partenaire Adsev
+2025-07-21 02:11:19,122 | WARNING | prospection | Historique sans changement de statut pour prospection #6
+2025-07-21 02:11:19,125 | WARNING | prospection | Historique sans changement de statut pour prospection #6
+2025-07-21 02:11:19,126 | WARNING | prospection | Historique sans changement de statut pour prospection #13
+2025-07-21 02:11:19,127 | INFO | prospection | [Historique] #61 pour prospection #9 : annulee → annulee
+2025-07-21 02:11:19,127 | WARNING | prospection | Historique sans changement de statut pour prospection #13
+2025-07-21 02:11:19,130 | INFO | prospections_signals | [Signal] Historique ajouté pour prospection #6 – Changement de statut : Annulée → Annulée
+2025-07-21 02:11:19,139 | INFO | prospections_signals | [Signal] Historique ajouté pour prospection #13 – Changement de statut : Annulée → Annulée
+2025-07-21 02:11:19,143 | INFO | prospection | [Historique] #62 pour prospection #6 : annulee → annulee
+2025-07-21 02:11:19,145 | INFO | prospection | [Historique] #63 pour prospection #13 : annulee → annulee
+2025-07-21 02:14:33,066 | INFO | prospections_signals | [Signal] Modification prospection #6 pour partenaire Adsev
+2025-07-21 02:14:33,066 | INFO | prospections_signals | [Signal] Modification prospection #9 pour partenaire Adsev
+2025-07-21 02:14:33,075 | WARNING | prospection | Historique sans changement de statut pour prospection #6
+2025-07-21 02:14:33,077 | WARNING | prospection | Historique sans changement de statut pour prospection #6
+2025-07-21 02:14:33,078 | INFO | prospections_signals | [Signal] Modification prospection #13 pour partenaire Adsev
+2025-07-21 02:14:33,079 | WARNING | prospection | Historique sans changement de statut pour prospection #9
+2025-07-21 02:14:33,082 | WARNING | prospection | Historique sans changement de statut pour prospection #9
+2025-07-21 02:14:33,089 | INFO | prospections_signals | [Signal] Historique ajouté pour prospection #6 – Changement de statut : Annulée → Annulée
+2025-07-21 02:14:33,094 | INFO | prospections_signals | [Signal] Historique ajouté pour prospection #9 – Changement de statut : Annulée → Annulée
+2025-07-21 02:14:33,096 | WARNING | prospection | Historique sans changement de statut pour prospection #13
+2025-07-21 02:14:33,098 | WARNING | prospection | Historique sans changement de statut pour prospection #13
+2025-07-21 02:14:33,100 | INFO | prospection | [Historique] #64 pour prospection #6 : annulee → annulee
+2025-07-21 02:14:33,107 | INFO | prospections_signals | [Signal] Historique ajouté pour prospection #13 – Changement de statut : Annulée → Annulée
+2025-07-21 02:14:33,109 | INFO | prospection | [Historique] #65 pour prospection #9 : annulee → annulee
+2025-07-21 02:14:33,122 | INFO | prospection | [Historique] #66 pour prospection #13 : annulee → annulee
+2025-07-21 19:54:53,833 | WARNING | prospections_signals | [Signal] Suppression prospection #9 pour Adsev
+2025-07-21 19:55:15,065 | WARNING | prospections_signals | [Signal] Suppression prospection #4 pour Adsev
+2025-07-21 19:59:10,918 | WARNING | prospections_signals | [Signal] Suppression prospection #6 pour Adsev
+2025-07-21 20:11:58,762 | WARNING | prospections_signals | [Signal] Suppression prospection #13 pour Adsev
+2025-07-21 20:13:21,963 | WARNING | prospections_signals | [Signal] Suppression prospection #8 pour Coca cola
+2025-07-21 20:14:15,082 | WARNING | prospections_signals | [Signal] Suppression prospection #5 pour Coca cola
+2025-07-21 20:14:15,103 | WARNING | prospections_signals | [Signal] Suppression prospection #10 pour test entreprise
+2025-07-21 20:14:15,141 | WARNING | prospections_signals | [Signal] Suppression prospection #11 pour Envergure
+2025-07-21 20:35:29,852 | WARNING | prospections_signals | [Signal] Suppression prospection #7 pour test entreprise
+2025-07-22 13:04:43,048 | INFO | prospections_signals | [Signal] Création prospection #15 pour partenaire azerty
+2025-07-22 13:07:10,274 | INFO | prospections_signals | [Signal] Création prospection #16 pour partenaire azerty
+2025-07-23 22:36:16,324 | INFO | prospections_signals | [Signal] Création prospection #17 pour partenaire azerty
+2025-07-29 19:29:15,402 | INFO | formations | [Formation] Modifiée : CIP (#1)
+2025-07-29 19:29:15,473 | INFO | formations_signals | [Signal] Formation modifiée : CIP (ID=1) par ABD
+2025-07-29 19:29:15,542 | INFO | formations_signals | [Signal] Historique enregistré pour formation #1 par ABD – Modification du champ 'nombre_entretiens' : 6 → 10
+2025-07-29 19:29:15,545 | INFO | formations | [Historique] Modification de nombre_entretiens le 29/07/2025 à 17:29
+2025-07-31 01:52:43,051 | INFO | custom_user | 🔄 Utilisateur mis à jour : testgirl@test.com
+2025-07-31 01:53:12,412 | INFO | custom_user | 🔄 Utilisateur mis à jour : testgirl@test.com
+2025-07-31 01:53:38,860 | INFO | custom_user | 🔄 Utilisateur mis à jour : testgirl@test.com
+2025-07-31 01:54:08,765 | INFO | custom_user | 🔄 Utilisateur mis à jour : testgirl@test.com
+2025-07-31 08:53:54,958 | INFO | custom_user | 🔄 Utilisateur mis à jour : testgirl@test.com
+2025-07-31 09:22:04,667 | INFO | custom_user | 🔄 Utilisateur mis à jour : testgirl@test.com
+2025-07-31 09:31:16,557 | INFO | custom_user | 🔄 Utilisateur mis à jour : testgirl@test.com
+2025-07-31 15:09:08,941 | INFO | centres_signals | Centre mis à jour
+2025-08-01 12:32:01,461 | INFO | prospections_signals | [Signal] Modification prospection #17 pour partenaire azerty
+2025-08-01 12:32:23,527 | INFO | prospections_signals | [Signal] Modification prospection #17 pour partenaire azerty
+2025-08-01 12:32:23,528 | INFO | prospection | [Prospection #17] Changements par testgirl : type_prospection: nouveau_prospect→premier_contact
+2025-08-01 12:32:23,538 | WARNING | prospection | Historique sans changement de statut pour prospection #17
+2025-08-01 12:32:23,540 | WARNING | prospection | Historique sans changement de statut pour prospection #17
+2025-08-01 12:32:23,647 | INFO | prospections_signals | [Signal] Historique ajouté pour prospection #17 – Changement de statut : À faire → À faire
+2025-08-01 12:32:23,698 | INFO | prospection | [Historique] #67 pour prospection #17 : a_faire → a_faire
+2025-08-01 12:33:16,413 | INFO | prospections_signals | [Signal] Modification prospection #17 pour partenaire azerty
+2025-08-01 12:33:16,418 | INFO | prospection | [Prospection #17] Changements par testgirl : type_prospection: premier_contact→reprise_contact
+2025-08-01 12:33:16,431 | WARNING | prospection | Historique sans changement de statut pour prospection #17
+2025-08-01 12:33:16,431 | WARNING | prospection | Historique sans changement de statut pour prospection #17
+2025-08-01 12:33:16,439 | INFO | prospections_signals | [Signal] Historique ajouté pour prospection #17 – Changement de statut : À faire → À faire
+2025-08-01 12:33:16,493 | INFO | prospection | [Historique] #68 pour prospection #17 : a_faire → a_faire
+2025-08-01 15:11:31,101 | INFO | custom_user | ✅ Utilisateur créé : quentin@tarentino.com avec rôle candidat
+2025-08-01 15:11:48,373 | INFO | custom_user | 🔄 Utilisateur mis à jour : quentin@tarentino.com
+2025-08-01 17:18:56,204 | INFO | custom_user | ✅ Utilisateur créé : cedric.lebrave@gmail.com avec rôle candidat
+2025-08-01 17:18:59,158 | INFO | custom_user | ✅ Utilisateur créé : cedric.lebrave@gmail.com avec rôle candidat
+2025-08-02 02:04:24,822 | INFO | custom_user | ✅ Utilisateur créé : azerty.fr@gmail.com avec rôle Stagiaire
+2025-08-02 02:04:32,859 | INFO | custom_user | ✅ Utilisateur créé : azerty.fr@gmail.com avec rôle candidat
+2025-08-02 10:34:11,404 | INFO | custom_user | ✅ Utilisateur créé : testav@test.com avec rôle Stagiaire
+2025-08-02 10:38:27,451 | INFO | custom_user | ✅ Utilisateur créé : testav@test.com avec rôle Stagiaire
+2025-08-02 10:39:06,673 | INFO | custom_user | ✅ Utilisateur créé : reza@gg.com avec rôle Stagiaire
+2025-08-02 16:35:15,584 | INFO | custom_user | ✅ Utilisateur créé : tre@gg.com avec rôle Stagiaire
+2025-08-02 16:44:04,994 | INFO | custom_user | ✅ Utilisateur créé : tre@gg.com avec rôle Stagiaire
+2025-08-02 17:08:16,585 | INFO | custom_user | ✅ Utilisateur créé : ezart@mail.com avec rôle Stagiaire
+2025-08-03 01:33:54,503 | INFO | custom_user | ✅ Utilisateur créé : kate@mail.com avec rôle Stagiaire
+2025-08-03 01:37:10,067 | INFO | custom_user | ✅ Utilisateur créé : claude@mail.com avec rôle Stagiaire
+2025-08-03 10:36:45,469 | INFO | custom_user | ✅ Utilisateur créé : tt@mail.com avec rôle Stagiaire
+2025-08-03 10:36:59,807 | INFO | custom_user | 🔄 Utilisateur mis à jour : tt@mail.com
+2025-08-03 10:39:54,804 | INFO | custom_user | ✅ Utilisateur créé : bret@mail.com avec rôle Stagiaire
+2025-08-03 11:04:51,663 | INFO | custom_user | 🔄 Utilisateur mis à jour : bret@mail.com
+2025-08-03 11:06:43,457 | INFO | custom_user | 🔄 Utilisateur mis à jour : bret@mail.com
+2025-08-03 14:15:55,712 | INFO | custom_user | 🔄 Utilisateur mis à jour : bret@mail.com
+2025-08-03 14:16:05,882 | INFO | custom_user | 🔄 Utilisateur mis à jour : quentin@tarentino.com
+2025-08-03 15:39:32,009 | INFO | custom_user | 🔄 Utilisateur mis à jour : bret@mail.com
+2025-08-03 15:39:34,532 | INFO | custom_user | 🔄 Utilisateur mis à jour : bret@mail.com
+2025-08-03 15:39:35,318 | INFO | custom_user | 🔄 Utilisateur mis à jour : bret@mail.com
+2025-08-03 15:39:35,781 | INFO | custom_user | 🔄 Utilisateur mis à jour : bret@mail.com
+2025-08-03 15:39:36,027 | INFO | custom_user | 🔄 Utilisateur mis à jour : bret@mail.com
+2025-08-03 15:39:36,218 | INFO | custom_user | 🔄 Utilisateur mis à jour : bret@mail.com
+2025-08-03 15:39:36,643 | INFO | custom_user | 🔄 Utilisateur mis à jour : bret@mail.com
+2025-08-03 15:39:51,319 | INFO | custom_user | 🔄 Utilisateur mis à jour : bret@mail.com
+2025-08-03 15:42:19,269 | INFO | custom_user | 🔄 Utilisateur mis à jour : bret@mail.com
+2025-08-03 15:43:13,800 | INFO | custom_user | 🔄 Utilisateur mis à jour : bret@mail.com
+2025-08-03 15:47:13,712 | INFO | custom_user | 🔄 Utilisateur mis à jour : bret@mail.com
+2025-08-03 15:47:15,912 | INFO | custom_user | 🔄 Utilisateur mis à jour : bret@mail.com
+2025-08-03 15:49:36,691 | INFO | custom_user | 🔄 Utilisateur mis à jour : bret@mail.com
+2025-08-03 15:51:36,353 | INFO | custom_user | 🔄 Utilisateur mis à jour : bret@mail.com
+2025-08-03 15:51:55,311 | INFO | custom_user | 🔄 Utilisateur mis à jour : tt@mail.com
+2025-08-03 16:54:21,406 | INFO | custom_user | 🔄 Utilisateur mis à jour : claude@mail.com
+2025-08-03 18:53:36,923 | INFO | prospections_signals | [Signal] Modification prospection #17 pour partenaire azerty
+2025-08-03 18:53:36,923 | INFO | prospection | [Prospection #17] Changements par testgirl : formation_id: None→1
+2025-08-03 18:53:36,926 | WARNING | prospection | Historique sans changement de statut pour prospection #17
+2025-08-03 18:53:36,926 | WARNING | prospection | Historique sans changement de statut pour prospection #17
+2025-08-03 18:53:37,014 | INFO | prospections_signals | [Signal] Historique ajouté pour prospection #17 – Changement de statut : À faire → À faire
+2025-08-03 18:53:37,018 | INFO | prospection | [Historique] #69 pour prospection #17 : a_faire → a_faire
+2025-08-03 19:22:43,341 | INFO | prospections_signals | [Signal] Modification prospection #16 pour partenaire azerty
+2025-08-03 19:22:43,348 | INFO | prospection | [Prospection #16] Changements par testgirl : formation_id: None→3
+2025-08-03 19:22:43,361 | WARNING | prospection | Historique sans changement de statut pour prospection #16
+2025-08-03 19:22:43,365 | WARNING | prospection | Historique sans changement de statut pour prospection #16
+2025-08-03 19:22:43,370 | INFO | prospections_signals | [Signal] Historique ajouté pour prospection #16 – Changement de statut : À faire → À faire
+2025-08-03 19:22:43,425 | INFO | prospection | [Historique] #70 pour prospection #16 : a_faire → a_faire
+2025-08-03 20:08:40,860 | INFO | prospections_signals | [Signal] Modification prospection #17 pour partenaire azerty
+2025-08-03 20:08:40,863 | INFO | prospection | [Prospection #17] Changements par testgirl : type_prospection: reprise_contact→premier_contact
+2025-08-03 20:08:40,869 | WARNING | prospection | Historique sans changement de statut pour prospection #17
+2025-08-03 20:08:40,871 | WARNING | prospection | Historique sans changement de statut pour prospection #17
+2025-08-03 20:08:40,940 | INFO | prospections_signals | [Signal] Historique ajouté pour prospection #17 – Changement de statut : À faire → À faire
+2025-08-03 20:08:40,986 | INFO | prospection | [Historique] #71 pour prospection #17 : a_faire → a_faire
+2025-08-03 20:09:13,400 | INFO | prospections_signals | [Signal] Modification prospection #17 pour partenaire azerty
+2025-08-03 20:09:13,401 | INFO | prospection | [Prospection #17] Changements par testgirl : statut: a_faire→a_relancer
+2025-08-03 20:09:13,406 | INFO | prospections_signals | [Signal] Historique ajouté pour prospection #17 – Changement de statut : À faire → À relancer
+2025-08-03 20:09:13,413 | INFO | prospection | [Historique] #72 pour prospection #17 : a_faire → a_relancer
+2025-08-03 20:09:13,418 | INFO | prospections_signals | [Signal] Historique ajouté pour prospection #17 – Changement de statut : À faire → À relancer
+2025-08-03 20:09:13,466 | INFO | prospection | [Historique] #73 pour prospection #17 : a_faire → a_relancer
+2025-08-03 20:19:35,182 | INFO | prospections_signals | [Signal] Modification prospection #17 pour partenaire azerty
+2025-08-03 20:19:35,183 | INFO | prospection | [Prospection #17] Changements par testgirl : formation_id: 1→None
+2025-08-03 20:19:35,186 | WARNING | prospection | Historique sans changement de statut pour prospection #17
+2025-08-03 20:19:35,187 | WARNING | prospection | Historique sans changement de statut pour prospection #17
+2025-08-03 20:19:35,232 | INFO | prospections_signals | [Signal] Historique ajouté pour prospection #17 – Changement de statut : À relancer → À relancer
+2025-08-03 20:19:35,275 | INFO | prospection | [Historique] #74 pour prospection #17 : a_relancer → a_relancer
+2025-08-03 20:20:19,186 | INFO | prospections_signals | [Signal] Modification prospection #17 pour partenaire azerty
+2025-08-03 20:20:19,187 | INFO | prospection | [Prospection #17] Changements par testgirl : statut: a_relancer→en_cours
+2025-08-03 20:20:19,203 | INFO | prospections_signals | [Signal] Historique ajouté pour prospection #17 – Changement de statut : À relancer → En cours
+2025-08-03 20:20:19,227 | INFO | prospection | [Historique] #75 pour prospection #17 : a_relancer → en_cours
+2025-08-04 02:31:19,555 | INFO | prospections_signals | [Signal] Modification prospection #17 pour partenaire azerty
+2025-08-04 03:08:31,438 | INFO | prospections_signals | [Signal] Modification prospection #17 pour partenaire azerty
+2025-08-04 15:43:33,564 | INFO | custom_user | 🔄 Utilisateur mis à jour : adserv.fr@gmail.com
+2025-08-04 15:44:10,218 | INFO | prospections_signals | [Signal] Modification prospection #17 pour partenaire azerty
+2025-08-04 15:44:10,234 | INFO | prospection | [Prospection #17] Changements par testgirl : formation_id: None→2
+2025-08-04 15:44:10,632 | WARNING | prospection | Historique sans changement de statut pour prospection #17
+2025-08-04 15:44:11,087 | WARNING | prospection | Historique sans changement de statut pour prospection #17
+2025-08-04 15:44:12,406 | INFO | prospections_signals | [Signal] Historique ajouté pour prospection #17 – Changement de statut : En cours → En cours
+2025-08-04 15:44:12,458 | INFO | prospection | [Historique] #76 pour prospection #17 : en_cours → en_cours
+2025-08-04 15:44:16,250 | INFO | prospections_signals | [Signal] Modification prospection #17 pour partenaire azerty
+2025-08-10 13:36:16,902 | INFO | prospections_signals | [Signal] Création prospection #18 pour partenaire Adsev
+2025-08-10 15:17:34,951 | INFO | prospections_signals | [Signal] Création prospection #19 pour partenaire Adsev
+2025-08-10 18:31:48,383 | INFO | prospections_signals | [Signal] Création prospection #20 pour partenaire Envergure
+2025-08-10 18:34:38,825 | INFO | prospections_signals | [Signal] Modification prospection #19 pour partenaire Adsev
+2025-08-10 18:58:51,000 | INFO | prospections_signals | [Signal] Modification prospection #19 pour partenaire Adsev
+2025-08-10 19:14:29,977 | INFO | prospections_signals | [Signal] Modification prospection #17 pour partenaire azerty
+2025-08-10 21:23:44,844 | INFO | prospections_signals | [Signal] Modification prospection #17 pour partenaire azerty
+2025-08-10 22:08:07,108 | INFO | prospections_signals | [Signal] Modification prospection #17 pour partenaire azerty
+2025-08-11 17:17:23,482 | INFO | custom_user | 🔄 Utilisateur mis à jour : bret@mail.com
+2025-08-11 17:27:49,096 | INFO | custom_user | 🔄 Utilisateur mis à jour : claude@mail.com
+2025-08-17 18:13:23,745 | INFO | prospections_signals | [Signal] Création prospection #21 pour partenaire Coca cola
+2025-08-18 21:31:49,210 | INFO | prospections_signals | [Signal] Modification prospection #21 pour partenaire Coca cola
+2025-08-18 21:31:49,224 | INFO | prospection | [Prospection #21] Changements par ABD : commentaire: None→azerty, azerty, azerty, azerty, azerty, azerty, azerty, azerty, azerty, azerty, azerty, azerty, azerty, azerty, azerty, azerty, azerty, azerty, azerty, azerty, azerty, azerty, azerty, azerty, azerty, azerty,
+2025-08-18 21:31:49,245 | WARNING | prospection | Historique sans changement de statut pour prospection #21
+2025-08-18 21:31:49,251 | WARNING | prospection | Historique sans changement de statut pour prospection #21
+2025-08-18 21:31:49,287 | INFO | prospections_signals | [Signal] Historique ajouté pour prospection #21 – Changement de statut : À faire → À faire
+2025-08-18 21:31:49,306 | INFO | prospection | [Historique] #77 pour prospection #21 : a_faire → a_faire
+2025-08-19 23:48:45,539 | INFO | prospections_signals | [Signal] Création prospection #22 pour partenaire azerty
+2025-08-19 23:49:37,031 | INFO | prospections_signals | [Signal] Création prospection #23 pour partenaire aaadddfff
+2025-08-19 23:50:53,051 | INFO | prospections_signals | [Signal] Création prospection #24 pour partenaire entr
+2025-08-20 00:59:35,769 | INFO | prospections_signals | [Signal] Création prospection #25 pour partenaire ccc
+2025-08-20 10:27:17,092 | INFO | custom_user | 🔄 Utilisateur mis à jour : testgirl@test.com
+2025-08-20 10:27:31,256 | INFO | custom_user | 🔄 Utilisateur mis à jour : testgirl@test.com
+2025-08-20 11:31:52,229 | INFO | prospections_signals | [Signal] Création prospection #26 pour partenaire tt
+2025-08-20 13:28:13,795 | INFO | prospections_signals | [Signal] Création prospection #27 pour partenaire entr
+2025-08-20 13:29:39,519 | INFO | prospections_signals | [Signal] Création prospection #28 pour partenaire advf
+2025-08-20 13:32:46,104 | INFO | prospections_signals | [Signal] Modification prospection #28 pour partenaire advf
+2025-08-20 13:32:46,110 | INFO | prospection | [Prospection #28] Changements par testgirl : type_prospection: nouveau_prospect→suivi
+2025-08-20 13:32:46,140 | WARNING | prospection | Historique sans changement de statut pour prospection #28
+2025-08-20 13:32:46,160 | WARNING | prospection | Historique sans changement de statut pour prospection #28
+2025-08-20 13:32:46,228 | INFO | prospections_signals | [Signal] Historique ajouté pour prospection #28 – Changement de statut : À faire → À faire
+2025-08-20 13:32:46,241 | INFO | prospection | [Historique] #78 pour prospection #28 : a_faire → a_faire
+2025-08-20 13:41:40,779 | INFO | prospections_signals | [Signal] Modification prospection #28 pour partenaire advf
+2025-08-20 13:41:40,783 | INFO | prospection | [Prospection #28] Changements par testgirl : type_prospection: suivi→premier_contact
+2025-08-20 13:41:40,797 | WARNING | prospection | Historique sans changement de statut pour prospection #28
+2025-08-20 13:41:40,798 | WARNING | prospection | Historique sans changement de statut pour prospection #28
+2025-08-20 13:41:40,817 | INFO | prospections_signals | [Signal] Historique ajouté pour prospection #28 – Changement de statut : À faire → À faire
+2025-08-20 13:41:40,836 | INFO | prospection | [Historique] #79 pour prospection #28 : a_faire → a_faire
+2025-08-20 13:42:15,636 | INFO | prospections_signals | [Signal] Modification prospection #24 pour partenaire entr
+2025-08-20 13:42:15,638 | INFO | prospection | [Prospection #24] Changements par testgirl : type_prospection: nouveau_prospect→premier_contact
+2025-08-20 13:42:15,644 | WARNING | prospection | Historique sans changement de statut pour prospection #24
+2025-08-20 13:42:15,644 | WARNING | prospection | Historique sans changement de statut pour prospection #24
+2025-08-20 13:42:15,647 | INFO | prospections_signals | [Signal] Historique ajouté pour prospection #24 – Changement de statut : À faire → À faire
+2025-08-20 13:42:15,680 | INFO | prospection | [Historique] #80 pour prospection #24 : a_faire → a_faire
+2025-08-20 13:43:04,425 | INFO | prospections_signals | [Signal] Modification prospection #26 pour partenaire tt
+2025-08-20 13:43:04,426 | INFO | prospection | [Prospection #26] Changements par testgirl : formation_id: None→1
+2025-08-20 13:43:04,428 | WARNING | prospection | Historique sans changement de statut pour prospection #26
+2025-08-20 13:43:04,428 | WARNING | prospection | Historique sans changement de statut pour prospection #26
+2025-08-20 13:43:04,432 | INFO | prospections_signals | [Signal] Historique ajouté pour prospection #26 – Changement de statut : À faire → À faire
+2025-08-20 13:43:04,440 | INFO | prospection | [Historique] #81 pour prospection #26 : a_faire → a_faire
+2025-08-20 13:44:58,232 | INFO | prospections_signals | [Signal] Modification prospection #28 pour partenaire advf
+2025-08-20 13:44:58,255 | INFO | prospection | [Prospection #28] Changements par testgirl : motif: autre→apprentissage
+2025-08-20 13:44:58,260 | WARNING | prospection | Historique sans changement de statut pour prospection #28
+2025-08-20 13:44:58,264 | WARNING | prospection | Historique sans changement de statut pour prospection #28
+2025-08-20 13:44:58,272 | INFO | prospections_signals | [Signal] Historique ajouté pour prospection #28 – Changement de statut : À faire → À faire
+2025-08-20 13:44:58,281 | INFO | prospection | [Historique] #82 pour prospection #28 : a_faire → a_faire
+2025-08-20 13:45:14,704 | INFO | prospections_signals | [Signal] Modification prospection #27 pour partenaire entr
+2025-08-20 13:45:14,705 | INFO | prospection | [Prospection #27] Changements par testgirl : motif: autre→apprentissage
+2025-08-20 13:45:14,709 | WARNING | prospection | Historique sans changement de statut pour prospection #27
+2025-08-20 13:45:14,709 | WARNING | prospection | Historique sans changement de statut pour prospection #27
+2025-08-20 13:45:14,716 | INFO | prospections_signals | [Signal] Historique ajouté pour prospection #27 – Changement de statut : À faire → À faire
+2025-08-20 13:45:14,729 | INFO | prospection | [Historique] #83 pour prospection #27 : a_faire → a_faire
+2025-08-20 14:02:25,685 | INFO | prospections_signals | [Signal] Modification prospection #28 pour partenaire advf
+2025-08-20 14:02:25,688 | INFO | prospection | [Prospection #28] Changements par testgirl : type_prospection: premier_contact→fidelisation
+2025-08-20 14:02:25,697 | WARNING | prospection | Historique sans changement de statut pour prospection #28
+2025-08-20 14:02:25,698 | WARNING | prospection | Historique sans changement de statut pour prospection #28
+2025-08-20 14:02:25,716 | INFO | prospections_signals | [Signal] Historique ajouté pour prospection #28 – Changement de statut : À faire → À faire
+2025-08-20 14:02:25,723 | INFO | prospection | [Historique] #84 pour prospection #28 : a_faire → a_faire
+2025-08-20 16:19:04,388 | INFO | prospections_signals | [Signal] Modification prospection #27 pour partenaire entr
+2025-08-20 16:19:04,390 | INFO | prospection | [Prospection #27] Changements par testgirl : statut: a_faire→a_relancer; relance_prevue: None→2025-08-28
+2025-08-20 16:19:04,425 | WARNING | prospections_signals | ⚠️ Impossible de journaliser historique #85 : 'HistoriqueProspection' object has no attribute 'prochain_contact_calcule'
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/signals/prospections_signals.py", line 82, in log_historique_prospection_save
+    if instance.prochain_contact_calcule:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'HistoriqueProspection' object has no attribute 'prochain_contact_calcule'
+2025-08-20 16:19:04,443 | WARNING | prospection | Historique sans changement de statut pour prospection #27
+2025-08-20 16:19:04,444 | WARNING | prospection | Historique sans changement de statut pour prospection #27
+2025-08-20 16:19:04,453 | WARNING | prospections_signals | ⚠️ Impossible de journaliser historique #86 : 'HistoriqueProspection' object has no attribute 'prochain_contact_calcule'
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/signals/prospections_signals.py", line 82, in log_historique_prospection_save
+    if instance.prochain_contact_calcule:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'HistoriqueProspection' object has no attribute 'prochain_contact_calcule'
+2025-08-20 16:19:04,491 | WARNING | prospections_signals | ⚠️ Impossible de journaliser historique #87 : 'HistoriqueProspection' object has no attribute 'prochain_contact_calcule'
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/signals/prospections_signals.py", line 82, in log_historique_prospection_save
+    if instance.prochain_contact_calcule:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'HistoriqueProspection' object has no attribute 'prochain_contact_calcule'
+2025-08-20 16:20:09,771 | INFO | prospections_signals | [Signal] Modification prospection #22 pour partenaire azerty
+2025-08-20 16:20:09,773 | INFO | prospection | [Prospection #22] Changements par testgirl : statut: a_faire→a_relancer; relance_prevue: None→2025-08-30
+2025-08-20 16:20:09,790 | WARNING | prospections_signals | ⚠️ Impossible de journaliser historique #88 : 'HistoriqueProspection' object has no attribute 'prochain_contact_calcule'
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/signals/prospections_signals.py", line 82, in log_historique_prospection_save
+    if instance.prochain_contact_calcule:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'HistoriqueProspection' object has no attribute 'prochain_contact_calcule'
+2025-08-20 16:20:09,802 | WARNING | prospection | Historique sans changement de statut pour prospection #22
+2025-08-20 16:20:09,803 | WARNING | prospection | Historique sans changement de statut pour prospection #22
+2025-08-20 16:20:09,804 | WARNING | prospections_signals | ⚠️ Impossible de journaliser historique #89 : 'HistoriqueProspection' object has no attribute 'prochain_contact_calcule'
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/signals/prospections_signals.py", line 82, in log_historique_prospection_save
+    if instance.prochain_contact_calcule:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'HistoriqueProspection' object has no attribute 'prochain_contact_calcule'
+2025-08-20 16:29:20,561 | INFO | prospections_signals | [Signal] Création prospection #29 pour partenaire Mteam
+2025-08-20 16:29:55,078 | INFO | prospections_signals | [Signal] Modification prospection #29 pour partenaire Mteam
+2025-08-20 16:31:22,390 | INFO | prospections_signals | [Signal] Modification prospection #29 pour partenaire Mteam
+2025-08-20 16:31:22,391 | INFO | prospection | [Prospection #29] Changements par ABD : statut: a_faire→a_relancer; relance_prevue: None→2025-08-29
+2025-08-20 16:31:22,413 | WARNING | prospections_signals | ⚠️ Impossible de journaliser historique #90 : 'HistoriqueProspection' object has no attribute 'prochain_contact_calcule'
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/signals/prospections_signals.py", line 82, in log_historique_prospection_save
+    if instance.prochain_contact_calcule:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'HistoriqueProspection' object has no attribute 'prochain_contact_calcule'
+2025-08-20 16:31:22,422 | WARNING | prospection | Historique sans changement de statut pour prospection #29
+2025-08-20 16:31:22,422 | WARNING | prospection | Historique sans changement de statut pour prospection #29
+2025-08-20 16:31:22,429 | WARNING | prospections_signals | ⚠️ Impossible de journaliser historique #91 : 'HistoriqueProspection' object has no attribute 'prochain_contact_calcule'
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/signals/prospections_signals.py", line 82, in log_historique_prospection_save
+    if instance.prochain_contact_calcule:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'HistoriqueProspection' object has no attribute 'prochain_contact_calcule'
+2025-08-20 16:31:22,442 | WARNING | prospections_signals | ⚠️ Impossible de journaliser historique #92 : 'HistoriqueProspection' object has no attribute 'prochain_contact_calcule'
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/signals/prospections_signals.py", line 82, in log_historique_prospection_save
+    if instance.prochain_contact_calcule:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'HistoriqueProspection' object has no attribute 'prochain_contact_calcule'
+2025-08-21 14:48:44,290 | INFO | prospections_signals | [Signal] Modification prospection #26 pour partenaire tt
+2025-08-21 14:49:21,821 | INFO | prospections_signals | [Signal] Modification prospection #26 pour partenaire tt
+2025-08-21 20:59:39,836 | INFO | prospections_signals | [Signal] Modification prospection #26 pour partenaire tt
+2025-08-22 12:46:31,648 | INFO | custom_user | 🔄 Utilisateur mis à jour : testgirl@test.com
+2025-08-22 12:47:07,919 | INFO | custom_user | 🔄 Utilisateur mis à jour : testgirl@test.com
+2025-08-22 18:35:08,435 | INFO | custom_user | 🔄 Utilisateur mis à jour : quentin@tarentino.com
+2025-08-22 19:43:26,214 | INFO | custom_user | 🔄 Utilisateur mis à jour : testgirl@test.com
+2025-08-22 20:35:38,862 | INFO | custom_user | 🔄 Utilisateur mis à jour : adserv.fr@gmail.com
+2025-08-22 20:36:12,826 | INFO | custom_user | 🔄 Utilisateur mis à jour : testgirl@test.com
+2025-08-22 20:40:49,755 | WARNING | prospection | Historique sans changement de statut pour prospection #27
+2025-08-22 20:40:49,758 | WARNING | prospection | Historique sans changement de statut pour prospection #27
+2025-08-22 20:40:49,845 | WARNING | prospections_signals | ⚠️ Impossible de journaliser historique #93 : 'HistoriqueProspection' object has no attribute 'prochain_contact_calcule'
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/signals/prospections_signals.py", line 82, in log_historique_prospection_save
+    if instance.prochain_contact_calcule:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'HistoriqueProspection' object has no attribute 'prochain_contact_calcule'
+2025-08-22 20:41:09,300 | INFO | prospections_signals | [Signal] Modification prospection #23 pour partenaire aaadddfff
+2025-08-22 20:41:09,302 | INFO | prospection | [Prospection #23] Changements par testgirl : formation_id: None→3
+2025-08-22 20:41:09,308 | WARNING | prospection | Historique sans changement de statut pour prospection #23
+2025-08-22 20:41:09,308 | WARNING | prospection | Historique sans changement de statut pour prospection #23
+2025-08-22 20:41:09,319 | WARNING | prospections_signals | ⚠️ Impossible de journaliser historique #94 : 'HistoriqueProspection' object has no attribute 'prochain_contact_calcule'
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/signals/prospections_signals.py", line 82, in log_historique_prospection_save
+    if instance.prochain_contact_calcule:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'HistoriqueProspection' object has no attribute 'prochain_contact_calcule'
+2025-08-22 20:41:22,034 | INFO | prospections_signals | [Signal] Modification prospection #25 pour partenaire ccc
+2025-08-22 20:41:22,037 | INFO | prospection | [Prospection #25] Changements par testgirl : formation_id: None→1
+2025-08-22 20:41:22,058 | WARNING | prospection | Historique sans changement de statut pour prospection #25
+2025-08-22 20:41:22,059 | WARNING | prospection | Historique sans changement de statut pour prospection #25
+2025-08-22 20:41:22,064 | WARNING | prospections_signals | ⚠️ Impossible de journaliser historique #95 : 'HistoriqueProspection' object has no attribute 'prochain_contact_calcule'
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/signals/prospections_signals.py", line 82, in log_historique_prospection_save
+    if instance.prochain_contact_calcule:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'HistoriqueProspection' object has no attribute 'prochain_contact_calcule'
+2025-08-22 20:41:34,621 | INFO | prospections_signals | [Signal] Modification prospection #24 pour partenaire entr
+2025-08-22 20:41:34,623 | INFO | prospection | [Prospection #24] Changements par testgirl : formation_id: None→1
+2025-08-22 20:41:34,641 | WARNING | prospection | Historique sans changement de statut pour prospection #24
+2025-08-22 20:41:34,642 | WARNING | prospection | Historique sans changement de statut pour prospection #24
+2025-08-22 20:41:34,650 | WARNING | prospections_signals | ⚠️ Impossible de journaliser historique #96 : 'HistoriqueProspection' object has no attribute 'prochain_contact_calcule'
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/signals/prospections_signals.py", line 82, in log_historique_prospection_save
+    if instance.prochain_contact_calcule:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'HistoriqueProspection' object has no attribute 'prochain_contact_calcule'
+2025-08-22 20:41:44,927 | WARNING | prospection | Historique sans changement de statut pour prospection #22
+2025-08-22 20:41:44,929 | WARNING | prospection | Historique sans changement de statut pour prospection #22
+2025-08-22 20:41:44,931 | WARNING | prospections_signals | ⚠️ Impossible de journaliser historique #97 : 'HistoriqueProspection' object has no attribute 'prochain_contact_calcule'
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/signals/prospections_signals.py", line 82, in log_historique_prospection_save
+    if instance.prochain_contact_calcule:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'HistoriqueProspection' object has no attribute 'prochain_contact_calcule'
+2025-08-22 20:42:02,002 | WARNING | prospection | Historique sans changement de statut pour prospection #29
+2025-08-22 20:42:02,004 | WARNING | prospection | Historique sans changement de statut pour prospection #29
+2025-08-22 20:42:02,007 | WARNING | prospections_signals | ⚠️ Impossible de journaliser historique #98 : 'HistoriqueProspection' object has no attribute 'prochain_contact_calcule'
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/signals/prospections_signals.py", line 82, in log_historique_prospection_save
+    if instance.prochain_contact_calcule:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'HistoriqueProspection' object has no attribute 'prochain_contact_calcule'
+2025-08-22 20:42:09,307 | WARNING | prospection | Historique sans changement de statut pour prospection #29
+2025-08-22 20:42:09,308 | WARNING | prospection | Historique sans changement de statut pour prospection #29
+2025-08-22 20:42:09,310 | WARNING | prospections_signals | ⚠️ Impossible de journaliser historique #99 : 'HistoriqueProspection' object has no attribute 'prochain_contact_calcule'
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/signals/prospections_signals.py", line 82, in log_historique_prospection_save
+    if instance.prochain_contact_calcule:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'HistoriqueProspection' object has no attribute 'prochain_contact_calcule'
+2025-08-22 20:42:33,923 | WARNING | prospection | Historique sans changement de statut pour prospection #29
+2025-08-22 20:42:33,925 | WARNING | prospection | Historique sans changement de statut pour prospection #29
+2025-08-22 20:42:33,928 | WARNING | prospections_signals | ⚠️ Impossible de journaliser historique #100 : 'HistoriqueProspection' object has no attribute 'prochain_contact_calcule'
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/signals/prospections_signals.py", line 82, in log_historique_prospection_save
+    if instance.prochain_contact_calcule:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'HistoriqueProspection' object has no attribute 'prochain_contact_calcule'
+2025-08-22 20:43:01,948 | INFO | custom_user | 🔄 Utilisateur mis à jour : quentin@tarentino.com
+2025-08-22 20:43:12,038 | INFO | custom_user | 🔄 Utilisateur mis à jour : kate@mail.com
+2025-08-22 20:43:13,730 | INFO | custom_user | 🔄 Utilisateur mis à jour : kate@mail.com
+2025-08-22 20:43:20,449 | INFO | custom_user | 🔄 Utilisateur mis à jour : kate@mail.com
+2025-08-22 20:43:27,857 | INFO | custom_user | 🔄 Utilisateur mis à jour : kate@mail.com
+2025-08-22 20:43:28,655 | INFO | custom_user | 🔄 Utilisateur mis à jour : kate@mail.com
+2025-08-22 20:43:29,118 | INFO | custom_user | 🔄 Utilisateur mis à jour : kate@mail.com
+2025-08-22 20:43:29,381 | INFO | custom_user | 🔄 Utilisateur mis à jour : kate@mail.com
+2025-08-22 20:43:29,647 | INFO | custom_user | 🔄 Utilisateur mis à jour : kate@mail.com
+2025-08-22 20:43:29,794 | INFO | custom_user | 🔄 Utilisateur mis à jour : kate@mail.com
+2025-08-22 20:43:30,041 | INFO | custom_user | 🔄 Utilisateur mis à jour : kate@mail.com
+2025-08-22 20:43:30,254 | INFO | custom_user | 🔄 Utilisateur mis à jour : kate@mail.com
+2025-08-22 20:43:30,473 | INFO | custom_user | 🔄 Utilisateur mis à jour : kate@mail.com
+2025-08-22 20:43:30,790 | INFO | custom_user | 🔄 Utilisateur mis à jour : kate@mail.com
+2025-08-22 20:43:52,382 | INFO | custom_user | 🔄 Utilisateur mis à jour : kate@mail.com
+2025-08-22 20:43:53,231 | INFO | custom_user | 🔄 Utilisateur mis à jour : kate@mail.com
+2025-08-22 20:43:53,503 | INFO | custom_user | 🔄 Utilisateur mis à jour : kate@mail.com
+2025-08-22 20:43:53,706 | INFO | custom_user | 🔄 Utilisateur mis à jour : kate@mail.com
+2025-08-22 20:51:47,315 | WARNING | prospection | Historique sans changement de statut pour prospection #29
+2025-08-22 20:51:47,317 | WARNING | prospection | Historique sans changement de statut pour prospection #29
+2025-08-22 20:51:47,320 | WARNING | prospections_signals | ⚠️ Impossible de journaliser historique #101 : 'HistoriqueProspection' object has no attribute 'prochain_contact_calcule'
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/signals/prospections_signals.py", line 82, in log_historique_prospection_save
+    if instance.prochain_contact_calcule:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'HistoriqueProspection' object has no attribute 'prochain_contact_calcule'
+2025-08-22 20:52:03,639 | WARNING | prospections_signals | [Signal] Suppression prospection #29 pour Mteam
+2025-08-22 20:52:16,802 | INFO | prospections_signals | [Signal] Création prospection #30 pour partenaire Mteam
+2025-08-22 20:52:27,582 | WARNING | prospections_signals | [Signal] Suppression prospection #30 pour Mteam
+2025-08-22 20:52:43,071 | INFO | prospections_signals | [Signal] Création prospection #31 pour partenaire Mteam
+2025-08-22 20:53:54,039 | INFO | prospections_signals | [Signal] Modification prospection #31 pour partenaire Mteam
+2025-08-22 20:53:54,041 | INFO | prospection | [Prospection #31] Changements par ABD : formation_id: None→3
+2025-08-22 20:53:54,044 | WARNING | prospection | Historique sans changement de statut pour prospection #31
+2025-08-22 20:53:54,044 | WARNING | prospection | Historique sans changement de statut pour prospection #31
+2025-08-22 20:53:54,047 | WARNING | prospections_signals | ⚠️ Impossible de journaliser historique #102 : 'HistoriqueProspection' object has no attribute 'prochain_contact_calcule'
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/signals/prospections_signals.py", line 82, in log_historique_prospection_save
+    if instance.prochain_contact_calcule:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'HistoriqueProspection' object has no attribute 'prochain_contact_calcule'
+2025-08-22 20:54:32,233 | WARNING | prospections_signals | [Signal] Suppression prospection #31 pour Mteam
+2025-08-22 20:54:49,272 | INFO | prospections_signals | [Signal] Création prospection #32 pour partenaire Mteam
+2025-08-22 20:58:20,561 | WARNING | prospections_signals | [Signal] Suppression prospection #32 pour Mteam
+2025-08-22 20:58:34,832 | INFO | prospections_signals | [Signal] Création prospection #33 pour partenaire Mteam
+2025-08-22 21:00:27,428 | INFO | prospections_signals | [Signal] Modification prospection #33 pour partenaire Mteam
+2025-08-22 21:07:09,448 | WARNING | prospections_signals | [Signal] Suppression prospection #33 pour Mteam
+2025-08-22 21:07:21,586 | INFO | prospections_signals | [Signal] Création prospection #34 pour partenaire Mteam
+2025-08-22 21:08:56,545 | WARNING | prospections_signals | [Signal] Suppression prospection #27 pour entr
+2025-08-22 21:09:01,340 | WARNING | prospections_signals | [Signal] Suppression prospection #28 pour advf
+2025-08-22 21:09:14,986 | INFO | prospections_signals | [Signal] Création prospection #35 pour partenaire azerty
+2025-08-22 21:15:35,727 | INFO | custom_user | 🔄 Utilisateur mis à jour : testgirl@test.com
+2025-08-22 21:15:42,467 | INFO | custom_user | 🔄 Utilisateur mis à jour : testgirl@test.com
+2025-08-22 21:16:37,061 | WARNING | prospections_signals | [Signal] Suppression prospection #34 pour Mteam
+2025-08-22 21:16:47,492 | INFO | prospections_signals | [Signal] Création prospection #36 pour partenaire Mteam
+2025-08-22 22:18:25,814 | INFO | prospections_signals | [Signal] Modification prospection #35 pour partenaire azerty
+2025-08-22 22:18:40,259 | INFO | prospections_signals | [Signal] Création prospection #37 pour partenaire Adserv
+2025-08-22 22:20:59,316 | INFO | custom_user | 🔄 Utilisateur mis à jour : testgirl@test.com
+2025-08-22 22:21:29,771 | INFO | custom_user | 🔄 Utilisateur mis à jour : testgirl@test.com
+2025-08-22 22:22:04,827 | INFO | prospections_signals | [Signal] Création prospection #38 pour partenaire azerty
+2025-08-22 23:30:34,080 | INFO | custom_user | 🔄 Utilisateur mis à jour : testgirl@test.com
+2025-08-22 23:30:57,135 | INFO | prospection_viewsets | [Prospection/update] owner=6 sans formation et aucune formation fournie → conserve instance
+2025-08-22 23:30:57,229 | INFO | prospections_signals | [Signal] Modification prospection #38 pour partenaire azerty
+2025-08-22 23:31:13,832 | INFO | prospection_viewsets | [Prospection/create] owner=20 → force formation_id=1
+2025-08-22 23:31:13,893 | INFO | prospections_signals | [Signal] Création prospection #39 pour partenaire Adserv
+2025-08-22 23:31:32,183 | INFO | prospection_viewsets | [Prospection/update] owner=6 sans formation et aucune formation fournie → conserve instance
+2025-08-22 23:31:32,257 | INFO | prospections_signals | [Signal] Modification prospection #38 pour partenaire azerty
+2025-08-22 23:42:50,113 | INFO | prospections_signals | [Signal] Modification prospection #38 pour partenaire azerty
+2025-08-22 23:43:00,742 | INFO | prospections_signals | [Signal] Modification prospection #38 pour partenaire azerty
+2025-08-22 23:43:10,067 | INFO | prospections_signals | [Signal] Modification prospection #38 pour partenaire azerty
+2025-08-22 23:44:36,738 | INFO | prospections_signals | [Signal] Modification prospection #35 pour partenaire azerty
+2025-08-22 23:44:36,740 | INFO | prospection | [Prospection #35] Changements par testgirl : type_prospection: nouveau_prospect→premier_contact
+2025-08-22 23:44:36,743 | WARNING | prospection | Historique sans changement de statut pour prospection #35
+2025-08-22 23:44:36,743 | WARNING | prospection | Historique sans changement de statut pour prospection #35
+2025-08-22 23:44:36,810 | WARNING | prospections_signals | ⚠️ Impossible de journaliser historique #103 : 'HistoriqueProspection' object has no attribute 'prochain_contact_calcule'
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/signals/prospections_signals.py", line 82, in log_historique_prospection_save
+    if instance.prochain_contact_calcule:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'HistoriqueProspection' object has no attribute 'prochain_contact_calcule'
+2025-08-23 00:37:01,189 | INFO | prospections_signals | [Signal] Modification prospection #38 pour partenaire azerty
+2025-08-23 10:31:25,159 | INFO | custom_user | ✅ Utilisateur créé : camille.dupont@mail.com avec rôle candidat
+2025-08-23 10:46:10,879 | INFO | custom_user | ✅ Utilisateur créé : paul.duma@hotmail.com avec rôle candidat
+2025-08-23 10:46:11,542 | INFO | custom_user | ✅ Utilisateur créé : sslerman@test.com avec rôle candidat
+2025-08-23 10:58:46,476 | INFO | custom_user | ✅ Utilisateur créé : paul.duma@hotmail.com avec rôle Test
+2025-08-23 10:58:46,671 | INFO | custom_user | 🔄 Utilisateur mis à jour : paul.duma@hotmail.com
+2025-08-23 10:58:47,092 | INFO | custom_user | ✅ Utilisateur créé : sslerman@test.com avec rôle Test
+2025-08-23 10:58:47,120 | INFO | custom_user | 🔄 Utilisateur mis à jour : sslerman@test.com
+2025-08-23 11:01:00,848 | INFO | custom_user | ✅ Utilisateur créé : david.clement@mail.com avec rôle Test
+2025-08-23 11:01:00,850 | INFO | candidats_signals | ✅ User créé #28 (email=david.clement@mail.com, role=test)
+2025-08-23 11:01:00,852 | INFO | candidats_signals | 🔗 Lien Candidat #13 ↔ User #28
+2025-08-23 11:01:00,870 | INFO | custom_user | 🔄 Utilisateur mis à jour : david.clement@mail.com
+2025-08-23 11:01:00,870 | INFO | candidats_signals | 🛠️ User #28 rôle mis à 'candidat'
+2025-08-23 11:01:18,334 | INFO | custom_user | ✅ Utilisateur créé : richrd.ben@mail.com avec rôle Test
+2025-08-23 11:01:18,335 | INFO | candidats_signals | ✅ User créé #29 (email=richrd.ben@mail.com, role=test)
+2025-08-23 11:01:18,337 | INFO | candidats_signals | 🔗 Lien Candidat #12 ↔ User #29
+2025-08-23 11:01:18,350 | INFO | custom_user | 🔄 Utilisateur mis à jour : richrd.ben@mail.com
+2025-08-23 11:01:18,350 | INFO | candidats_signals | 🛠️ User #29 rôle mis à 'candidat'
+2025-08-23 11:01:32,333 | INFO | custom_user | ✅ Utilisateur créé : camille.desbri@mail.com avec rôle Test
+2025-08-23 11:01:32,334 | INFO | candidats_signals | ✅ User créé #30 (email=camille.desbri@mail.com, role=test)
+2025-08-23 11:01:32,336 | INFO | candidats_signals | 🔗 Lien Candidat #11 ↔ User #30
+2025-08-23 11:01:32,346 | INFO | custom_user | 🔄 Utilisateur mis à jour : camille.desbri@mail.com
+2025-08-23 11:01:32,347 | INFO | candidats_signals | 🛠️ User #30 rôle mis à 'candidat'
+2025-08-23 11:02:20,494 | INFO | custom_user | ✅ Utilisateur créé : philippe.maurice@mail.com avec rôle Test
+2025-08-23 11:02:20,495 | INFO | candidats_signals | ✅ User créé #31 (email=philippe.maurice@mail.com, role=test)
+2025-08-23 11:02:20,497 | INFO | candidats_signals | 🔗 Lien Candidat #8 ↔ User #31
+2025-08-23 11:02:20,512 | INFO | custom_user | 🔄 Utilisateur mis à jour : philippe.maurice@mail.com
+2025-08-23 11:02:20,512 | INFO | candidats_signals | 🛠️ User #31 rôle mis à 'candidat'
+2025-08-23 11:02:32,179 | WARNING | candidats_signals | ⚠️ User #23 (email=camille.dupont@mail.com) déjà lié à un autre Candidat. Skip.
+2025-08-23 11:03:42,556 | INFO | custom_user | ✅ Utilisateur créé : camille.d@mail.com avec rôle Test
+2025-08-23 11:03:42,556 | INFO | candidats_signals | ✅ User créé #32 (email=camille.d@mail.com, role=test)
+2025-08-23 11:03:42,558 | INFO | candidats_signals | 🔗 Lien Candidat #10 ↔ User #32
+2025-08-23 11:03:42,568 | INFO | custom_user | 🔄 Utilisateur mis à jour : camille.d@mail.com
+2025-08-23 11:03:42,568 | INFO | candidats_signals | 🛠️ User #32 rôle mis à 'candidat'
+2025-08-23 11:05:19,088 | INFO | custom_user | 🔄 Utilisateur mis à jour : tt@mail.com
+2025-08-23 11:05:43,867 | INFO | custom_user | 🔄 Utilisateur mis à jour : claude@mail.com
+2025-08-23 11:06:01,830 | INFO | candidats_signals | ➕ Candidat créé (ou récupéré) pour User #5 (role=candidat)
+2025-08-23 11:06:01,831 | INFO | custom_user | 🔄 Utilisateur mis à jour : test@test.com
+2025-08-23 11:06:53,186 | INFO | custom_user | 🔄 Utilisateur mis à jour : test@test.com
+2025-08-23 11:07:36,125 | INFO | prospections_signals | [Signal] Modification prospection #38 pour partenaire azerty
+2025-08-23 11:48:58,258 | INFO | prospections_signals | [Signal] Modification prospection #38 pour partenaire azerty
+2025-08-23 11:48:58,261 | INFO | prospection | [Prospection #38] Changements par testgirl : formation_id: None→3
+2025-08-23 11:48:58,264 | WARNING | prospection | Historique sans changement de statut pour prospection #38
+2025-08-23 11:48:58,266 | WARNING | prospection | Historique sans changement de statut pour prospection #38
+2025-08-23 11:48:58,310 | WARNING | prospections_signals | ⚠️ Impossible de journaliser historique #104 : 'HistoriqueProspection' object has no attribute 'prochain_contact_calcule'
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/signals/prospections_signals.py", line 82, in log_historique_prospection_save
+    if instance.prochain_contact_calcule:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'HistoriqueProspection' object has no attribute 'prochain_contact_calcule'
+2025-08-23 11:49:21,103 | INFO | prospections_signals | [Signal] Modification prospection #37 pour partenaire Adserv
+2025-08-23 11:50:12,985 | INFO | prospections_signals | [Signal] Modification prospection #37 pour partenaire Adserv
+2025-08-23 11:50:12,987 | INFO | prospection | [Prospection #37] Changements par ABD : formation_id: None→2
+2025-08-23 11:50:12,990 | WARNING | prospection | Historique sans changement de statut pour prospection #37
+2025-08-23 11:50:12,990 | WARNING | prospection | Historique sans changement de statut pour prospection #37
+2025-08-23 11:50:13,005 | WARNING | prospections_signals | ⚠️ Impossible de journaliser historique #105 : 'HistoriqueProspection' object has no attribute 'prochain_contact_calcule'
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/signals/prospections_signals.py", line 82, in log_historique_prospection_save
+    if instance.prochain_contact_calcule:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'HistoriqueProspection' object has no attribute 'prochain_contact_calcule'
+2025-08-23 11:56:52,130 | INFO | prospections_signals | [Signal] Modification prospection #36 pour partenaire Mteam
+2025-08-23 11:56:52,132 | INFO | prospection | [Prospection #36] Changements par ABD : formation_id: None→2
+2025-08-23 11:56:52,134 | WARNING | prospection | Historique sans changement de statut pour prospection #36
+2025-08-23 11:56:52,135 | WARNING | prospection | Historique sans changement de statut pour prospection #36
+2025-08-23 11:56:52,147 | WARNING | prospections_signals | ⚠️ Impossible de journaliser historique #106 : 'HistoriqueProspection' object has no attribute 'prochain_contact_calcule'
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/signals/prospections_signals.py", line 82, in log_historique_prospection_save
+    if instance.prochain_contact_calcule:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'HistoriqueProspection' object has no attribute 'prochain_contact_calcule'
+2025-08-23 11:57:14,332 | WARNING | prospection | Historique sans changement de statut pour prospection #22
+2025-08-23 11:57:14,334 | WARNING | prospection | Historique sans changement de statut pour prospection #22
+2025-08-23 11:57:14,342 | WARNING | prospections_signals | ⚠️ Impossible de journaliser historique #107 : 'HistoriqueProspection' object has no attribute 'prochain_contact_calcule'
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/signals/prospections_signals.py", line 82, in log_historique_prospection_save
+    if instance.prochain_contact_calcule:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'HistoriqueProspection' object has no attribute 'prochain_contact_calcule'
+2025-08-23 11:57:37,403 | WARNING | prospections_signals | [Signal] Suppression prospection #22 pour azerty
+2025-08-23 11:57:49,734 | WARNING | prospections_signals | [Signal] Suppression prospection #35 pour azerty
+2025-08-23 11:58:31,379 | INFO | prospections_signals | [Signal] Création prospection #40 pour partenaire azerty
+2025-08-23 12:07:20,383 | INFO | candidats_signals | ➕ Candidat créé (ou récupéré) pour User #19 (role=candidat)
+2025-08-23 12:07:20,383 | INFO | custom_user | 🔄 Utilisateur mis à jour : kate@mail.com
+2025-08-23 12:07:29,541 | INFO | custom_user | 🔄 Utilisateur mis à jour : kate@mail.com
+2025-08-23 13:23:58,186 | INFO | prospections_signals | [Signal] Création prospection #41 pour partenaire Adserv
+2025-08-23 13:24:19,324 | INFO | prospections_signals | [Signal] Modification prospection #40 pour partenaire azerty
+2025-08-23 13:34:30,352 | INFO | prospections_signals | [Signal] Modification prospection #41 pour partenaire Adserv
+2025-08-23 13:34:49,591 | INFO | prospections_signals | [Signal] Modification prospection #40 pour partenaire azerty
+2025-08-23 13:55:00,820 | INFO | prospections_signals | [Signal] Modification prospection #40 pour partenaire azerty
+2025-08-23 13:55:55,448 | INFO | prospections_signals | [Signal] Modification prospection #40 pour partenaire azerty
+2025-08-23 13:56:08,121 | INFO | prospections_signals | [Signal] Modification prospection #38 pour partenaire azerty
+2025-08-23 13:56:08,128 | INFO | prospection | [Prospection #38] Changements par testgirl : formation_id: 3→1
+2025-08-23 13:56:08,171 | WARNING | prospection | Historique sans changement de statut pour prospection #38
+2025-08-23 13:56:08,206 | WARNING | prospection | Historique sans changement de statut pour prospection #38
+2025-08-23 13:56:08,267 | WARNING | prospections_signals | ⚠️ Impossible de journaliser historique #108 : 'HistoriqueProspection' object has no attribute 'prochain_contact_calcule'
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/signals/prospections_signals.py", line 82, in log_historique_prospection_save
+    if instance.prochain_contact_calcule:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'HistoriqueProspection' object has no attribute 'prochain_contact_calcule'
+2025-08-23 13:56:23,929 | INFO | prospections_signals | [Signal] Modification prospection #26 pour partenaire tt
+2025-08-23 13:57:03,775 | INFO | prospections_signals | [Signal] Création prospection #42 pour partenaire advf
+2025-08-23 13:57:33,262 | INFO | prospections_signals | [Signal] Création prospection #43 pour partenaire ccc
+2025-08-23 15:18:03,829 | INFO | prospections_signals | [Signal] Modification prospection #40 pour partenaire azerty
+2025-08-23 15:18:15,142 | INFO | prospections_signals | [Signal] Modification prospection #40 pour partenaire azerty
+2025-08-23 15:19:34,055 | INFO | prospections_signals | [Signal] Modification prospection #41 pour partenaire Adserv
+2025-08-23 15:20:07,940 | INFO | prospections_signals | [Signal] Modification prospection #39 pour partenaire Adserv
+2025-08-23 15:36:42,062 | INFO | prospections_signals | [Signal] Modification prospection #14 pour partenaire test entreprise
+2025-08-23 15:36:42,089 | INFO | prospection | [Prospection #14] Changements par ABD : statut: a_relancer→en_cours
+2025-08-23 15:36:42,353 | WARNING | prospections_signals | ⚠️ Impossible de journaliser historique #109 : 'HistoriqueProspection' object has no attribute 'prochain_contact_calcule'
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/signals/prospections_signals.py", line 82, in log_historique_prospection_save
+    if instance.prochain_contact_calcule:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'HistoriqueProspection' object has no attribute 'prochain_contact_calcule'
+2025-08-23 15:43:51,475 | INFO | prospections_signals | [Signal] Modification prospection #12 pour partenaire Coca cola
+2025-08-23 15:43:51,479 | INFO | prospection | [Prospection #12] Changements par ABD : statut: a_relancer→en_cours; formation_id: 2→1
+2025-08-23 15:43:51,501 | WARNING | prospections_signals | ⚠️ Impossible de journaliser historique #110 : 'HistoriqueProspection' object has no attribute 'prochain_contact_calcule'
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/signals/prospections_signals.py", line 82, in log_historique_prospection_save
+    if instance.prochain_contact_calcule:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'HistoriqueProspection' object has no attribute 'prochain_contact_calcule'
+2025-08-23 15:43:51,551 | WARNING | prospection | Historique sans changement de statut pour prospection #12
+2025-08-23 15:43:51,551 | WARNING | prospection | Historique sans changement de statut pour prospection #12
+2025-08-23 15:43:51,555 | WARNING | prospections_signals | ⚠️ Impossible de journaliser historique #111 : 'HistoriqueProspection' object has no attribute 'prochain_contact_calcule'
+Traceback (most recent call last):
+  File "/Users/ABD/Sites/Rap_App_Django_V2/rap_app_project/rap_app/signals/prospections_signals.py", line 82, in log_historique_prospection_save
+    if instance.prochain_contact_calcule:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'HistoriqueProspection' object has no attribute 'prochain_contact_calcule'
+2025-08-23 17:34:20,906 | INFO | prospections_signals | [Signal] Modification prospection #12 pour partenaire Coca cola
+2025-08-23 17:35:38,805 | INFO | prospections_signals | [Signal] Modification prospection #12 pour partenaire Coca cola
+2025-08-23 17:35:51,402 | INFO | prospections_signals | [Signal] Modification prospection #12 pour partenaire Coca cola
+2025-08-23 17:45:08,561 | INFO | prospections_signals | [Signal] Modification prospection #12 pour partenaire Coca cola
+2025-08-23 17:45:38,338 | INFO | prospections_signals | [Signal] Modification prospection #12 pour partenaire Coca cola
+2025-08-23 18:34:32,683 | INFO | prospections_signals | [Signal] Modification prospection #12 pour partenaire Coca cola
+2025-08-23 18:34:32,687 | INFO | prospection | [Prospection #12] Changements par ABD : moyen_contact: None→email
+2025-08-23 18:34:37,729 | INFO | prospections_signals | [Signal] Modification prospection #12 pour partenaire Coca cola
+2025-08-23 18:49:25,096 | INFO | prospections_signals | [Signal] Modification prospection #12 pour partenaire Coca cola
+2025-08-23 18:49:25,098 | INFO | prospection | [Prospection #12] Changements par ABD : motif: autre→apprentissage
+2025-08-23 18:49:28,050 | INFO | prospections_signals | [Signal] Modification prospection #12 pour partenaire Coca cola
+2025-08-23 18:49:28,050 | INFO | prospection | [Prospection #12] Changements par ABD : motif: apprentissage→autre
+2025-08-23 18:49:30,291 | INFO | prospections_signals | [Signal] Modification prospection #12 pour partenaire Coca cola
+2025-08-23 18:54:37,982 | INFO | prospections_signals | [Signal] Modification prospection #12 pour partenaire Coca cola
+2025-08-23 18:54:37,984 | INFO | prospection | [Prospection #12] Changements par ABD : moyen_contact: email→telephone
+2025-08-23 18:54:40,757 | INFO | prospections_signals | [Signal] Modification prospection #12 pour partenaire Coca cola
+2025-08-23 18:54:40,757 | INFO | prospection | [Prospection #12] Changements par ABD : moyen_contact: telephone→email
+2025-08-23 18:54:42,494 | INFO | prospections_signals | [Signal] Modification prospection #12 pour partenaire Coca cola
+2025-08-23 19:10:05,079 | INFO | prospections_signals | [Signal] Modification prospection #14 pour partenaire test entreprise
+2025-08-23 19:11:55,578 | INFO | prospections_signals | [Signal] Modification prospection #12 pour partenaire Coca cola
+2025-08-23 20:27:07,514 | INFO | prospections_signals | [Signal] Modification prospection #12 pour partenaire Coca cola
+2025-08-23 20:45:01,987 | INFO | prospections_signals | [Signal] Modification prospection #12 pour partenaire Coca cola
+2025-08-23 21:03:37,783 | INFO | prospections_signals | [Signal] Modification prospection #16 pour partenaire azerty
+2025-08-23 21:04:42,623 | WARNING | prospections_signals | [Signal] Suppression prospection #17 pour azerty
+2025-08-23 21:05:13,154 | INFO | prospections_signals | [Signal] Création prospection #44 pour partenaire aaadddfff
+2025-08-23 21:17:58,516 | INFO | prospections_signals | [Signal] Création prospection #45 pour partenaire azerty
+2025-08-23 21:19:16,883 | INFO | prospections_signals | [Signal] Création prospection #46 pour partenaire test entreprise
+2025-08-23 21:21:16,111 | INFO | prospections_signals | [Signal] Création prospection #47 pour partenaire Bricorama
+2025-08-23 21:22:05,227 | INFO | prospections_signals | [Signal] Création prospection #48 pour partenaire Envergure
+2025-08-23 21:27:34,525 | INFO | prospections_signals | [Signal] Création prospection #49 pour partenaire aaadddfff
+2025-08-24 02:24:44,165 | INFO | prospections_signals | [Signal] Modification prospection #12 pour partenaire adecco
+2025-08-24 02:24:44,169 | INFO | prospection | [Prospection #12] Changements par ABD : partenaire_id: 3→14
+2025-08-24 10:20:24,210 | INFO | prospections_signals | [Signal] Modification prospection #18 pour partenaire mpoiuyr
+2025-08-24 10:20:24,218 | INFO | prospection | [Prospection #18] Changements par ABD : partenaire_id: 2→15
+2025-08-24 10:20:26,457 | INFO | prospections_signals | [Signal] Modification prospection #18 pour partenaire Adserv
+2025-08-24 10:20:26,458 | INFO | prospection | [Prospection #18] Changements par ABD : partenaire_id: 15→2
+2025-08-24 10:24:53,594 | INFO | prospections_signals | [Signal] Modification prospection #20 pour partenaire Envergure
+2025-08-24 11:07:41,019 | INFO | custom_user | ✅ Utilisateur créé : alyssia.diatta@gmail.com avec rôle Test
+2025-08-24 11:07:41,024 | INFO | candidats_signals | ✅ User créé #33 (email=alyssia.diatta@gmail.com, role=test)
+2025-08-24 11:07:41,112 | INFO | candidats_signals | 🔗 Lien Candidat #21 ↔ User #33
+2025-08-24 11:07:41,132 | INFO | custom_user | 🔄 Utilisateur mis à jour : alyssia.diatta@gmail.com
+2025-08-24 11:07:41,132 | INFO | candidats_signals | 🛠️ User #33 rôle mis à 'candidat'
+2025-08-24 11:07:41,285 | INFO | candidats_signals | 🔗 Lien Candidat #21 ↔ User #33 (email=alyssia.diatta@gmail.com)
+2025-08-24 11:08:23,440 | INFO | prospections_signals | [Signal] Création prospection #50 pour partenaire acme
+2025-08-26 21:11:56,335 | INFO | custom_user | ✅ Utilisateur créé : thierry.marcin@mail.com avec rôle Test
+2025-08-26 21:11:56,339 | INFO | candidats_signals | ✅ User créé #34 (email=thierry.marcin@mail.com, role=test)
+2025-08-26 21:11:56,386 | INFO | candidats_signals | 🔗 Lien Candidat #23 ↔ User #34
+2025-08-26 21:11:56,444 | INFO | custom_user | 🔄 Utilisateur mis à jour : thierry.marcin@mail.com
+2025-08-26 21:11:56,445 | INFO | candidats_signals | 🛠️ User #34 rôle mis à 'candidat'
+2025-08-26 21:11:56,570 | INFO | candidats_signals | 🔗 Lien Candidat #23 ↔ User #34 (email=thierry.marcin@mail.com)
+2025-08-26 21:30:45,513 | INFO | custom_user | 🔄 Utilisateur mis à jour : camille.d@mail.com
+2025-08-29 18:28:30,898 | INFO | custom_user | ✅ Utilisateur créé : adserv.fr@gmail.com avec rôle Super administrateur
+2025-08-29 18:28:44,977 | INFO | custom_user | 🔄 Utilisateur mis à jour : adserv.fr@gmail.com
+2025-08-29 18:35:20,877 | INFO | centres | [Centre] Création: Meudon
+2025-08-29 18:35:20,917 | INFO | centres_signals | Nouveau centre créé
+2025-08-29 19:16:11,680 | INFO | centres | [Centre] Création: Nanterre
+2025-08-29 19:16:11,722 | INFO | centres_signals | Nouveau centre créé
+2025-08-29 19:16:17,660 | INFO | centres | [Centre] Création: Paris
+2025-08-29 19:16:17,682 | INFO | centres_signals | Nouveau centre créé
+2025-08-29 19:16:30,669 | INFO | centres | [Centre] Création: Magnanville
+2025-08-29 19:16:30,684 | INFO | centres_signals | Nouveau centre créé
+2025-08-29 19:16:47,537 | INFO | centres | [Centre] Création: Centre test
+2025-08-29 19:16:47,553 | INFO | centres_signals | Nouveau centre créé
+2025-08-29 19:51:58,966 | INFO | formations | [Formation] Créée : TMI (Technicien de maintenance industrielle)
+2025-08-29 19:51:58,998 | INFO | formations_signals | [Signal] Formation créée : TMI (Technicien de maintenance industrielle) (ID=1) par ABD
+2025-08-29 19:51:59,039 | INFO | formations_signals | [Signal] Historique enregistré pour formation #1 par ABD – création du champ 'formation' : — → TMI (Technicien de maintenance industrielle)
+2025-08-29 19:51:59,044 | INFO | formations | [Historique] Modification de formation le 29/08/2025 à 17:51
+2025-08-29 19:52:06,244 | INFO | formations | [Formation] Modifiée : TMI (Technicien de maintenance industrielle) (#1)
+2025-08-29 19:52:06,258 | INFO | formations_signals | [Signal] Formation modifiée : TMI (Technicien de maintenance industrielle) (ID=1) par ABD
+2025-08-29 19:56:28,601 | INFO | formations | [Formation] Créée : CIP (Conseiller en insertion professionnelle)
+2025-08-29 19:56:28,607 | INFO | formations_signals | [Signal] Formation créée : CIP (Conseiller en insertion professionnelle) (ID=2) par ABD
+2025-08-29 19:56:28,625 | INFO | formations_signals | [Signal] Historique enregistré pour formation #2 par ABD – création du champ 'formation' : — → CIP (Conseiller en insertion professionnelle)
+2025-08-29 19:56:28,627 | INFO | formations | [Historique] Modification de formation le 29/08/2025 à 17:56
+2025-08-29 19:58:21,351 | INFO | formations | [Formation] Créée : EEB
+2025-08-29 19:58:21,358 | INFO | formations_signals | [Signal] Formation créée : EEB (ID=3) par ABD
+2025-08-29 19:58:21,381 | INFO | formations_signals | [Signal] Historique enregistré pour formation #3 par ABD – création du champ 'formation' : — → EEB
+2025-08-29 19:58:21,383 | INFO | formations | [Historique] Modification de formation le 29/08/2025 à 17:58
+2025-08-29 20:00:02,676 | INFO | formations | [Formation] Créée : AD (Assistante de direction)
+2025-08-29 20:00:02,679 | INFO | formations_signals | [Signal] Formation créée : AD (Assistante de direction) (ID=4) par ABD
+2025-08-29 20:00:02,690 | INFO | formations_signals | [Signal] Historique enregistré pour formation #4 par ABD – création du champ 'formation' : — → AD (Assistante de direction)
+2025-08-29 20:00:02,691 | INFO | formations | [Historique] Modification de formation le 29/08/2025 à 18:00
+2025-08-29 20:10:58,872 | INFO | custom_user | ✅ Utilisateur créé : testgirl@test.com avec rôle Test
+2025-08-29 20:10:58,881 | INFO | candidats_signals | ✅ User créé #2 (email=testgirl@test.com, role=test)
+2025-08-29 20:10:58,884 | INFO | candidats_signals | 🔗 Lien Candidat #1 ↔ User #2
+2025-08-29 20:10:58,944 | INFO | custom_user | 🔄 Utilisateur mis à jour : testgirl@test.com
+2025-08-29 20:10:58,952 | INFO | candidats_signals | 🛠️ User #2 rôle mis à 'candidat'
+2025-08-29 20:12:09,523 | INFO | custom_user | 🔄 Utilisateur mis à jour : testgirl@test.com
+2025-08-29 20:14:59,946 | INFO | custom_user | ✅ Utilisateur créé : john.do@mail.com avec rôle Test
+2025-08-29 20:14:59,947 | INFO | candidats_signals | ✅ User créé #3 (email=john.do@mail.com, role=test)
+2025-08-29 20:14:59,950 | INFO | candidats_signals | 🔗 Lien Candidat #2 ↔ User #3
+2025-08-29 20:14:59,963 | INFO | custom_user | 🔄 Utilisateur mis à jour : john.do@mail.com
+2025-08-29 20:14:59,963 | INFO | candidats_signals | 🛠️ User #3 rôle mis à 'candidat'
+2025-08-29 20:17:03,938 | INFO | custom_user | ✅ Utilisateur créé : melanie.jana@mail.com avec rôle Test
+2025-08-29 20:17:03,940 | INFO | candidats_signals | ✅ User créé #4 (email=melanie.jana@mail.com, role=test)
+2025-08-29 20:17:03,942 | INFO | candidats_signals | 🔗 Lien Candidat #3 ↔ User #4
+2025-08-29 20:17:03,954 | INFO | custom_user | 🔄 Utilisateur mis à jour : melanie.jana@mail.com
+2025-08-29 20:17:03,955 | INFO | candidats_signals | 🛠️ User #4 rôle mis à 'candidat'
+2025-08-29 20:17:53,470 | INFO | custom_user | ✅ Utilisateur créé : simon.duval@mail.com avec rôle Test
+2025-08-29 20:17:53,471 | INFO | candidats_signals | ✅ User créé #5 (email=simon.duval@mail.com, role=test)
+2025-08-29 20:17:53,473 | INFO | candidats_signals | 🔗 Lien Candidat #4 ↔ User #5
+2025-08-29 20:17:53,485 | INFO | custom_user | 🔄 Utilisateur mis à jour : simon.duval@mail.com
+2025-08-29 20:17:53,485 | INFO | candidats_signals | 🛠️ User #5 rôle mis à 'candidat'
+2025-08-29 20:55:36,080 | INFO | custom_user | ✅ Utilisateur créé : diane.venutolo@afpa.fr avec rôle Membre du staff
+2025-08-29 21:14:47,209 | INFO | prospections_signals | [Signal] Création prospection #1 pour partenaire Acorus
+2025-08-29 21:15:59,602 | INFO | prospections_signals | [Signal] Création prospection #2 pour partenaire ADSERV
+2025-08-29 21:16:19,835 | INFO | prospections_signals | [Signal] Création prospection #3 pour partenaire Coca Cola
+2025-08-29 21:16:44,481 | INFO | prospections_signals | [Signal] Création prospection #4 pour partenaire Mairie de Nanterre
+2025-08-29 22:24:55,577 | INFO | prospections_signals | [Signal] Création prospection #5 pour partenaire Apple
+2025-08-30 20:16:14,525 | INFO | prospections_signals | [Signal] Modification prospection #1 pour partenaire Acorus
+2025-08-30 21:20:02,148 | INFO | prospections_signals | [Signal] Création prospection #6 pour partenaire ADSERV
+2025-08-30 21:22:15,683 | INFO | prospections_signals | [Signal] Création prospection #7 pour partenaire Coca Cola
+2025-08-30 21:22:38,918 | INFO | prospections_signals | [Signal] Modification prospection #1 pour partenaire Acorus
+2025-08-30 21:23:10,400 | INFO | prospections_signals | [Signal] Modification prospection #3 pour partenaire Coca Cola
+2025-08-30 21:23:10,400 | INFO | prospection | [Prospection #3] Changements par ABD : formation_id: 1→2
+2025-08-30 21:23:13,764 | INFO | prospections_signals | [Signal] Modification prospection #3 pour partenaire Coca Cola
+2025-08-30 21:23:13,764 | INFO | prospection | [Prospection #3] Changements par ABD : formation_id: 2→1
+2025-08-30 21:25:23,679 | INFO | prospections_signals | [Signal] Modification prospection #3 pour partenaire Coca Cola
+2025-08-30 21:25:46,025 | INFO | prospections_signals | [Signal] Modification prospection #3 pour partenaire Coca Cola
+2025-08-30 21:25:46,025 | INFO | prospection | [Prospection #3] Changements par ABD : formation_id: 1→3
+2025-08-30 21:29:05,609 | INFO | prospections_signals | [Signal] Modification prospection #6 pour partenaire ADSERV
+2025-08-30 21:29:05,610 | INFO | prospection | [Prospection #6] Changements par ABD : formation_id: None→3
+2025-08-30 23:06:06,223 | INFO | prospections_signals | [Signal] Modification prospection #3 pour partenaire Coca Cola
+2025-08-30 23:06:06,225 | INFO | prospection | [Prospection #3] Changements par ABD : formation_id: 3→2
+2025-08-30 23:06:06,227 | WARNING | prospection | Historique sans changement de statut pour prospection #3
+2025-08-30 23:06:06,228 | WARNING | prospection | Historique sans changement de statut pour prospection #3
+2025-08-30 23:06:06,258 | INFO | prospections_signals | [Signal] Historique ajouté pour prospection #3 – Changement de statut : À faire → À faire
+2025-08-31 10:50:41,820 | INFO | custom_user | 🔄 Utilisateur mis à jour : testgirl@test.com
+2025-08-31 10:51:40,091 | INFO | custom_user | 🔄 Utilisateur mis à jour : testgirl@test.com
+2025-08-31 12:01:21,412 | INFO | prospections_signals | [Signal] Modification prospection #1 pour partenaire Acorus
+2025-08-31 12:01:21,420 | INFO | prospection | [Prospection #1] Changements par ABD : formation_id: 3→2
+2025-08-31 12:01:21,442 | WARNING | prospection | Historique sans changement de statut pour prospection #1
+2025-08-31 12:01:21,442 | WARNING | prospection | Historique sans changement de statut pour prospection #1
+2025-08-31 12:01:21,472 | INFO | prospections_signals | [Signal] Historique ajouté pour prospection #1 – Changement de statut : À faire → À faire
+2025-08-31 13:14:32,436 | INFO | prospections_signals | [Signal] Modification prospection #6 pour partenaire ADSERV
+2025-08-31 13:14:32,438 | INFO | prospection | [Prospection #6] Changements par ABD : commentaire: None→; formation_id: 3→None; centre_id: None→1
+2025-08-31 13:14:32,439 | WARNING | prospection | Historique sans changement de statut pour prospection #6
+2025-08-31 13:14:32,446 | WARNING | prospection | Historique sans changement de statut pour prospection #6
+2025-08-31 13:14:32,452 | INFO | prospections_signals | [Signal] Historique ajouté pour prospection #6 – Changement de statut : À faire → À faire
+2025-08-31 13:14:32,472 | WARNING | prospection | Historique sans changement de statut pour prospection #6
+2025-08-31 13:14:32,474 | WARNING | prospection | Historique sans changement de statut pour prospection #6
+2025-08-31 13:14:32,475 | INFO | prospections_signals | [Signal] Historique ajouté pour prospection #6 – Changement de statut : À faire → À faire
+2025-08-31 13:14:32,488 | WARNING | prospection | Historique sans changement de statut pour prospection #6
+2025-08-31 13:14:32,491 | WARNING | prospection | Historique sans changement de statut pour prospection #6
+2025-08-31 13:14:32,492 | INFO | prospections_signals | [Signal] Historique ajouté pour prospection #6 – Changement de statut : À faire → À faire
+2025-08-31 17:31:23,712 | INFO | prospections_signals | [Signal] Modification prospection #1 pour partenaire Acorus
+2025-08-31 17:31:23,742 | INFO | prospection | [Prospection #1] Changements par ABD : centre_id: None→2
+2025-08-31 17:31:23,755 | WARNING | prospection | Historique sans changement de statut pour prospection #1
+2025-08-31 17:31:23,756 | WARNING | prospection | Historique sans changement de statut pour prospection #1
+2025-08-31 17:31:23,777 | INFO | prospections_signals | [Signal] Historique ajouté pour prospection #1 – Changement de statut : À faire → À faire
+2025-08-31 17:32:32,342 | INFO | prospections_signals | [Signal] Modification prospection #2 pour partenaire ADSERV
+2025-08-31 17:32:32,343 | INFO | prospection | [Prospection #2] Changements par ABD : centre_id: None→4
+2025-08-31 17:32:32,345 | WARNING | prospection | Historique sans changement de statut pour prospection #2
+2025-08-31 17:32:32,346 | WARNING | prospection | Historique sans changement de statut pour prospection #2
+2025-08-31 17:32:32,352 | INFO | prospections_signals | [Signal] Historique ajouté pour prospection #2 – Changement de statut : À faire → À faire
+2025-08-31 17:32:54,789 | WARNING | prospections_signals | [Signal] Suppression prospection #2 pour ADSERV
+2025-08-31 17:33:14,514 | INFO | prospections_signals | [Signal] Modification prospection #3 pour partenaire Coca Cola
+2025-08-31 17:33:14,518 | INFO | prospection | [Prospection #3] Changements par ABD : centre_id: None→2
+2025-08-31 17:33:14,522 | WARNING | prospection | Historique sans changement de statut pour prospection #3
+2025-08-31 17:33:14,525 | WARNING | prospection | Historique sans changement de statut pour prospection #3
+2025-08-31 17:33:14,532 | INFO | prospections_signals | [Signal] Historique ajouté pour prospection #3 – Changement de statut : À faire → À faire
+2025-08-31 17:33:38,550 | WARNING | prospections_signals | [Signal] Suppression prospection #4 pour Mairie de Nanterre
+2025-08-31 17:36:03,799 | WARNING | prospections_signals | [Signal] Suppression prospection #6 pour ADSERV
+2025-08-31 18:54:26,420 | INFO | prospections_signals | [Signal] Modification prospection #5 pour partenaire Apple
+2025-08-31 18:54:26,423 | INFO | prospection | [Prospection #5] Changements par girl.test : formation_id: 3→2; centre_id: None→2
+2025-08-31 18:54:26,456 | WARNING | prospection | Historique sans changement de statut pour prospection #5
+2025-08-31 18:54:26,460 | WARNING | prospection | Historique sans changement de statut pour prospection #5
+2025-08-31 18:54:26,505 | INFO | prospections_signals | [Signal] Historique ajouté pour prospection #5 – Changement de statut : À faire → À faire
+2025-08-31 18:54:26,566 | WARNING | prospection | Historique sans changement de statut pour prospection #5
+2025-08-31 18:54:26,567 | WARNING | prospection | Historique sans changement de statut pour prospection #5
+2025-08-31 18:54:26,574 | INFO | prospections_signals | [Signal] Historique ajouté pour prospection #5 – Changement de statut : À faire → À faire
+2025-08-31 19:40:37,000 | INFO | custom_user | 🔄 Utilisateur mis à jour : testgirl@test.com
+2025-09-01 00:47:00,879 | INFO | prospections_signals | [Signal] Création prospection #8 pour partenaire Test entreprise
+2025-09-01 20:16:59,179 | INFO | custom_user | 🔄 Utilisateur mis à jour : testgirl@test.com
+2025-09-06 09:01:50,020 | INFO | custom_user | 🔄 Utilisateur mis à jour : testgirl@test.com
+2025-09-06 09:20:58,295 | INFO | prospections_signals | [Signal] Modification prospection #7 pour partenaire Coca Cola
+2025-09-06 09:20:58,420 | INFO | prospection | [Prospection #7] Changements par ABD : formation_id: None→1; centre_id: None→1
+2025-09-06 09:20:58,466 | WARNING | prospection | Historique sans changement de statut pour prospection #7
+2025-09-06 09:20:58,467 | WARNING | prospection | Historique sans changement de statut pour prospection #7
+2025-09-06 09:20:58,531 | INFO | prospections_signals | [Signal] Historique ajouté pour prospection #7 – Changement de statut : À faire → À faire
+2025-09-06 09:20:58,547 | WARNING | prospection | Historique sans changement de statut pour prospection #7
+2025-09-06 09:20:58,549 | WARNING | prospection | Historique sans changement de statut pour prospection #7
+2025-09-06 09:20:58,564 | INFO | prospections_signals | [Signal] Historique ajouté pour prospection #7 – Changement de statut : À faire → À faire
+2025-09-06 11:14:12,297 | INFO | formations | [Formation] Modifiée : TMI (Technicien de maintenance industrielle) (#1)
+2025-09-06 11:14:12,336 | INFO | formations_signals | [Signal] Formation modifiée : TMI (Technicien de maintenance industrielle) (ID=1) par ABD
+2025-09-06 11:14:12,389 | INFO | formations_signals | [Signal] Historique enregistré pour formation #1 par ABD – Modification du champ 'num_kairos' : — → —
+2025-09-06 11:14:12,390 | INFO | formations | [Historique] Modification de num_kairos le 06/09/2025 à 09:14
+2025-09-06 11:14:12,398 | INFO | formations_signals | [Signal] Historique enregistré pour formation #1 par ABD – Modification du champ 'num_produit' : — → —
+2025-09-06 11:14:12,399 | INFO | formations | [Historique] Modification de num_produit le 06/09/2025 à 09:14
+2025-09-06 11:14:12,404 | INFO | formations_signals | [Signal] Historique enregistré pour formation #1 par ABD – Modification du champ 'inscrits_mp' : 9 → 12
+2025-09-06 11:14:12,405 | INFO | formations | [Historique] Modification de inscrits_mp le 06/09/2025 à 09:14
+2025-09-07 12:13:57,007 | INFO | formations | [Formation] Modifiée : TMI (Technicien de maintenance industrielle) (#1)
+2025-09-07 12:13:57,074 | INFO | formations_signals | [Signal] Formation modifiée : TMI (Technicien de maintenance industrielle) (ID=1) par ABD
+2025-09-07 12:13:57,107 | INFO | formations_signals | [Signal] Historique enregistré pour formation #1 par Système – Modification du champ 'num_kairos' : — → —
+2025-09-07 12:13:57,110 | INFO | formations | [Historique] Modification de num_kairos le 07/09/2025 à 10:13
+2025-09-07 12:13:57,119 | INFO | formations_signals | [Signal] Historique enregistré pour formation #1 par Système – Modification du champ 'num_produit' : — → —
+2025-09-07 12:13:57,120 | INFO | formations | [Historique] Modification de num_produit le 07/09/2025 à 10:13
+2025-09-07 12:13:57,127 | INFO | formations_signals | [Signal] Historique enregistré pour formation #1 par Système – Modification du champ 'inscrits_mp' : 12 → 15
+2025-09-07 12:13:57,128 | INFO | formations | [Historique] Modification de inscrits_mp le 07/09/2025 à 10:13
+2025-09-07 14:41:34,907 | INFO | prospections_signals | [Signal] Modification prospection #7 pour partenaire Coca Cola
+2025-09-07 14:42:24,858 | WARNING | prospection | Historique sans changement de statut pour prospection #7
+2025-09-07 14:42:24,859 | WARNING | prospection | Historique sans changement de statut pour prospection #7
+2025-09-07 14:44:35,571 | WARNING | prospection | Historique sans changement de statut pour prospection #7
+2025-09-07 14:44:35,575 | WARNING | prospection | Historique sans changement de statut pour prospection #7
+2025-09-07 15:45:23,186 | INFO | prospections_signals | [Signal] Modification prospection #7 pour partenaire Coca Cola
+2025-09-07 17:58:01,418 | INFO | prospections_signals | [Signal] Modification prospection #7 pour partenaire Coca Cola
+2025-09-07 19:44:43,618 | INFO | prospections_signals | [Signal] Modification prospection #7 pour partenaire Coca Cola
+2025-09-07 20:55:24,357 | INFO | prospections_signals | [Signal] Modification prospection #7 pour partenaire Coca Cola
+2025-09-07 21:01:22,031 | INFO | prospections_signals | [Signal] Modification prospection #7 pour partenaire Coca Cola
+2025-09-07 21:01:22,033 | INFO | prospection | [Prospection #7] Changements par ABD : statut: a_faire→acceptee
+2025-09-07 21:01:22,146 | INFO | prospections_signals | [Signal] Historique ajouté pour prospection #7 – Changement de statut : À faire → Acceptée
+2025-09-08 20:09:45,137 | INFO | formations | [Formation] Créée : ADVF
+2025-09-08 20:09:45,377 | INFO | formations_signals | [Signal] Formation créée : ADVF (ID=5) par ABD
+2025-09-08 20:09:45,527 | INFO | formations_signals | [Signal] Historique enregistré pour formation #5 par ABD – création du champ 'formation' : — → ADVF
+2025-09-08 20:09:45,529 | INFO | formations | [Historique] Modification de formation le 08/09/2025 à 18:09
+2025-09-13 22:27:53,855 | INFO | custom_user | 🔄 Utilisateur mis à jour : adserv.fr@gmail.com
+2025-09-13 23:57:02,768 | INFO | prospections_signals | [Signal] Création prospection #9 pour partenaire Mairie de Nanterre

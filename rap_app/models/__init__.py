@@ -20,7 +20,7 @@ from .models_test import DummyModel
 from .candidat import Candidat
 from .appairage import Appairage, HistoriqueAppairage
 from .atelier_tre import AtelierTRE
-
+from .commentaires_appairage import CommentaireAppairage
 __all__ = ['CustomUser']  # Important pour l'importation
 
 default_app_config = "rap_app.apps.RapAppConfig"
@@ -45,5 +45,5 @@ from . import (
     candidat,
     appairage,
     atelier_tre,
-    
+    commentaires_appairage,
 )

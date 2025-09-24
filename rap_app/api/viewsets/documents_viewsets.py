@@ -3,12 +3,12 @@ import logging
 from django.http import HttpResponse
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from drf_spectacular.utils import (
     OpenApiTypes, extend_schema, OpenApiParameter, OpenApiResponse
 )
 from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.exceptions import PermissionDenied
 import django_filters
 
 from ...models.documents import Document
@@ -18,9 +18,10 @@ from ...api.serializers.documents_serializers import (
     TypeDocumentChoiceSerializer,
 )
 from ...api.paginations import RapAppPagination
-from ...api.permissions import IsOwnerOrStaffOrAbove
+from ...api.permissions import IsStaffOrAbove  # ✅ staff/admin/superadmin only
 
 logger = logging.getLogger("application.api")
+
 
 class DocumentFilter(django_filters.FilterSet):
     centre_id = django_filters.NumberFilter(field_name='formation__centre_id')
@@ -30,7 +31,8 @@ class DocumentFilter(django_filters.FilterSet):
     class Meta:
         model = Document
         fields = ['centre_id', 'statut_id', 'type_offre_id']
-        
+
+
 @extend_schema(tags=["Documents"])
 class DocumentViewSet(viewsets.ModelViewSet):
     """
@@ -42,23 +44,72 @@ class DocumentViewSet(viewsets.ModelViewSet):
     - Export CSV
     - Endpoint par formation
     - Types de documents disponibles
+
+    ⚠️ Scope centres :
+      - Admin/Superadmin : accès global
+      - Staff : limité aux documents dont la formation appartient à ses centres
     """
-    queryset = Document.objects.all()
     serializer_class = DocumentSerializer
-    permission_classes = [IsAuthenticated & IsOwnerOrStaffOrAbove]
+    permission_classes = [IsStaffOrAbove]
     pagination_class = RapAppPagination
 
     filter_backends = [DjangoFilterBackend]
     filterset_class = DocumentFilter
-    
+
+    # --------------------- helpers scope/permissions ---------------------
+
+    def _is_admin_like(self, user) -> bool:
+        return getattr(user, "is_superuser", False) or (hasattr(user, "is_admin") and user.is_admin())
+
+    def _staff_centre_ids(self, user):
+        """Liste des centres du staff (None si admin-like = accès global)."""
+        if self._is_admin_like(user):
+            return None
+        if getattr(user, "is_staff", False):
+            # nécessite le M2M user.centres (déjà ajouté)
+            return list(user.centres.values_list("id", flat=True))
+        return []
+
+    def _scope_qs_to_user_centres(self, qs):
+        """Applique le scope par centres au queryset."""
+        user = self.request.user
+        centre_ids = self._staff_centre_ids(user)
+        if centre_ids is None:
+            return qs  # admin/superadmin
+        if centre_ids:
+            return qs.filter(formation__centre_id__in=centre_ids)
+        return qs.none()
+
+    def _assert_staff_can_use_formation(self, formation):
+        """Empêche un staff d'écrire hors de son périmètre (centre de la formation)."""
+        if not formation:
+            return
+        user = self.request.user
+        if self._is_admin_like(user):
+            return
+        if getattr(user, "is_staff", False):
+            allowed = set(user.centres.values_list("id", flat=True))
+            if getattr(formation, "centre_id", None) not in allowed:
+                raise PermissionDenied("Formation hors de votre périmètre (centre).")
+
+    # ------------------------------ queryset ------------------------------
+
+    def get_queryset(self):
+        base = (
+            Document.objects
+            .select_related("formation", "formation__centre", "formation__statut", "formation__type_offre", "created_by")
+            .all()
+        )
+        return self._scope_qs_to_user_centres(base)
+
+    # ------------------------------ list/retrieve -------------------------
+
     @extend_schema(
         summary="📄 Lister tous les documents",
         responses={200: OpenApiResponse(response=DocumentSerializer(many=True))}
     )
     def list(self, request, *args, **kwargs):
-        """
-        📄 Liste paginée des documents, avec filtres `centre_id`, `statut_id`, `type_offre_id`.
-        """
+        """📄 Liste paginée des documents, avec filtres `centre_id`, `statut_id`, `type_offre_id`."""
         return super().list(request, *args, **kwargs)
 
     @extend_schema(
@@ -66,10 +117,8 @@ class DocumentViewSet(viewsets.ModelViewSet):
         responses={200: OpenApiResponse(response=DocumentSerializer)}
     )
     def retrieve(self, request, *args, **kwargs):
-        """
-        📂 Détail enrichi d’un document.
-        """
-        doc = self.get_object()
+        """📂 Détail enrichi d’un document."""
+        doc = self.get_object()  # get_object() utilise get_queryset() -> scopé
         serializer = self.get_serializer(doc)
         return Response({
             "success": True,
@@ -77,26 +126,28 @@ class DocumentViewSet(viewsets.ModelViewSet):
             "data": serializer.data
         })
 
+    # ------------------------------ create/update/destroy -----------------
+
     @extend_schema(
         summary="➕ Ajouter un document",
         request=DocumentSerializer,
         responses={201: OpenApiResponse(response=DocumentSerializer)}
     )
     def create(self, request, *args, **kwargs):
-        """
-        ➕ Création d’un nouveau document.
-        """
+        """➕ Création d’un nouveau document."""
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
-            document = serializer.save(created_by=request.user)
+            # contrôle périmètre avant save
+            formation = serializer.validated_data.get("formation")
+            self._assert_staff_can_use_formation(formation)
 
+            document = serializer.save(created_by=request.user)
             LogUtilisateur.log_action(
                 instance=document,
                 user=request.user,
                 action=LogUtilisateur.ACTION_CREATE,
                 details=f"Ajout du document « {document.nom_fichier} »"
             )
-
             return Response({
                 "success": True,
                 "message": "Document créé avec succès.",
@@ -116,9 +167,7 @@ class DocumentViewSet(viewsets.ModelViewSet):
         responses={200: OpenApiResponse(response=DocumentSerializer)}
     )
     def update(self, request, *args, **kwargs):
-        """
-        ✏️ Mise à jour partielle d’un document.
-        """
+        """✏️ Mise à jour partielle d’un document."""
         instance = self.get_object()
         data = request.data.copy()
 
@@ -128,15 +177,17 @@ class DocumentViewSet(viewsets.ModelViewSet):
 
         serializer = self.get_serializer(instance, data=data, partial=True)
         if serializer.is_valid():
-            document = serializer.save()
+            # contrôle périmètre (nouvelle formation si fournie, sinon formation existante)
+            new_formation = serializer.validated_data.get("formation", instance.formation)
+            self._assert_staff_can_use_formation(new_formation)
 
+            document = serializer.save()
             LogUtilisateur.log_action(
                 instance=document,
                 user=request.user,
                 action=LogUtilisateur.ACTION_UPDATE,
                 details=f"Mise à jour du document « {document.nom_fichier} »"
             )
-
             return Response({
                 "success": True,
                 "message": "Document mis à jour avec succès.",
@@ -154,24 +205,25 @@ class DocumentViewSet(viewsets.ModelViewSet):
         responses={204: OpenApiResponse(description="Document supprimé avec succès.")}
     )
     def destroy(self, request, *args, **kwargs):
-        """
-        🗑️ Suppression physique d’un document.
-        """
+        """🗑️ Suppression physique d’un document."""
         document = self.get_object()
-        document.delete(user=request.user)
+        # verrouille la suppression au périmètre centre
+        self._assert_staff_can_use_formation(getattr(document, "formation", None))
 
+        document.delete(user=request.user)
         LogUtilisateur.log_action(
             instance=document,
             user=request.user,
             action=LogUtilisateur.ACTION_DELETE,
             details=f"Suppression du document « {document.nom_fichier} »"
         )
-
         return Response({
             "success": True,
             "message": "Document supprimé avec succès.",
             "data": None
         }, status=status.HTTP_204_NO_CONTENT)
+
+    # ------------------------------ actions custom ------------------------
 
     @extend_schema(
         summary="📚 Lister les documents d’une formation",
@@ -182,9 +234,7 @@ class DocumentViewSet(viewsets.ModelViewSet):
     )
     @action(detail=False, methods=["get"], url_path="par-formation")
     def par_formation(self, request):
-        """
-        📚 Retourne tous les documents liés à une formation donnée.
-        """
+        """📚 Retourne tous les documents liés à une formation donnée (scopé)."""
         formation_id = request.query_params.get("formation")
         if not formation_id:
             return Response({"success": False, "message": "Paramètre 'formation' requis."}, status=400)
@@ -194,7 +244,7 @@ class DocumentViewSet(viewsets.ModelViewSet):
         except ValueError:
             return Response({"success": False, "message": "ID de formation invalide."}, status=400)
 
-        queryset = self.queryset.filter(formation_id=formation_id)
+        queryset = self.get_queryset().filter(formation_id=formation_id)
         page = self.paginate_queryset(queryset)
         serializer = self.get_serializer(page or queryset, many=True)
         return self.get_paginated_response(serializer.data) if page else Response({
@@ -203,7 +253,7 @@ class DocumentViewSet(viewsets.ModelViewSet):
         })
 
     @extend_schema(
-        summary="🧾 Exporter tous les documents au format CSV",
+        summary="🧾 Exporter tous les documents au format CSV (scopé + filtré)",
         responses={
             200: OpenApiResponse(
                 description="Fichier CSV contenant la liste des documents",
@@ -213,16 +263,16 @@ class DocumentViewSet(viewsets.ModelViewSet):
     )
     @action(detail=False, methods=["get"], url_path="export-csv")
     def export_csv(self, request):
-        """
-        🧾 Export CSV complet des documents (non filtré).
-        """
+        """🧾 Export CSV des documents selon filtres + scope centres."""
+        qs = self.filter_queryset(self.get_queryset())
+
         response = HttpResponse(content_type='text/csv')
         response["Content-Disposition"] = "attachment; filename=documents.csv"
 
         writer = csv.writer(response)
         writer.writerow(["ID", "Nom", "Type", "Formation", "Auteur", "Taille (Ko)", "MIME"])
 
-        for doc in self.queryset:
+        for doc in qs:
             writer.writerow([
                 doc.id,
                 doc.nom_fichier,
@@ -243,9 +293,7 @@ class DocumentViewSet(viewsets.ModelViewSet):
     )
     @action(detail=False, methods=["get"], url_path="types", url_name="types")
     def get_types(self, request):
-        """
-        📋 Retourne les types de documents disponibles.
-        """
+        """📋 Retourne les types de documents disponibles."""
         data = [
             {"value": value, "label": label}
             for value, label in Document.TYPE_DOCUMENT_CHOICES
@@ -258,26 +306,29 @@ class DocumentViewSet(viewsets.ModelViewSet):
         })
 
     @extend_schema(
-        summary="Récupérer les filtres disponibles pour les documents",
+        summary="Récupérer les filtres disponibles pour les documents (scopé)",
         responses={200: OpenApiResponse(description="Filtres disponibles")}
     )
     @action(detail=False, methods=["get"], url_path="filtres")
     def get_filtres(self, request):
         """
         Renvoie les options de filtres disponibles pour les documents.
-        ⚠️ Affiche uniquement les centres/statuts/types liés à au moins un document.
+        ⚠️ Affiche uniquement les centres/statuts/types liés à au moins un document,
+        et uniquement dans le périmètre de l'utilisateur.
         """
-        centres = Document.objects \
+        scoped = self.get_queryset()
+
+        centres = scoped \
             .filter(formation__centre__isnull=False) \
             .values_list("formation__centre_id", "formation__centre__nom") \
             .distinct()
 
-        statuts = Document.objects \
+        statuts = scoped \
             .filter(formation__statut__isnull=False) \
             .values_list("formation__statut_id", "formation__statut__nom") \
             .distinct()
 
-        type_offres = Document.objects \
+        type_offres = scoped \
             .filter(formation__type_offre__isnull=False) \
             .values_list("formation__type_offre_id", "formation__type_offre__nom") \
             .distinct()

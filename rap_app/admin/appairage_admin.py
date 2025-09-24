@@ -1,147 +1,130 @@
+# rap_app/admin/appairage_admin.py
 from django.contrib import admin, messages
-from django.urls import reverse
-from django.utils.html import format_html
-from django.utils.translation import gettext_lazy as _
-from ..models.appairage import Appairage, HistoriqueAppairage, AppairageStatut
+from django.db.models import QuerySet
+
+from ..models import Appairage, HistoriqueAppairage
+from ..models.appairage import AppairageStatut
 
 
-class AppairageInline(admin.TabularInline):
-    model = Appairage
+class HistoriqueAppairageInline(admin.TabularInline):
+    model = HistoriqueAppairage
     extra = 0
-    fields = (
-        "partenaire", "formation", "date_appairage", "statut",
-        "commentaire", "retour_partenaire", "date_retour"
-    )
-    autocomplete_fields = ("partenaire", "formation")
-    readonly_fields = ("date_appairage",)
-    show_change_link = True
+    can_delete = False
+    readonly_fields = ("date", "statut", "commentaire", "auteur")
+    fields = ("date", "statut", "commentaire", "auteur")
+    ordering = ("-date",)
+    verbose_name = "Historique"
+    verbose_name_plural = "Historiques"
 
 
 @admin.register(Appairage)
 class AppairageAdmin(admin.ModelAdmin):
+    date_hierarchy = "date_appairage"
+
     list_display = (
-        'candidat_link',
-        'partenaire_link',
-        'formation_link',
-        'statut_badge',
-        'date_appairage',
-        'date_retour',
-        'voir_historique',
+        "id", "candidat", "partenaire", "formation",
+        "statut", "date_appairage", "created_by", "created_at", "updated_at",
     )
-    list_filter = (
-        'statut',
-        ('date_appairage', admin.DateFieldListFilter),
-        'formation',
-        'partenaire',
-    )
+    list_filter = ("statut", ("date_appairage", admin.DateFieldListFilter), "partenaire", "formation")
     search_fields = (
-        'candidat__nom',
-        'candidat__prenom',
-        'partenaire__nom',
-        'formation__nom',
-        'commentaire',
-        'retour_partenaire',
+        "id", "candidat__nom", "candidat__prenom", "candidat__email",
+        "partenaire__nom", "formation__id",
     )
-    autocomplete_fields = ('candidat', 'partenaire', 'formation')
-    ordering = ('-date_appairage',)
-    readonly_fields = ('date_appairage',)
+    ordering = ("-date_appairage", "-id")
+
+    raw_id_fields = ("candidat", "partenaire", "formation", "created_by", "updated_by")
+
+    readonly_fields = ("created_by", "created_at", "updated_at")
 
     fieldsets = (
-        (_("Informations principales"), {
-            "fields": (
-                'candidat', 'partenaire', 'formation', 'statut',
-                'date_appairage', 'date_retour',
-            )
+        ("Liaison", {"fields": ("candidat", "partenaire", "formation")}),
+        ("Suivi", {
+            "fields": ("date_appairage", "statut", "retour_partenaire", "date_retour")
         }),
-        (_("Commentaires et retour"), {
-            "fields": (
-                'commentaire', 'retour_partenaire',
-            )
-        }),
+        ("Métadonnées", {"fields": ("created_by", "created_at", "updated_at")}),
     )
 
-    actions = ['changer_statut_en_transmis', 'changer_statut_en_refuse', 'changer_statut_en_accepte']
+    inlines = [HistoriqueAppairageInline]
 
-    @admin.display(description="Statut")
-    def statut_badge(self, obj):
-        color = {
-            'transmis': '#6c757d',
-            'en_attente': '#fd7e14',
-            'accepte': '#198754',
-            'refuse': '#dc3545',
-            'annule': '#343a40',
-            'a_faire': '#0dcaf0',
-        }.get(obj.statut, '#adb5bd')
-        label = obj.get_statut_display() if obj.statut else "-"
-        return format_html('<span style="color:{}; font-weight:bold;">{}</span>', color, label)
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related(
+            "candidat", "partenaire", "formation", "created_by"
+        )
 
-    @admin.display(description="Candidat")
-    def candidat_link(self, obj):
-        if obj.candidat:
-            url = reverse("admin:rap_app_candidat_change", args=[obj.candidat.pk])
-            return format_html('<a href="{}">{}</a>', url, obj.candidat)
-        return "-"
+    def save_model(self, request, obj, form, change):
+        obj.save(user=request.user)
 
-    @admin.display(description="Partenaire")
-    def partenaire_link(self, obj):
-        if obj.partenaire:
-            url = reverse("admin:rap_app_partenaire_change", args=[obj.partenaire.pk])
-            return format_html('<a href="{}">{}</a>', url, obj.partenaire)
-        return "-"
+    def save_formset(self, request, form, formset, change):
+        instances = formset.save(commit=False)
+        for inst in instances:
+            try:
+                inst.save(user=request.user)
+            except TypeError:
+                inst.save()
+        formset.save_m2m()
 
-    @admin.display(description="Formation")
-    def formation_link(self, obj):
-        if obj.formation:
-            url = reverse("admin:rap_app_formation_change", args=[obj.formation.pk])
-            return format_html('<a href="{}">{}</a>', url, obj.formation)
-        return "-"
+    # ---- Actions utilitaires ----
+    def _bulk_set_statut(self, request, queryset: QuerySet[Appairage], new_statut: str):
+        updated = 0
+        for a in queryset:
+            if a.statut != new_statut:
+                a.statut = new_statut
+                a.save(user=request.user)
+                updated += 1
+        if updated:
+            self.message_user(request, f"{updated} appairage(s) mis à jour → {new_statut}")
+        else:
+            self.message_user(request, "Aucun changement", level=messages.WARNING)
 
-    @admin.display(description="Historique")
-    def voir_historique(self, obj):
-        url = f"/admin/rap_app/historiqueappairage/?appairage__id__exact={obj.pk}"
-        return format_html('<a href="{}">Voir</a>', url)
+    @admin.action(description="Statut → Transmis")
+    def act_transmis(self, request, queryset):
+        self._bulk_set_statut(request, queryset, AppairageStatut.TRANSMIS)
 
-    @admin.action(description="Changer le statut en 'Transmis'")
-    def changer_statut_en_transmis(self, request, queryset):
-        updated = queryset.update(statut=AppairageStatut.TRANSMIS)
-        messages.success(request, _(f"{updated} appairage(s) mis à jour en 'Transmis'."))
+    @admin.action(description="Statut → En attente")
+    def act_en_attente(self, request, queryset):
+        self._bulk_set_statut(request, queryset, AppairageStatut.EN_ATTENTE)
 
-    @admin.action(description="Changer le statut en 'Refusé'")
-    def changer_statut_en_refuse(self, request, queryset):
-        updated = queryset.update(statut=AppairageStatut.REFUSE)
-        messages.success(request, _(f"{updated} appairage(s) mis à jour en 'Refusé'."))
+    @admin.action(description="Statut → Accepté")
+    def act_accepte(self, request, queryset):
+        self._bulk_set_statut(request, queryset, AppairageStatut.ACCEPTE)
 
-    @admin.action(description="Changer le statut en 'Accepté'")
-    def changer_statut_en_accepte(self, request, queryset):
-        updated = queryset.update(statut=AppairageStatut.ACCEPTE)
-        messages.success(request, _(f"{updated} appairage(s) mis à jour en 'Accepté'."))
+    @admin.action(description="Statut → Refusé")
+    def act_refuse(self, request, queryset):
+        self._bulk_set_statut(request, queryset, AppairageStatut.REFUSE)
 
-    @admin.display(description="Date retour")
-    def date_retour(self, obj):
-        return obj.date_retour.strftime("%d/%m/%Y %H:%M") if obj.date_retour else "-"
+    @admin.action(description="Statut → Annulé")
+    def act_annule(self, request, queryset):
+        self._bulk_set_statut(request, queryset, AppairageStatut.ANNULE)
+
+    @admin.action(description="Statut → À faire")
+    def act_a_faire(self, request, queryset):
+        self._bulk_set_statut(request, queryset, AppairageStatut.A_FAIRE)
+
+    @admin.action(description="Statut → Contrat à signer")
+    def act_contrat_a_signer(self, request, queryset):
+        self._bulk_set_statut(request, queryset, AppairageStatut.CONTRAT_A_SIGNER)
+
+    @admin.action(description="Statut → Contrat en attente")
+    def act_contrat_en_attente(self, request, queryset):
+        self._bulk_set_statut(request, queryset, AppairageStatut.CONTRAT_EN_ATTENTE)
+
+    @admin.action(description="Statut → Appairage OK")
+    def act_appairage_ok(self, request, queryset):
+        self._bulk_set_statut(request, queryset, AppairageStatut.APPAIRAGE_OK)
+
+    actions = (
+        "act_transmis", "act_en_attente", "act_accepte", "act_refuse",
+        "act_annule", "act_a_faire", "act_contrat_a_signer",
+        "act_contrat_en_attente", "act_appairage_ok",
+    )
+
 
 @admin.register(HistoriqueAppairage)
 class HistoriqueAppairageAdmin(admin.ModelAdmin):
-    list_display = (
-        'appairage',
-        'statut',
-        'date',
-        'auteur',
-        'commentaire',
-    )
-    list_filter = (
-        'statut',
-        'date',
-    )
-    search_fields = (
-        'appairage__candidat__nom',
-        'appairage__candidat__prenom',
-        'appairage__partenaire__nom',
-        'commentaire',
-    )
-    autocomplete_fields = ('appairage', 'auteur')
-    readonly_fields = ('date',)
-    ordering = ('-date',)
-
-
-__all__ = ["AppairageAdmin", "HistoriqueAppairageAdmin", "AppairageInline"]
+    date_hierarchy = "date"
+    list_display = ("id", "appairage", "statut", "auteur", "date")
+    list_filter = ("statut", ("date", admin.DateFieldListFilter), "auteur")
+    search_fields = ("id", "appairage__id", "appairage__candidat__nom", "appairage__partenaire__nom")
+    ordering = ("-date", "-id")
+    raw_id_fields = ("appairage", "auteur")
+    readonly_fields = ("date",)

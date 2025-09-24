@@ -50,19 +50,8 @@ class CentreManager(models.Manager):
         return self.filter(code_postal=code_postal)
     
     def with_prepa_for_year(self, year=None):
-        """
-        Récupère les centres avec leur PrepaCompGlobal pour une année donnée.
-        
-        Args:
-            year (int, optional): Année cible, par défaut l'année courante
-            
-        Returns:
-            QuerySet: Centres avec PrepaCompGlobal préchargés
-        """
         from .prepacomp import PrepaCompGlobal
-        
-        annee = annee or now().year
-        
+        year = year or now().year   # <-- utiliser 'year', pas 'annee'
         return self.prefetch_related(
             models.Prefetch(
                 'prepacompglobal_set',
