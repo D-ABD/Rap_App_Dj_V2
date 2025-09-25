@@ -1,31 +1,6 @@
 from django.contrib import admin
 from django.utils.html import format_html
-from ..models.vae_jury import SuiviJury, VAE, HistoriqueStatutVAE
-
-
-@admin.register(SuiviJury)
-class SuiviJuryAdmin(admin.ModelAdmin):
-    """
-    📊 Suivi mensuel des jurys de VAE par centre.
-    """
-
-    list_display = (
-        "centre",
-        "annee",
-        "mois",
-        "objectif_jury",
-        "jurys_realises",
-        "ecart",
-        "pourcentage_affiche",
-        "created_at",
-    )
-    list_filter = ("centre", "annee", "mois")
-    search_fields = ("centre__nom",)
-    ordering = ("-annee", "-mois", "centre")
-
-    def pourcentage_affiche(self, obj):
-        return f"{obj.pourcentage_mensuel:.1f} %"
-    pourcentage_affiche.short_description = "Taux atteint"
+from ..models.vae import VAE, HistoriqueStatutVAE
 
 
 @admin.register(VAE)
@@ -62,8 +37,9 @@ class VAEAdmin(admin.ModelAdmin):
         return format_html(
             '<span style="color:white; background:{}; padding:2px 6px; border-radius:4px;">{}</span>',
             color,
-            label
+            label,
         )
+
     statut_badge.short_description = "Statut"
 
 

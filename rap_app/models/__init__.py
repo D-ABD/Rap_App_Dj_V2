@@ -13,7 +13,8 @@ from .partenaires import Partenaire
 from .rapports import Rapport
 from .prospection import Prospection, HistoriqueProspection
 from .prepacomp import Semaine, PrepaCompGlobal
-from .vae_jury import VAE, SuiviJury, HistoriqueStatutVAE
+from .vae import   VAE, HistoriqueStatutVAE
+from .jury import SuiviJury
 from .logs import LogUtilisateur
 from .custom_user import CustomUser
 from .models_test import DummyModel
@@ -41,7 +42,8 @@ from . import (
     statut,
     types_offre,
     custom_user,
-    vae_jury,
+    VAE,
+    jury,
     candidat,
     appairage,
     atelier_tre,

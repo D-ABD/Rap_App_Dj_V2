@@ -3,6 +3,7 @@ from rest_framework.routers import DefaultRouter
 
 
 
+
 from .viewsets.stats_viewsets.prospection_comment_stats_viewset import ProspectionCommentStatsViewSet
 from .viewsets.stats_viewsets.commentaires_stats_viewsets import CommentaireStatsViewSet
 from .viewsets.stats_viewsets.atelier_tre_stats_viewset import AtelierTREStatsViewSet
@@ -39,7 +40,9 @@ from .viewsets.statut_viewsets import StatutViewSet
 from .viewsets.temporaire_viewset import test_token_view
 from .viewsets.types_offre_viewsets import TypeOffreViewSet
 from .viewsets.user_viewsets import CustomUserViewSet, RegisterView
-from .viewsets.vae_jury_viewsets import HistoriqueStatutVAEViewSet, SuiviJuryViewSet, VAEViewSet
+from .viewsets.jury_viewsets import SuiviJuryViewSet
+from .viewsets.vae_viewsets import HistoriqueStatutVAEViewSet, VAEViewSet
+
 
 # Router
 router = DefaultRouter()

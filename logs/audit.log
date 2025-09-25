@@ -2258,3 +2258,19 @@ AttributeError: 'HistoriqueProspection' object has no attribute 'prochain_contac
 2025-09-08 20:09:45,529 | INFO | formations | [Historique] Modification de formation le 08/09/2025 à 18:09
 2025-09-13 22:27:53,855 | INFO | custom_user | 🔄 Utilisateur mis à jour : adserv.fr@gmail.com
 2025-09-13 23:57:02,768 | INFO | prospections_signals | [Signal] Création prospection #9 pour partenaire Mairie de Nanterre
+2025-09-25 13:09:34,488 | INFO | custom_user | ✅ Utilisateur créé : tim@mail.com avec rôle Test
+2025-09-25 13:09:34,490 | INFO | candidats_signals | ✅ User créé #7 (email=tim@mail.com, role=test)
+2025-09-25 13:09:35,279 | INFO | candidats_signals | 🔗 Lien Candidat #5 ↔ User #7
+2025-09-25 13:09:35,296 | INFO | custom_user | 🔄 Utilisateur mis à jour : tim@mail.com
+2025-09-25 13:09:35,296 | INFO | candidats_signals | 🛠️ User #7 rôle mis à 'candidat'
+2025-09-25 13:09:35,768 | INFO | candidats_signals | 🔗 Lien Candidat #5 ↔ User #7 (email=tim@mail.com)
+2025-09-25 21:07:08,823 | INFO | formations | [Formation] Modifiée : ADVF (#5)
+2025-09-25 21:07:08,895 | INFO | formations_signals | [Signal] Formation modifiée : ADVF (ID=5) par ABD
+2025-09-25 21:07:08,993 | INFO | formations_signals | [Signal] Historique enregistré pour formation #5 par ABD – Modification du champ 'num_kairos' : — → —
+2025-09-25 21:07:08,995 | INFO | formations | [Historique] Modification de num_kairos le 25/09/2025 à 19:07
+2025-09-25 21:07:09,002 | INFO | formations_signals | [Signal] Historique enregistré pour formation #5 par ABD – Modification du champ 'num_offre' : — → 101281
+2025-09-25 21:07:09,003 | INFO | formations | [Historique] Modification de num_offre le 25/09/2025 à 19:07
+2025-09-25 21:07:09,017 | INFO | formations_signals | [Signal] Historique enregistré pour formation #5 par ABD – Modification du champ 'num_produit' : — → —
+2025-09-25 21:07:09,019 | INFO | formations | [Historique] Modification de num_produit le 25/09/2025 à 19:07
+2025-09-25 21:07:09,028 | INFO | formations_signals | [Signal] Historique enregistré pour formation #5 par ABD – Modification du champ 'assistante' : — → —
+2025-09-25 21:07:09,030 | INFO | formations | [Historique] Modification de assistante le 25/09/2025 à 19:07

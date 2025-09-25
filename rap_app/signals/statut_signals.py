@@ -5,7 +5,9 @@ from django.dispatch import receiver
 from django.apps import apps
 from django.utils import timezone
 
-from ..models.vae_jury import VAE, HistoriqueStatutVAE, SuiviJury
+from ..models.jury import SuiviJury
+from ..models.vae import VAE, HistoriqueStatutVAE
+
 from ..models.logs import LogUtilisateur
 from ..models.prepacomp import Semaine
 
