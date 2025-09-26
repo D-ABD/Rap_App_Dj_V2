@@ -2274,3 +2274,7 @@ AttributeError: 'HistoriqueProspection' object has no attribute 'prochain_contac
 2025-09-25 21:07:09,019 | INFO | formations | [Historique] Modification de num_produit le 25/09/2025 à 19:07
 2025-09-25 21:07:09,028 | INFO | formations_signals | [Signal] Historique enregistré pour formation #5 par ABD – Modification du champ 'assistante' : — → —
 2025-09-25 21:07:09,030 | INFO | formations | [Historique] Modification de assistante le 25/09/2025 à 19:07
+2025-09-26 20:07:10,645 | INFO | custom_user | 🔄 Utilisateur mis à jour : adserv.fr@gmail.com
+2025-09-26 20:13:30,438 | INFO | candidats_signals | ➕ Candidat créé (ou récupéré) pour User #8 (role=stagiaire)
+2025-09-26 20:13:30,480 | INFO | custom_user | ✅ Utilisateur créé : app@mail.com avec rôle Stagiaire
+2025-09-26 20:16:42,923 | INFO | custom_user | 🔄 Utilisateur mis à jour : app@mail.com
