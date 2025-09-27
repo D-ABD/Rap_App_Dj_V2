@@ -6,6 +6,12 @@ from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import BasePermission, SAFE_METHODS
 from django_filters.rest_framework import DjangoFilterBackend, FilterSet, filters as dj_filters
 from django.db.models import Count, Q
+from openpyxl import Workbook
+from openpyxl.utils import get_column_letter
+from io import BytesIO
+from django.http import HttpResponse
+from django.utils import timezone as dj_timezone
+import datetime
 
 from ...api.permissions import IsOwnerOrStaffOrAbove, RestrictToUserOwnedQuerysetMixin
 from ...models.partenaires import Partenaire
@@ -402,3 +408,86 @@ class PartenaireViewSet(RestrictToUserOwnedQuerysetMixin, viewsets.ModelViewSet)
         # Candidats distincts
         data["candidats"] = {"count": partenaire.appairages.values("candidat_id").distinct().count()}
         return Response(data)
+
+# -------------------- Export Excel --------------------
+
+    @action(detail=False, methods=["get"], url_path="export-xlsx")
+    def export_xlsx(self, request):
+        qs = self.filter_queryset(
+            self.get_queryset().select_related("default_centre", "created_by")
+        )
+
+        wb = Workbook()
+        ws = wb.active
+        ws.title = "Partenaires"
+
+        headers = [
+            "ID", "Nom", "Type", "Secteur d’activité",
+            "Adresse", "CP", "Ville", "Pays",
+            "Contact nom", "Contact poste", "Contact email", "Contact téléphone",
+            "Site web", "Réseau social",
+            "Type action", "Description action", "Description générale",
+            "Slug", "Centre par défaut",
+            "Créé par", "Date création",
+            "Nb prospections", "Nb formations", "Nb appairages",
+        ]
+        ws.append(headers)
+
+        def _fmt(val):
+            if val is None:
+                return ""
+            if isinstance(val, datetime.datetime):
+                return val.strftime("%d/%m/%Y %H:%M")
+            if isinstance(val, datetime.date):
+                return val.strftime("%d/%m/%Y")
+            return str(val)
+
+        for p in qs:
+            ws.append([
+                p.id,
+                p.nom,
+                p.get_type_display(),
+                p.secteur_activite or "",
+                p.street_name or "",
+                p.zip_code or "",
+                p.city or "",
+                p.country or "",
+                p.contact_nom or "",
+                p.contact_poste or "",
+                p.contact_email or "",
+                p.contact_telephone or "",
+                p.website or "",
+                p.social_network_url or "",
+                p.get_actions_display() if p.actions else "",
+                p.action_description or "",
+                p.description or "",
+                p.slug or "",
+                getattr(p.default_centre, "nom", ""),
+                getattr(p.created_by, "username", ""),
+                _fmt(p.created_at),
+                p.nb_prospections,
+                p.nb_formations,
+                p.nb_appairages,
+            ])
+
+        # Ajuster largeur colonnes
+        for col in ws.columns:
+            max_length = 0
+            col_letter = get_column_letter(col[0].column)
+            for cell in col:
+                if cell.value:
+                    max_length = max(max_length, len(str(cell.value)))
+            ws.column_dimensions[col_letter].width = min(max_length + 2, 50)
+
+        buffer = BytesIO()
+        wb.save(buffer)
+        binary_content = buffer.getvalue()
+
+        filename = f'partenaires_{dj_timezone.now().strftime("%Y%m%d_%H%M%S")}.xlsx'
+        response = HttpResponse(
+            binary_content,
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        )
+        response["Content-Disposition"] = f'attachment; filename="{filename}"'
+        response["Content-Length"] = len(binary_content)
+        return response

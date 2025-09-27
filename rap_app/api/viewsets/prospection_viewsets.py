@@ -13,6 +13,13 @@ from drf_spectacular.utils import (
     OpenApiParameter,
     OpenApiExample,
 )
+import datetime
+
+from openpyxl import Workbook
+from openpyxl.utils import get_column_letter
+from io import BytesIO
+from django.http import HttpResponse
+from django.utils import timezone as dj_timezone
 
 from django.contrib.auth import get_user_model
 from rest_framework.exceptions import PermissionDenied
@@ -670,6 +677,143 @@ class ProspectionViewSet(viewsets.ModelViewSet):
             }
         )
 
+    # ---------- Actions exports ----------
+    @action(detail=False, methods=["get", "post"], url_path="export-xlsx")
+    def export_xlsx(self, request):
+        user = request.user
+        qs = self.filter_queryset(
+            self.get_queryset().select_related(
+                "formation",
+                "formation__centre",
+                "formation__type_offre",
+                "formation__statut",
+                "partenaire",
+                "owner",
+                "created_by",
+            )
+        )
+
+        ids = request.data.get("ids") if request.method == "POST" else None
+        if ids:
+            ids = _parse_id_list(ids)
+            qs = qs.filter(id__in=ids)
+
+        wb = Workbook()
+        ws = wb.active
+        ws.title = "Prospections"
+
+        # Prospection toujours
+        prospection_fields = [
+            "id", "date_prospection", "statut", "objectif",
+            "motif", "type_prospection", "commentaire", "relance_prevue",
+        ]
+
+        # Rôle candidat/stagiaire → Formation limitée
+        if hasattr(user, "is_candidat_or_stagiaire") and user.is_candidat_or_stagiaire():
+            formation_fields = ["nom", "centre_nom"]
+        else:
+            formation_fields = [
+                "id", "nom", "centre_nom", "type_offre_nom", "statut_nom",
+                "start_date", "end_date", "num_offre", "places_disponibles",
+                "taux_saturation", "total_places", "total_inscrits",
+            ]
+
+        # Partenaire : toujours toutes les infos demandées
+        partenaire_fields = [
+            "nom", "zip_code", "contact_nom", "contact_email", "contact_telephone",
+        ]
+
+        # Ajout staff-only : owner / created_by
+        extra_fields = []
+        if not (hasattr(user, "is_candidat_or_stagiaire") and user.is_candidat_or_stagiaire()):
+            extra_fields = ["owner_username", "created_by_username"]
+
+        headers = prospection_fields + [f"formation__{f}" for f in formation_fields] + [f"partenaire__{f}" for f in partenaire_fields] + extra_fields
+        ws.append(headers)
+
+        def _fmt(val):
+            if val is None:
+                return ""
+            if isinstance(val, datetime.datetime):
+                return val.strftime("%d/%m/%Y %H:%M")
+            if isinstance(val, datetime.date):
+                return val.strftime("%d/%m/%Y")
+            if isinstance(val, float):
+                return round(val, 2)
+            return str(val)
+
+        for p in qs:
+            row = []
+            # Prospection
+            for field in prospection_fields:
+                row.append(_fmt(getattr(p, field, "")))
+
+            # Formation
+            f = p.formation
+            if f:
+                if hasattr(user, "is_candidat_or_stagiaire") and user.is_candidat_or_stagiaire():
+                    row += [
+                        f.nom,
+                        getattr(f.centre, "nom", ""),
+                    ]
+                else:
+                    row += [
+                        f.id,
+                        f.nom,
+                        getattr(f.centre, "nom", ""),
+                        getattr(f.type_offre, "nom", ""),
+                        getattr(f.statut, "nom", ""),
+                        _fmt(f.start_date),
+                        _fmt(f.end_date),
+                        f.num_offre or "",
+                        f.places_disponibles,
+                        f.taux_saturation,
+                        f.total_places,
+                        f.total_inscrits,
+                    ]
+            else:
+                row += [""] * len(formation_fields)
+
+            # Partenaire
+            part = p.partenaire
+            row += [
+                getattr(part, "nom", ""),
+                getattr(part, "zip_code", ""),
+                getattr(part, "contact_nom", ""),
+                getattr(part, "contact_email", ""),
+                getattr(part, "contact_telephone", ""),
+            ]
+
+            # Staff-only extras
+            if not (hasattr(user, "is_candidat_or_stagiaire") and user.is_candidat_or_stagiaire()):
+                row += [
+                    getattr(p.owner, "username", ""),
+                    getattr(p.created_by, "username", ""),
+                ]
+
+            ws.append(row)
+
+        # Ajustement colonnes
+        for col in ws.columns:
+            max_length = 0
+            col_letter = get_column_letter(col[0].column)
+            for cell in col:
+                if cell.value:
+                    max_length = max(max_length, len(str(cell.value)))
+            ws.column_dimensions[col_letter].width = min(max_length + 2, 50)
+
+        buffer = BytesIO()
+        wb.save(buffer)
+        binary_content = buffer.getvalue()
+
+        filename = f'prospections_{dj_timezone.now().strftime("%Y%m%d_%H%M%S")}.xlsx'
+        response = HttpResponse(
+            binary_content,
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        )
+        response["Content-Disposition"] = f'attachment; filename="{filename}"'
+        response["Content-Length"] = len(binary_content)
+        return response
 
 class HistoriqueProspectionViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = HistoriqueProspection.objects.select_related(

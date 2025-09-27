@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body {
+      font-family: 'DejaVu Sans', sans-serif;
+      font-size: 12px;
+      margin: 2cm;
+      color: #333;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .commentaire {
+      margin-bottom: 25px;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      page-break-inside: avoid;
+    }
+
+    .meta {
+      font-size: 11px;
+      margin-bottom: 8px;
+      color: #555;
+    }
+
+    .section {
+      margin-top: 6px;
+    }
+
+    .label {
+      font-weight: bold;
+    }
+
+    .contenu {
+      margin-top: 8px;
+      font-style: italic;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <h1>Commentaires d’appairage exportés</h1>
+
+  {% for c in commentaires %}
+    <div class="commentaire">
+      <!-- Infos Appairage -->
+      <div class="section">
+        <span class="label">🆔 Appairage :</span> {{ c.appairage.id }}<br>
+        <span class="label">📌 Statut :</span> {{ c.appairage.statut|default:"—" }}
+      </div>
+
+      <!-- Candidat -->
+      <div class="section">
+        <span class="label">👤 Candidat :</span> {{ c.appairage.candidat.nom_complet|default:"—" }}
+      </div>
+
+      <!-- Partenaire -->
+      <div class="section">
+        <span class="label">🏢 Entreprise :</span> {{ c.appairage.partenaire.nom|default:"—" }}
+      </div>
+
+      <!-- Formation -->
+      <div class="section">
+        <span class="label">🎓 Formation :</span> {{ c.appairage.formation.nom|default:"—" }}<br>
+        <span class="label">📄 Offre :</span> {{ c.appairage.formation.num_offre|default:"—" }}<br>
+        <span class="label">🔖 Type :</span> {{ c.appairage.formation.type_offre.nom|default:"—" }}<br>
+        <span class="label">📅 Début :</span> {{ c.appairage.formation.start_date|date:"d/m/Y"|default:"—" }}<br>
+        <span class="label">📅 Fin :</span> {{ c.appairage.formation.end_date|date:"d/m/Y"|default:"—" }}
+      </div>
+
+      <!-- Commentaire -->
+      <div class="section">
+        <span class="label">✍️ Auteur :</span> {{ c.created_by.username|default:"—" }}<br>
+        <span class="label">📅 Date :</span> {{ c.created_at|date:"d/m/Y H:i" }}
+      </div>
+      <div class="contenu">
+        {{ c.body }}
+      </div>
+    </div>
+  {% empty %}
+    <p>Aucun commentaire à afficher.</p>
+  {% endfor %}
+</body>
+</html>

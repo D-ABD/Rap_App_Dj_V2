@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Commentaires Prospection</title>
+  <style>
+    body {
+      font-family: 'DejaVu Sans', sans-serif;
+      font-size: 11px;
+      margin: 1.5cm;
+      color: #333;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 12px;
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      table-layout: fixed;
+    }
+
+    th, td {
+      border: 1px solid #ccc;
+      padding: 5px 6px;
+      vertical-align: top;
+    }
+
+    th {
+      background: #f0f0f0;
+    }
+
+    td.wrap {
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+
+    th.context { width: 32%; }
+    th.comment { width: 68%; }
+
+    .section {
+      margin: 0;
+      padding: 0;
+      line-height: 1.1;
+    }
+
+    .label {
+      font-weight: bold;
+    }
+
+    .contenu {
+      margin-top: 4px;
+      font-style: italic;
+      white-space: pre-wrap;
+      line-height: 1.2;
+    }
+  </style>
+</head>
+<body>
+  <h1>Commentaires de prospection</h1>
+
+  <table>
+    <thead>
+      <tr>
+        <th class="context">Contexte</th>
+        <th class="comment">Commentaire</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in items %}
+      <tr>
+        <!-- Contexte -->
+        <td class="wrap">
+          <div class="section">
+            <span class="label">🆔 Prospection :</span> {{ item.prospection.id }}<br>
+            <span class="label">📅 Date :</span> {{ item.prospection.date_prospection|date:"d/m/Y" }}<br>
+            <span class="label">📌 Statut :</span> {{ item.prospection.statut|default:"—" }}
+          </div>
+          <div class="section">
+            <span class="label">🎓 Formation :</span> {{ item.formation.nom|default:"—" }}<br>
+            <span class="label">🏢 Centre :</span> {{ item.formation.centre_nom|default:"—" }}
+            {% if not user.is_candidat_or_stagiaire %}
+              <br><span class="label">📅 Début :</span> {{ item.formation.start_date|date:"d/m/Y"|default:"—" }}
+              <br><span class="label">📅 Fin :</span> {{ item.formation.end_date|date:"d/m/Y"|default:"—" }}
+            {% endif %}
+          </div>
+          <div class="section">
+            <span class="label">🤝 Partenaire :</span> {{ item.partenaire.nom|default:"—" }}
+          </div>
+        </td>
+
+        <!-- Commentaire -->
+        <td class="wrap">
+          <div class="section">
+            <span class="label">📅 Date commentaire :</span> {{ item.commentaire.created_at|date:"d/m/Y H:i" }}
+            {% if not user.is_candidat_or_stagiaire %}
+              <br><span class="label">✍️ Auteur :</span> {{ item.extras.comment_created_by|default:"—" }}
+            {% endif %}
+          </div>
+          <div class="contenu">
+            {{ item.commentaire.body|default:"(vide)" }}
+          </div>
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="2">Aucun commentaire disponible.</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</body>
+</html>

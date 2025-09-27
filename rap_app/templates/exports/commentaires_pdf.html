@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Export des commentaires</title>
+  <style>
+    body {
+      font-family: 'DejaVu Sans', sans-serif;
+      font-size: 11px;
+      margin: 2cm;
+      color: #333;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .commentaire {
+      margin-bottom: 20px;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      page-break-inside: avoid;
+    }
+
+    .section {
+      margin-top: 3px;
+      line-height: 1.2;
+    }
+
+    .label {
+      font-weight: bold;
+    }
+
+    .contenu {
+      margin-top: 6px;
+      font-style: italic;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <h1>Commentaires exportés</h1>
+
+  {% for c in items %}
+  <div class="commentaire">
+    <!-- Formation -->
+    <div class="section">
+      <span class="label">🎓 Formation :</span>
+      {{ c.formation.nom|default:"—" }}
+      {% if c.formation.num_offre %}
+        (offre {{ c.formation.num_offre }})
+      {% endif %}
+    </div>
+
+    <!-- Centre / Type / Statut -->
+    <div class="section">
+      <span class="label">🏢 Centre :</span> {{ c.formation.centre_nom|default:"—" }}<br>
+      <span class="label">🔖 Type :</span> {{ c.formation.type_offre_nom|default:"—" }}<br>
+      <span class="label">📌 Statut :</span> {{ c.formation.statut_nom|default:"—" }}
+    </div>
+
+    <!-- Auteur & Dates -->
+    <div class="section">
+      <span class="label">✍️ Auteur :</span> {{ c.auteur|default:"—" }}<br>
+      <span class="label">📅 Créé le :</span> {{ c.created_at|default:"—" }}
+    </div>
+
+    <!-- Infos places -->
+    <div class="section">
+      <span class="label">Places prévues :</span> {{ c.formation.places_prevues }}<br>
+      <span class="label">Inscrits :</span> {{ c.formation.inscrits }}<br>
+      <span class="label">Dispo :</span> {{ c.formation.places_disponibles }}<br>
+      <span class="label">Taux saturation :</span> {{ c.formation.taux_saturation }}%<br>
+      <span class="label">Sat. moy. commentaires :</span> {{ c.formation.saturation_commentaires }}
+    </div>
+
+    <!-- Contenu -->
+    <div class="contenu">
+      {{ c.contenu|linebreaks }}
+    </div>
+  </div>
+{% empty %}
+  <p>Aucun commentaire à afficher.</p>
+{% endfor %}
+
+</body>
+</html>

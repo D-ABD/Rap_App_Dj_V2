@@ -5,11 +5,12 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.exceptions import ValidationError, PermissionDenied
-
 from django.http import HttpResponse
 from django.template.loader import render_to_string
 from weasyprint import HTML
 import csv
+from openpyxl import Workbook
+from openpyxl.utils import get_column_letter
 
 from ...utils.filters import AppairageFilterSet
 from ...models.appairage import Appairage, HistoriqueAppairage
@@ -326,84 +327,95 @@ class AppairageViewSet(viewsets.ModelViewSet):
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    # ---------------------------- Actions export ----------------------------
 
-    @action(detail=False, methods=["post"], url_path="export-csv")
-    def export_csv(self, request):
+    # ---------------------------- Actions export ----------------------------
+    @action(detail=False, methods=["get", "post"], url_path="export-xlsx")
+    def export_xlsx(self, request):
         qs = self._get_export_queryset(request)
 
-        response = HttpResponse(content_type="text/csv; charset=utf-8")
-        filename = f'appairages_{dj_timezone.now().strftime("%Y%m%d_%H%M%S")}.csv'
-        response["Content-Disposition"] = f'attachment; filename="{filename}"'
-        writer = csv.writer(response)
+        wb = Workbook()
+        ws = wb.active
+        ws.title = "Appairages"
 
-        writer.writerow(
-            [
-                "id",
-                "candidat_id",
-                "candidat_nom",
-                "partenaire_id",
-                "partenaire_nom",
-                "partenaire_email",
-                "partenaire_telephone",
-                "formation_id",
-                "formation_nom",
-                "formation_type_offre",
-                "formation_num_offre",
-                "statut",
-                "statut_display",
-                "date_appairage",
-                "commentaire",
-                "retour_partenaire",
-                "date_retour",
-                "created_by",
-                "created_by_nom",
-                "updated_by",
-                "updated_by_nom",
-                "created_at",
-                "updated_at",
-            ]
-        )
+        headers = [
+            "id",
+            "candidat_id",
+            "candidat_nom",
+            "partenaire_id",
+            "partenaire_nom",
+            "partenaire_email",
+            "partenaire_telephone",
+            "formation_id",
+            "formation_nom",
+            "formation_type_offre",
+            "formation_num_offre",
+            "statut",
+            "statut_display",
+            "date_appairage",
+            "commentaire",
+            "retour_partenaire",
+            "date_retour",
+            "created_by",
+            "created_by_nom",
+            "updated_by",
+            "updated_by_nom",
+            "created_at",
+            "updated_at",
+        ]
+
+        # écrire en-têtes
+        ws.append(headers)
 
         for a in qs:
-            writer.writerow(
-                [
-                    a.id,
-                    getattr(a.candidat, "id", "") or "",
-                    getattr(a.candidat, "nom_complet", "") or "",
-                    getattr(a.partenaire, "id", "") or "",
-                    getattr(a.partenaire, "nom", "") or "",
-                    self._partenaire_email(a),
-                    self._partenaire_telephone(a),
-                    self._formation_id(a),
-                    self._formation_label(a),
-                    self._formation_type_offre(a),
-                    self._formation_num_offre(a),
-                    a.statut,
-                    a.get_statut_display(),
-                    a.date_appairage.isoformat() if a.date_appairage else "",
-                    a.last_commentaire or "",
-                    a.retour_partenaire or "",
-                    a.date_retour.isoformat() if a.date_retour else "",
-                    getattr(a.created_by, "id", "") if a.created_by else "",
-                    self._user_display(a.created_by),
-                    getattr(a.updated_by, "id", "") if a.updated_by else "",
-                    self._user_display(a.updated_by),
-                    a.created_at.isoformat() if getattr(a, "created_at", None) else "",
-                    a.updated_at.isoformat() if getattr(a, "updated_at", None) else "",
-                ]
-            )
+            ws.append([
+                a.id,
+                getattr(a.candidat, "id", "") or "",
+                getattr(a.candidat, "nom_complet", "") or "",
+                getattr(a.partenaire, "id", "") or "",
+                getattr(a.partenaire, "nom", "") or "",
+                self._partenaire_email(a),
+                self._partenaire_telephone(a),
+                self._formation_id(a),
+                self._formation_label(a),
+                self._formation_type_offre(a),
+                self._formation_num_offre(a),
+                a.statut,
+                a.get_statut_display(),
+                a.date_appairage.isoformat() if a.date_appairage else "",
+                a.last_commentaire or "",
+                a.retour_partenaire or "",
+                a.date_retour.isoformat() if a.date_retour else "",
+                getattr(a.created_by, "id", "") if a.created_by else "",
+                self._user_display(a.created_by),
+                getattr(a.updated_by, "id", "") if a.updated_by else "",
+                self._user_display(a.updated_by),
+                a.created_at.isoformat() if getattr(a, "created_at", None) else "",
+                a.updated_at.isoformat() if getattr(a, "updated_at", None) else "",
+            ])
 
-        return response
+        # ajuster la largeur des colonnes automatiquement
+        for col in ws.columns:
+            max_length = 0
+            col_letter = get_column_letter(col[0].column)
+            for cell in col:
+                try:
+                    if cell.value:
+                        max_length = max(max_length, len(str(cell.value)))
+                except:
+                    pass
+            ws.column_dimensions[col_letter].width = min(max_length + 2, 50)
 
-    @action(detail=False, methods=["post"], url_path="export-pdf")
-    def export_pdf(self, request):
-        qs = self._get_export_queryset(request)
-        html_string = render_to_string("exports/appairages_pdf.html", {"appairages": qs})
-        pdf = HTML(string=html_string).write_pdf()
+        # créer la réponse HTTP
+        from io import BytesIO
+        buffer = BytesIO()
+        wb.save(buffer)
+        buffer.seek(0)
 
-        response = HttpResponse(pdf, content_type="application/pdf")
-        filename = f'appairages_{dj_timezone.now().strftime("%Y%m%d_%H%M%S")}.pdf'
+        response = HttpResponse(
+            buffer,
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
+        filename = f'appairages_{dj_timezone.now().strftime("%Y%m%d_%H%M%S")}.xlsx'
         response["Content-Disposition"] = f'attachment; filename="{filename}"'
         return response
 

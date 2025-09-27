@@ -4,6 +4,14 @@ from django.http import HttpResponse
 from django.db.models import Q, Count
 from django.db.models.functions import TruncMonth
 
+
+from openpyxl import Workbook
+from openpyxl.utils import get_column_letter
+from io import BytesIO
+import datetime
+from django.utils import timezone as dj_timezone
+
+
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
@@ -338,17 +346,7 @@ class FormationViewSet(RestrictToUserOwnedQuerysetMixin, viewsets.ModelViewSet):
             logger.exception("Duplication échouée")
             return Response({"success": False, "message": str(e)}, status=400)
 
-    @extend_schema(summary="Exporter les formations au format CSV")
-    @action(detail=False, methods=["get"])
-    def export_csv(self, request):
-        qs = self.get_queryset()  # ✅ restreint
-        response = HttpResponse(content_type='text/csv')
-        response["Content-Disposition"] = "attachment; filename=formations.csv"
-        writer = csv.writer(response)
-        writer.writerow(Formation.get_csv_headers())
-        for f in qs:
-            writer.writerow(f.to_csv_row())
-        return response
+
 
     # ---------- STATS GLOBAL + PAR CENTRE ----------
     def _detect_date_field(self):
@@ -453,6 +451,104 @@ class FormationViewSet(RestrictToUserOwnedQuerysetMixin, viewsets.ModelViewSet):
         historique = HistoriqueFormation.objects.select_related("formation", "created_by").order_by("-created_at")
         serializer = HistoriqueFormationSerializer(historique, many=True)
         return Response({"success": True, "data": serializer.data}, status=status.HTTP_200_OK)
+
+
+
+
+    @extend_schema(summary="Exporter les formations au format XLSX")
+    @action(detail=False, methods=["get", "post"], url_path="export-xlsx")
+    def export_xlsx(self, request):
+        """
+        - GET  → export de toutes les formations (scopées + filtrées)
+        - POST → export uniquement des formations dont les IDs sont envoyés
+        """
+        qs = self.get_queryset().select_related("centre", "type_offre", "statut")
+
+        # --- Gestion POST (sélection explicite)
+        ids = None
+        if request.method == "POST":
+            ids = request.data.get("ids", [])
+            if isinstance(ids, str):
+                ids = [int(x) for x in ids.split(",") if x.isdigit()]
+            elif isinstance(ids, list):
+                ids = [int(x) for x in ids if str(x).isdigit()]
+            else:
+                ids = []
+            if ids:
+                qs = qs.filter(id__in=ids)
+
+        # --- Construction du fichier Excel
+        wb = Workbook()
+        ws = wb.active
+        ws.title = "Formations"
+
+        headers = [
+            "ID", "Nom", "Centre", "Type d’offre", "Statut",
+            "Date début", "Date fin",
+            "Numéro Kairos", "Numéro d’offre", "Numéro produit",
+            "Assistante", "Convocation envoyée",
+            "Places CRIF", "Places MP", "Places prévues (total)",
+            "Inscrits CRIF", "Inscrits MP", "Inscrits (total)",
+            "Places dispo", "Taux saturation (%)",
+            "Nombre de candidats", "Nombre d’entretiens",
+        ]
+        ws.append(headers)
+
+        def _fmt(val):
+            if val is None:
+                return ""
+            if isinstance(val, (datetime.date, datetime.datetime)):
+                return val.strftime("%d/%m/%Y")
+            return str(val)
+
+        for f in qs:
+            ws.append([
+                f.id,
+                f.nom,
+                f.centre.nom if f.centre else "",
+                f.type_offre.nom if f.type_offre else "",
+                f.statut.nom if f.statut else "",
+                _fmt(f.start_date),
+                _fmt(f.end_date),
+                f.num_kairos or "",
+                f.num_offre or "",
+                f.num_produit or "",
+                f.assistante or "",
+                "Oui" if f.convocation_envoie else "Non",
+                f.prevus_crif,
+                f.prevus_mp,
+                f.total_places,
+                f.inscrits_crif,
+                f.inscrits_mp,
+                f.total_inscrits,
+                f.places_disponibles,
+                f.taux_saturation,
+                f.nombre_candidats,
+                f.nombre_entretiens,
+            ])
+
+        # Ajustement largeur colonnes
+        for col in ws.columns:
+            max_length = max((len(str(cell.value)) for cell in col if cell.value), default=0)
+            ws.column_dimensions[get_column_letter(col[0].column)].width = min(max_length + 2, 50)
+
+        buffer = BytesIO()
+        wb.save(buffer)
+        buffer.seek(0)
+        binary_content = buffer.getvalue()
+
+        filename = f'formations_{dj_timezone.now().strftime("%Y%m%d_%H%M%S")}.xlsx'
+        response = HttpResponse(
+            binary_content,
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        )
+        response["Content-Disposition"] = f'attachment; filename="{filename}"'
+        response["Content-Length"] = len(binary_content)
+        return response
+
+
+
+
 
 
 @extend_schema(
@@ -597,3 +693,4 @@ class HistoriqueFormationGroupedView(APIView):
             "message": "Historique groupé par formation",
             "data": list(grouped_data.values())
         })
+

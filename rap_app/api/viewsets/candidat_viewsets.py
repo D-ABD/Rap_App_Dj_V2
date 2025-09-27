@@ -15,7 +15,9 @@ import logging
 from django.db.models.functions import Coalesce
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import PermissionDenied
-
+from openpyxl import Workbook
+from openpyxl.utils import get_column_letter
+from io import BytesIO
 from ...models import atelier_tre
 
 # ✅ imports modèles
@@ -432,6 +434,100 @@ class CandidatViewSet(viewsets.ModelViewSet):
         response = HttpResponse(pdf, content_type="application/pdf")
         response["Content-Disposition"] = 'attachment; filename="candidats.pdf"'
         return response
+    
+    # ---------- Actions Exports----------
+
+    @action(detail=False, methods=["get"], url_path="export-xlsx")
+    def export_xlsx(self, request):
+        qs = self.filter_queryset(self.get_queryset())
+        logger.debug("📤 export XLSX candidats params=%s rows=%d", self._qp_dict(request), qs.count())
+
+        wb = Workbook()
+        ws = wb.active
+        ws.title = "Candidats"
+
+        # --- 1) Colonnes à exporter (tous les champs utiles) ---
+        headers = [
+            "ID",
+            "Nom",
+            "Prénom",
+            "Email",
+            "Téléphone",
+            "Adresse",
+            "Code postal",
+            "Ville",
+            "Date inscription",
+            "Statut",
+            "Statut CV",
+            "Disponibilité",
+            "Type contrat",
+            "OSIA",
+            "Résultat placement",
+            "Contrat signé",
+            "Formation",
+            "Num offre formation",
+            "Centre formation",
+            "Type formation",
+            "Entreprise placement",
+            "Entreprise validée",
+            "Responsable placement",
+            "Vu par",
+            "Nb appairages",
+            "Nb prospections",
+        ]
+        ws.append(headers)
+
+        # --- 2) Données ligne par ligne ---
+        for c in qs:
+            ws.append([
+                c.id,
+                c.nom,
+                c.prenom,
+                c.email,
+                c.telephone,
+                getattr(c, "adresse", ""),
+                getattr(c, "code_postal", ""),
+                getattr(c, "ville", ""),
+                c.date_inscription.strftime("%d/%m/%Y") if c.date_inscription else "",
+                c.get_statut_display() if hasattr(c, "get_statut_display") else c.statut,
+                c.get_cv_statut_display() if hasattr(c, "get_cv_statut_display") else c.cv_statut,
+                getattr(c, "get_disponibilite_display", lambda: None)() or getattr(c, "disponibilite", ""),
+                getattr(c, "get_type_contrat_display", lambda: None)() or getattr(c, "type_contrat", ""),
+                c.numero_osia or "",
+                c.get_resultat_placement_display() if hasattr(c, "get_resultat_placement_display") else c.resultat_placement,
+                c.get_contrat_signe_display() if hasattr(c, "get_contrat_signe_display") else c.contrat_signe,
+                c.formation.nom if c.formation else "",
+                c.formation.num_offre if c.formation else "",
+                c.formation.centre.nom if getattr(c.formation, "centre", None) else "",
+                c.formation.type_offre.nom if getattr(c.formation, "type_offre", None) else "",
+                getattr(c.entreprise_placement, "nom", ""),
+                getattr(c.entreprise_validee, "nom", ""),
+                getattr(c.responsable_placement, "username", ""),
+                getattr(c.vu_par, "username", ""),
+                getattr(c, "nb_appairages_calc", 0),
+                getattr(c, "nb_prospections_calc", 0),
+            ])
+
+        # --- 3) Ajuste la largeur des colonnes ---
+        for col in ws.columns:
+            max_length = 0
+            col_letter = get_column_letter(col[0].column)
+            for cell in col:
+                if cell.value:
+                    max_length = max(max_length, len(str(cell.value)))
+            ws.column_dimensions[col_letter].width = min(max_length + 2, 50)
+
+        # --- 4) Envoi HTTP ---
+        buffer = BytesIO()
+        wb.save(buffer)
+        buffer.seek(0)
+
+        response = HttpResponse(
+            buffer,
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        )
+        response["Content-Disposition"] = 'attachment; filename="candidats.xlsx"'
+        return response
 
 
 class HistoriquePlacementViewSet(viewsets.ReadOnlyModelViewSet):
@@ -493,3 +589,7 @@ class HistoriquePlacementViewSet(viewsets.ReadOnlyModelViewSet):
     def meta(self, request):
         logger.debug("ℹ️ /historique-placements/meta called")
         return Response(HistoriquePlacementMetaSerializer().data)
+
+
+
+

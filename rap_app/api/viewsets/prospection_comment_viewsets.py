@@ -11,6 +11,16 @@ from drf_spectacular.utils import (
     OpenApiParameter,
     OpenApiResponse,
 )
+from rest_framework.decorators import action
+
+from django.template.loader import render_to_string
+from weasyprint import HTML
+from openpyxl import Workbook
+from openpyxl.utils import get_column_letter
+from io import BytesIO
+from django.http import HttpResponse
+from django.utils import timezone as dj_timezone
+import datetime
 
 from ..paginations import RapAppPagination
 from ..serializers.prospection_serializers import HistoriqueProspectionSerializer
@@ -273,7 +283,273 @@ class ProspectionCommentViewSet(viewsets.ModelViewSet):
             return super().destroy(request, *args, **kwargs)
 
         return super().destroy(request, *args, **kwargs)
+    
+ # ---------------------------- Exports ----------------------------
+    @action(detail=False, methods=["get", "post"], url_path="export-pdf")
+    def export_pdf(self, request):
+        user = request.user
+        qs = self.filter_queryset(
+            self.get_queryset().select_related(
+                "prospection",
+                "prospection__formation",
+                "prospection__formation__centre",
+                "prospection__formation__type_offre",
+                "prospection__formation__statut",
+                "prospection__partenaire",
+                "prospection__owner",
+                "prospection__created_by",
+                "created_by",
+            )
+        )
 
+        ids = request.data.get("ids") if request.method == "POST" else None
+        if ids:
+            qs = qs.filter(id__in=ids)
+
+        data = []
+        for c in qs:
+            p = c.prospection
+            f = getattr(p, "formation", None)
+            part = getattr(p, "partenaire", None)
+
+            # Prospection (toujours complet)
+            prospection_data = {
+                "id": p.id,
+                "date_prospection": getattr(p, "date_prospection", ""),
+                "statut": getattr(p, "statut", ""),
+                "objectif": getattr(p, "objectif", ""),
+                "motif": getattr(p, "motif", ""),
+                "type_prospection": getattr(p, "type_prospection", ""),
+                "commentaire": getattr(p, "commentaire", ""),
+                "relance_prevue": getattr(p, "relance_prevue", ""),
+            }
+
+            # Formation (restriction si candidat/stagiaire)
+            if hasattr(user, "is_candidat_or_stagiaire") and user.is_candidat_or_stagiaire():
+                formation_data = {
+                    "nom": getattr(f, "nom", "") if f else "",
+                    "centre_nom": getattr(f.centre, "nom", "") if f and f.centre else "",
+                }
+            else:
+                formation_data = {
+                    "id": getattr(f, "id", "") if f else "",
+                    "nom": getattr(f, "nom", "") if f else "",
+                    "centre_nom": getattr(f.centre, "nom", "") if f and f.centre else "",
+                    "type_offre_nom": getattr(f.type_offre, "nom", "") if f and f.type_offre else "",
+                    "statut_nom": getattr(f.statut, "nom", "") if f and f.statut else "",
+                    "start_date": getattr(f, "start_date", ""),
+                    "end_date": getattr(f, "end_date", ""),
+                    "num_offre": getattr(f, "num_offre", ""),
+                    "places_disponibles": getattr(f, "places_disponibles", ""),
+                    "taux_saturation": getattr(f, "taux_saturation", ""),
+                    "total_places": getattr(f, "total_places", ""),
+                    "total_inscrits": getattr(f, "total_inscrits", ""),
+                }
+
+            # Partenaire (toujours complet)
+            partenaire_data = {
+                "nom": getattr(part, "nom", ""),
+                "zip_code": getattr(part, "zip_code", ""),
+                "contact_nom": getattr(part, "contact_nom", ""),
+                "contact_email": getattr(part, "contact_email", ""),
+                "contact_telephone": getattr(part, "contact_telephone", ""),
+            }
+
+            # Commentaire
+            commentaire_data = {
+                "id": c.id,
+                "body": c.body or "",
+                "is_internal": "Oui" if c.is_internal else "Non",
+                "created_at": c.created_at.strftime("%d/%m/%Y %H:%M") if c.created_at else "",
+            }
+
+            # Extras staff-only
+            extras = {}
+            if not (hasattr(user, "is_candidat_or_stagiaire") and user.is_candidat_or_stagiaire()):
+                extras = {
+                    "prospection_owner": getattr(p.owner, "username", ""),
+                    "prospection_created_by": getattr(p.created_by, "username", ""),
+                    "comment_created_by": getattr(c.created_by, "username", ""),
+                }
+
+            data.append({
+                "prospection": prospection_data,
+                "formation": formation_data,
+                "partenaire": partenaire_data,
+                "commentaire": commentaire_data,
+                "extras": extras,
+            })
+
+        # Génération du PDF avec WeasyPrint
+        html_string = render_to_string(
+            "exports/prospection_commentaires_pdf.html",
+            {"items": data, "user": user},
+        )
+        pdf = HTML(string=html_string).write_pdf()
+
+        filename = f'prospection_commentaires_{dj_timezone.now().strftime("%Y%m%d_%H%M%S")}.pdf'
+        response = HttpResponse(pdf, content_type="application/pdf")
+        response["Content-Disposition"] = f'attachment; filename="{filename}"'
+        return response
+
+
+    @action(detail=False, methods=["get", "post"], url_path="export-xlsx")
+    def export_xlsx(self, request):
+        user = request.user
+        qs = self.filter_queryset(
+            self.get_queryset().select_related(
+                "prospection",
+                "prospection__formation",
+                "prospection__formation__centre",
+                "prospection__formation__type_offre",
+                "prospection__formation__statut",
+                "prospection__partenaire",
+                "prospection__owner",
+                "prospection__created_by",
+                "created_by",
+            )
+        )
+
+        ids = request.data.get("ids") if request.method == "POST" else None
+        if ids:
+            qs = qs.filter(id__in=ids)
+
+        wb = Workbook()
+        ws = wb.active
+        ws.title = "Commentaires Prospection"
+
+        # Champs Prospection (de base)
+        prospection_fields = [
+            "id", "date_prospection", "statut", "objectif",
+            "motif", "type_prospection", "commentaire", "relance_prevue",
+        ]
+
+        # Formation (restreinte si candidat/stagiaire)
+        if hasattr(user, "is_candidat_or_stagiaire") and user.is_candidat_or_stagiaire():
+            formation_fields = ["nom", "centre_nom"]
+        else:
+            formation_fields = [
+                "id", "nom", "centre_nom", "type_offre_nom", "statut_nom",
+                "start_date", "end_date", "num_offre", "places_disponibles",
+                "taux_saturation", "total_places", "total_inscrits",
+            ]
+
+        # Partenaire → toujours complet
+        partenaire_fields = [
+            "nom", "zip_code", "contact_nom", "contact_email", "contact_telephone",
+        ]
+
+        # Champs Commentaire
+        commentaire_fields = ["id", "body", "is_internal", "created_at"]
+
+        # Staff-only extras (owner/created_by prospection + auteur commentaire)
+        extra_fields = []
+        if not (hasattr(user, "is_candidat_or_stagiaire") and user.is_candidat_or_stagiaire()):
+            extra_fields = ["prospection__owner_username", "prospection__created_by_username", "comment_created_by_username"]
+
+        headers = (
+            [f"prospection__{f}" for f in prospection_fields]
+            + [f"formation__{f}" for f in formation_fields]
+            + [f"partenaire__{f}" for f in partenaire_fields]
+            + [f"commentaire__{f}" for f in commentaire_fields]
+            + extra_fields
+        )
+        ws.append(headers)
+
+        def _fmt(val):
+            if val is None:
+                return ""
+            if isinstance(val, datetime.datetime):
+                return val.strftime("%d/%m/%Y %H:%M")
+            if isinstance(val, datetime.date):
+                return val.strftime("%d/%m/%Y")
+            if isinstance(val, float):
+                return round(val, 2)
+            return str(val)
+
+        for c in qs:
+            row = []
+
+            # Prospection
+            p = c.prospection
+            for field in prospection_fields:
+                row.append(_fmt(getattr(p, field, "")))
+
+            # Formation
+            f = getattr(p, "formation", None)
+            if f:
+                if hasattr(user, "is_candidat_or_stagiaire") and user.is_candidat_or_stagiaire():
+                    row += [
+                        f.nom,
+                        getattr(f.centre, "nom", ""),
+                    ]
+                else:
+                    row += [
+                        f.id,
+                        f.nom,
+                        getattr(f.centre, "nom", ""),
+                        getattr(f.type_offre, "nom", ""),
+                        getattr(f.statut, "nom", ""),
+                        _fmt(f.start_date),
+                        _fmt(f.end_date),
+                        f.num_offre or "",
+                        f.places_disponibles,
+                        f.taux_saturation,
+                        f.total_places,
+                        f.total_inscrits,
+                    ]
+            else:
+                row += [""] * len(formation_fields)
+
+            # Partenaire
+            part = getattr(p, "partenaire", None)
+            row += [
+                getattr(part, "nom", ""),
+                getattr(part, "zip_code", ""),
+                getattr(part, "contact_nom", ""),
+                getattr(part, "contact_email", ""),
+                getattr(part, "contact_telephone", ""),
+            ]
+
+            # Commentaire
+            row += [
+                c.id,
+                c.body or "",
+                "Oui" if c.is_internal else "Non",
+                _fmt(c.created_at),
+            ]
+
+            # Staff-only extras
+            if not (hasattr(user, "is_candidat_or_stagiaire") and user.is_candidat_or_stagiaire()):
+                row += [
+                    getattr(p.owner, "username", ""),
+                    getattr(p.created_by, "username", ""),
+                    getattr(c.created_by, "username", ""),
+                ]
+
+            ws.append(row)
+
+        # Ajustement colonnes
+        for col in ws.columns:
+            max_length = 0
+            col_letter = get_column_letter(col[0].column)
+            for cell in col:
+                if cell.value:
+                    max_length = max(max_length, len(str(cell.value)))
+            ws.column_dimensions[col_letter].width = min(max_length + 2, 50)
+
+        buffer = BytesIO()
+        wb.save(buffer)
+        binary_content = buffer.getvalue()
+
+        filename = f'prospection_commentaires_{dj_timezone.now().strftime("%Y%m%d_%H%M%S")}.xlsx'
+        response = HttpResponse(
+            binary_content,
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        )
+        response["Content-Disposition"] = f'attachment; filename="{filename}"'
+        response["Content-Length"] = len(binary_content)
+        return response
 
 class HistoriqueProspectionViewSet(viewsets.ReadOnlyModelViewSet):
     """
