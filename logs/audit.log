@@ -2281,3 +2281,4 @@ AttributeError: 'HistoriqueProspection' object has no attribute 'prochain_contac
 2025-09-28 10:09:19,367 | INFO | candidats_signals | ➕ Candidat créé (ou récupéré) pour User #9 (role=stagiaire)
 2025-09-28 10:09:19,405 | INFO | custom_user | ✅ Utilisateur créé : marielle@mail.com avec rôle Stagiaire
 2025-09-28 10:10:16,747 | INFO | custom_user | 🔄 Utilisateur mis à jour : marielle@mail.com
+2025-09-28 12:30:26,241 | INFO | prospections_signals | [Signal] Création prospection #10 pour partenaire Apple

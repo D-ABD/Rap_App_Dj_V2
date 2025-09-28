@@ -184,6 +184,8 @@ class AppairageCommentaireStatsViewSet(RestrictToUserOwnedQueryset, GenericViewS
                 "appairage_id": c.appairage_id,
                 "centre_nom": getattr(c.appairage.formation.centre, "nom", None),
                 "formation_nom": getattr(c.appairage.formation, "nom", None),
+                "num_offre": getattr(c.appairage.formation, "num_offre", None),  # ✅ ajouté
+                "type_offre_nom": getattr(getattr(c.appairage.formation, "type_offre", None), "nom", None), 
                 "partenaire_nom": getattr(c.appairage.partenaire, "nom", None),
                 "statut_snapshot": c.statut_snapshot,
                 "body": c.body[:280],
@@ -221,7 +223,10 @@ class AppairageCommentaireStatsViewSet(RestrictToUserOwnedQueryset, GenericViewS
         group_fields_map = {
             "centre": ["appairage__formation__centre_id", "appairage__formation__centre__nom"],
             "departement": ["departement"],
-            "formation": ["appairage__formation_id", "appairage__formation__nom", "appairage__formation__num_offre"],
+            "formation": ["appairage__formation_id", "appairage__formation__nom", 
+            "appairage__formation__type_offre__nom", "appairage__formation__num_offre"
+            ],
+            
             "partenaire": ["appairage__partenaire_id", "appairage__partenaire__nom"],
             "statut_snapshot": ["statut_snapshot"],
             "appairage": ["appairage_id"],
@@ -245,6 +250,11 @@ class AppairageCommentaireStatsViewSet(RestrictToUserOwnedQueryset, GenericViewS
             elif by == "formation":
                 r["group_key"] = r.get("appairage__formation_id")
                 r["group_label"] = r.get("appairage__formation__nom") or "—"
+                r["group_label"] = (
+                    f"{r.get('appairage__formation__nom') or '—'} "
+                    f"(#{r.get('appairage__formation__num_offre') or '?'}, "
+                    f"{r.get('appairage__formation__type_offre__nom') or '?'})"
+                )
             elif by == "partenaire":
                 r["group_key"] = r.get("appairage__partenaire_id")
                 r["group_label"] = r.get("appairage__partenaire__nom") or "—"
