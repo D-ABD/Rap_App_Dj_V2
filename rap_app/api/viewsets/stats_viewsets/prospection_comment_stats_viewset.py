@@ -219,6 +219,7 @@ class ProspectionCommentStatsViewSet(RestrictToUserOwnedQueryset, GenericViewSet
             statut = getattr(p, "statut", None)
             type_prospection = getattr(p, "type_prospection", None)
             objectif = getattr(p, "objectif", None)
+            
 
             body = c.body or ""
             preview_len = 180
@@ -234,6 +235,10 @@ class ProspectionCommentStatsViewSet(RestrictToUserOwnedQueryset, GenericViewSet
                 "centre_nom": centre_nom,
                 "formation_nom": formation_nom,
                 "partenaire_nom": partenaire_nom,
+                "num_offre": getattr(getattr(p, "formation", None), "num_offre", None),
+                "type_offre_nom": getattr(getattr(getattr(p, "formation", None), "type_offre", None), "nom", None),
+                "start_date": getattr(getattr(p, "formation", None), "date_debut", None),
+                "end_date": getattr(getattr(p, "formation", None), "date_fin", None),
                 "statut": statut,
                 "type_prospection": type_prospection,
                 "objectif": objectif,
@@ -260,30 +265,31 @@ class ProspectionCommentStatsViewSet(RestrictToUserOwnedQueryset, GenericViewSet
     @action(detail=False, methods=["GET"], url_path="grouped")
     def grouped(self, request):
         """
-        GET /prospection-comment-stats/grouped/?by=centre|departement
+        GET /prospection-comment-stats/grouped/?by=centre|departement|formation
         Renvoie les options (clé + label + total) pour les <select>.
         """
         by = (request.query_params.get("by") or "centre").lower()
-        allowed = {"centre", "departement"}
+        allowed = {"centre", "departement", "formation"}
         if by not in allowed:
             return Response({"detail": f"'by' doit être dans {sorted(allowed)}"}, status=400)
 
-        # On applique tous les filtres SAUF celui du group_by pour lister les options complètes.
         params = request.query_params.copy()
-        if by == "centre":
-            params.pop("centre", None)
-        if by == "departement":
-            params.pop("departement", None)
+        params.pop(by, None)  # on supprime le filtre correspondant
 
         qs = self._apply_filters(self.get_queryset(), params)
-
-        # departement dérivé du code postal centre
         qs = qs.annotate(
             departement=Coalesce(Substr("prospection__centre__code_postal", 1, 2), Value("NA"))
         )
 
         if by == "centre":
             group_fields = ["prospection__centre_id", "prospection__centre__nom"]
+        elif by == "formation":
+            group_fields = [
+                "prospection__formation_id",
+                "prospection__formation__nom",
+                "prospection__formation__num_offre",
+                "prospection__formation__type_offre__nom",
+            ]
         else:  # departement
             group_fields = ["departement"]
 
@@ -296,18 +302,23 @@ class ProspectionCommentStatsViewSet(RestrictToUserOwnedQueryset, GenericViewSet
         results = []
         for r in rows:
             if by == "centre":
-                group_key = r.get("prospection__centre_id")
-                group_label = r.get("prospection__centre__nom") or (
-                    f"Centre #{group_key}" if group_key is not None else "—"
+                key = r.get("prospection__centre_id")
+                label = r.get("prospection__centre__nom") or (f"Centre #{key}" if key is not None else "—")
+            elif by == "formation":
+                key = r.get("prospection__formation_id")
+                label = (
+                    f"{r.get('prospection__formation__nom') or '—'} "
+                    f"(#{r.get('prospection__formation__num_offre') or '?'}, "
+                    f"{r.get('prospection__formation__type_offre__nom') or '?'})"
                 )
             else:
-                group_key = r.get("departement")
-                group_label = group_key or "—"
+                key = r.get("departement")
+                label = key or "—"
 
             results.append({
                 **r,
-                "group_key": group_key,
-                "group_label": group_label,
+                "group_key": key,
+                "group_label": label,
                 "total": int(r.get("total") or 0),
             })
 
