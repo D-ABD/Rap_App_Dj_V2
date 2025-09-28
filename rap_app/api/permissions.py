@@ -52,10 +52,19 @@ class ReadWriteAdminReadStaff(BasePermission):
 
 class IsStaffOrAbove(BasePermission):
     message = "Accès réservé au staff, admin ou superadmin."
+
     def has_permission(self, request, view):
-        return request.user.is_authenticated and request.user.is_staff_or_admin()
+        user = request.user
+        if not user or not user.is_authenticated:
+            return False
 
-
+        # Vérifie explicitement le rôle
+        role = getattr(user, "role", "").lower()
+        return (
+            getattr(user, "is_staff", False)
+            or getattr(user, "is_superuser", False)
+            or role in ["staff", "admin", "superadmin"]
+        )
 class ReadOnlyOrAdmin(BasePermission):
     message = "Lecture publique. Modifications réservées aux admins ou superadmins."
     def has_permission(self, request, view):

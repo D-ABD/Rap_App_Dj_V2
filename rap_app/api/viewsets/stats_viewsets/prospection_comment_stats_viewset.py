@@ -90,17 +90,14 @@ class ProspectionCommentStatsViewSet(RestrictToUserOwnedQueryset, GenericViewSet
         return []
 
     def _scope_for_user(self, qs, user):
-        """
-        - admin/superadmin → global
-        - staff → périmètre centres + départements (via prospection.centre)
-        - autre (ex: candidat) → uniquement commentaires non internes ET owner = user.id
-        """
         if not (user and user.is_authenticated):
             return qs.none()
 
+        # Admin = accès global
         if self._is_admin_like(user):
             return qs
 
+        # Staff = périmètre centres/départements
         if getattr(user, "is_staff", False):
             centre_ids = self._staff_centre_ids(user)
             if centre_ids is None:
@@ -120,8 +117,13 @@ class ProspectionCommentStatsViewSet(RestrictToUserOwnedQueryset, GenericViewSet
                 q |= q_dep
             return qs.filter(q).distinct()
 
-        # profil non staff
-        return qs.filter(is_internal=False, prospection__owner_id=user.id)
+        # ✅ Cas candidat / stagiaire : uniquement ses propres commentaires visibles
+        if hasattr(user, "is_candidat_or_stagiaire") and user.is_candidat_or_stagiaire():
+            return qs.filter(is_internal=False, prospection__owner_id=user.id)
+
+        # Tous les autres → aucun accès
+        return qs.none()
+
 
     # ────────────────────────────────────────────────────────────
     # Data

@@ -9,6 +9,8 @@ from rest_framework import permissions, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
+from ...permissions import IsStaffOrAbove
+
 from ....models.atelier_tre import AtelierTRE, AtelierTREPresence, PresenceStatut
 
 
@@ -34,7 +36,7 @@ class AtelierTREStatsViewSet(viewsets.ViewSet):
     /api/ateliertre-stats/grouped/   -> groupé par centre|departement|type_atelier
     /api/ateliertre-stats/tops/      -> tops (types & centres)
     """
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsStaffOrAbove]
 
     # ─────────────────────────────────────────────────────────────
     # Helpers scope staff/admin

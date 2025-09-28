@@ -12,6 +12,8 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
+from ...permissions import IsStaffOrAbove
+
 from ....models.commentaires_appairage import CommentaireAppairage
 
 
@@ -40,7 +42,7 @@ GroupKey = Literal[
 class AppairageCommentaireStatsViewSet(RestrictToUserOwnedQueryset, GenericViewSet):
     """KPIs & agrégats sur **Commentaires d’appairage**."""
 
-    permission_classes = [IsOwnerOrStaffOrAbove]
+    permission_classes = [IsStaffOrAbove]
 
     # ───────────────────────────────
     # Helpers périmètre

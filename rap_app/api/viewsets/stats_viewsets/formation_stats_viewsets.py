@@ -13,6 +13,8 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
+from ...permissions import IsStaffOrAbove
+
 try:
     from ..permissions import IsOwnerOrStaffOrAbove  # type: ignore
 except Exception:  # pragma: no cover
@@ -36,7 +38,7 @@ GroupKey = Literal["formation", "centre", "departement", "type_offre", "statut"]
 class FormationStatsViewSet(RestrictToUserOwnedQueryset, GenericViewSet):
     """Vue d’agrégats/KPI sur **Formation** (JSON only)."""
 
-    permission_classes = [IsOwnerOrStaffOrAbove]
+    permission_classes = [IsStaffOrAbove]
 
     # ────────────────────────────────────────────────────────────
     # Helpers périmètre user

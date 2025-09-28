@@ -64,20 +64,36 @@ class PartenaireStatsViewSet(viewsets.ViewSet):
                     if codes:
                         return codes
         return []
+    
+    def _base_qs(self, request) -> QuerySet:
+        """
+        Construit le queryset de base déjà restreint en fonction du user.
+        Ainsi, list/grouped/tops héritent tous du même périmètre.
+        """
+        qs = Partenaire.objects.all()
+        qs = self._apply_base_filters(qs, request)
+        qs = self._scope_partenaires_for_user(qs, getattr(request, "user", None))
+        return qs
+
 
     def _scope_partenaires_for_user(self, qs: QuerySet, user):
         """
         Périmètre:
-          - admin/superadmin → global
-          - staff → union (OR) des centres assignés **OU** des départements,
+        - admin/superadmin → global
+        - staff → union (OR) des centres assignés **OU** des départements,
                     en considérant: Partenaire.default_centre, Partenaire.zip_code,
                     Prospections.centre et Appairages.formation.centre.
-          - autres → pas de restriction ici.
+        - candidats/stagiaires → uniquement les partenaires liés à leurs prospections
+        - autres → aucun accès
         """
         if not (user and user.is_authenticated):
             return qs.none()
+
+        # Accès complet pour admin/superadmin
         if self._is_admin_like(user):
             return qs
+
+        # Restriction staff
         if getattr(user, "is_staff", False):
             centre_ids = self._staff_centre_ids(user)
             dep_codes = self._staff_departement_codes(user)
@@ -98,7 +114,13 @@ class PartenaireStatsViewSet(viewsets.ViewSet):
                     q_dep |= Q(appairages__formation__centre__code_postal__startswith=code)
                 q |= q_dep
             return qs.filter(q).distinct()
-        return qs
+
+        # ✅ Cas candidat / stagiaire : uniquement ses partenaires via prospections
+        if hasattr(user, "is_candidat_or_stagiaire") and user.is_candidat_or_stagiaire():
+            return qs.filter(prospections__owner_id=user.id).distinct()
+
+        # Tous les autres (ex: utilisateur inconnu ou rôle test) → aucun accès
+        return qs.none()
 
     # ------------------------------
     # Helpers filtres
@@ -135,11 +157,7 @@ class PartenaireStatsViewSet(viewsets.ViewSet):
             q &= Q(appairages__date_appairage__date__lte=date_to)
         return q
 
-    def _base_qs(self, request) -> QuerySet:
-        qs = Partenaire.objects.all()
-        qs = self._apply_base_filters(qs, request)
-        qs = self._scope_partenaires_for_user(qs, getattr(request, "user", None))
-        return qs
+
 
     # ------------------------------
     # GET /api/partenaire-stats/  (overview)

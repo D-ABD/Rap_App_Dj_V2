@@ -16,6 +16,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
+from ...permissions import IsStaffOrAbove
+
 logger = logging.getLogger("application.candidat_stats")
 
 try:
@@ -67,7 +69,7 @@ class CandidatStatsViewSet(RestrictToUserOwnedQueryset, GenericViewSet):
       GET /candidat-stats/grouped/?by=... → groupés par centre|departement|formation|statut|type_contrat|cv_statut|resultat_placement|contrat_signe|responsable|entreprise
     """
 
-    permission_classes = [IsOwnerOrStaffOrAbove]
+    permission_classes = [IsStaffOrAbove]
 
     # ───────────────────────────────
     # Helpers périmètre staff

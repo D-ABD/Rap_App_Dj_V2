@@ -138,7 +138,6 @@ class CustomUser(AbstractUser):
     )
 
     # 🔐 Centres autorisés pour les membres du staff (M2M, multi-affectation)
-    # Si Centre est dans une autre app, remplace "Centre" par "app_label.Centre"
     centres = models.ManyToManyField(
         "Centre",
         related_name="users",
@@ -171,26 +170,19 @@ class CustomUser(AbstractUser):
     # ----- validation -----
     def clean(self):
         super().clean()
-
-        # téléphone
         if self.phone:
             phone_cleaned = self.phone.replace("+", "").replace(" ", "").replace("-", "")
             if not phone_cleaned.isdigit():
                 raise ValidationError(
-                    {
-                        "phone": "Le numéro de téléphone ne doit contenir que des chiffres, des espaces, un '+' ou des tirets"
-                    }
+                    {"phone": "Le numéro de téléphone ne doit contenir que des chiffres, des espaces, un '+' ou des tirets"}
                 )
 
-        # normalisation rôle
         if self.role:
             self.role = self.role.lower().strip()
 
-        # rôle superadmin seulement si superuser
         if self.role == self.ROLE_SUPERADMIN and not self.is_superuser:
             raise ValidationError({"role": "Seul un superuser peut avoir le rôle 'Super administrateur'"})
 
-        # normalisation email
         if self.email:
             self.email = self.email.lower().strip()
 
@@ -205,14 +197,12 @@ class CustomUser(AbstractUser):
         if self.phone:
             self.phone = " ".join(self.phone.split())
 
-        # synchronisation des flags
         if self.role == self.ROLE_SUPERADMIN:
             self.is_superuser = True
             self.is_staff = True
         elif self.role in [self.ROLE_ADMIN, self.ROLE_STAFF]:
             self.is_staff = True
 
-        # validation
         try:
             self.full_clean()
         except ValidationError as e:
@@ -283,42 +273,30 @@ class CustomUser(AbstractUser):
     def permissions_list(self):
         if self.is_superuser:
             from django.contrib.auth.models import Permission
-
             return list(Permission.objects.values_list("codename", flat=True))
         return list(self.user_permissions.values_list("codename", flat=True))
 
     # ----- helpers rôle -----
-    def is_admin(self):
-        return self.role in [self.ROLE_ADMIN, self.ROLE_SUPERADMIN]
+    def is_superadmin(self) -> bool:
+        return self.role == self.ROLE_SUPERADMIN or self.is_superuser is True
 
-    def is_staff_or_admin(self):
-        return self.role in [self.ROLE_STAFF, self.ROLE_ADMIN, self.ROLE_SUPERADMIN]
+    def is_admin(self) -> bool:
+        return self.role == self.ROLE_ADMIN or self.is_superadmin()
+
+    def is_staff_role(self) -> bool:
+        return self.role == self.ROLE_STAFF
+
+    def is_staff_or_admin(self) -> bool:
+        return self.is_staff_role() or self.is_admin() or self.is_superadmin()
 
     def is_stagiaire(self):
         return self.role == self.ROLE_STAGIAIRE
-
-    def is_role_superadmin(self):
-        """Évite la confusion avec l'attribut booléen is_superuser."""
-        return self.role == self.ROLE_SUPERADMIN
-
-    # (si ton code ailleurs appelle encore is_superadmin(), garde cet alias)
-    def is_superadmin(self):
-        return self.is_role_superadmin()
-
-    def is_staff_custom(self):
-        return self.role == self.ROLE_STAFF
 
     def is_candidat(self):
         return self.role == self.ROLE_CANDIDAT
 
     def is_candidatuser(self):
         return self.role == self.ROLE_CANDIDAT_USER
-
-    def is_test(self):
-        return self.role == self.ROLE_TEST
-
-    def is_candidat_or_validated(self):
-        return self.role in [self.ROLE_CANDIDAT, self.ROLE_CANDIDAT_USER]
 
     def is_candidat_or_stagiaire(self):
         return (self.role or "").lower() in self.CANDIDATE_ROLES
@@ -327,9 +305,8 @@ class CustomUser(AbstractUser):
         return self.role in roles
 
     def has_module_access(self, module_name):
-        if self.is_role_superadmin():
+        if self.is_superadmin():
             return True
-
         module_access = {
             "admin": [self.ROLE_ADMIN, self.ROLE_SUPERADMIN],
             "reporting": [self.ROLE_ADMIN, self.ROLE_SUPERADMIN, self.ROLE_STAFF],
@@ -339,11 +316,9 @@ class CustomUser(AbstractUser):
 
     # ----- helpers centres (scope) -----
     def get_centre_ids(self):
-        """Retourne la liste des IDs de centres autorisés pour cet utilisateur staff."""
         return list(self.centres.values_list("id", flat=True))
 
     def has_centre_access(self, centre_id: int) -> bool:
-        """Vrai si l'utilisateur a accès au centre donné (admin/superadmin = accès global)."""
         if self.is_superuser or self.is_admin():
             return True
         if self.is_staff:
@@ -361,12 +336,5 @@ class CustomUser(AbstractUser):
     @classmethod
     def get_csv_headers(cls):
         return [
-            "ID",
-            "Email",
-            "Nom d'utilisateur",
-            "Prénom",
-            "Nom",
-            "Rôle",
-            "Date d'inscription",
-            "Actif",
+            "ID", "Email", "Nom d'utilisateur", "Prénom", "Nom", "Rôle", "Date d'inscription", "Actif",
         ]

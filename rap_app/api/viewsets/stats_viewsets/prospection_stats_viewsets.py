@@ -140,18 +140,14 @@ class ProspectionStatsViewSet(RestrictToUserOwnedQueryset, GenericViewSet):
         return []
 
     def _scope_prospections_for_user(self, qs, user):
-        """
-        Applique le périmètre de visibilité:
-          - admin/superadmin → global
-          - staff → prospections du périmètre centres + départements
-          - autres → pas de filtre spécifique ici (peut être géré par RestrictToUserOwnedQueryset)
-        """
         if not (user and user.is_authenticated):
             return qs.none()
 
+        # Admin = accès global
         if self._is_admin_like(user):
             return qs
 
+        # Staff = périmètre centres/départements
         if getattr(user, "is_staff", False):
             centre_ids = self._staff_centre_ids(user)
             if centre_ids is None:
@@ -169,10 +165,14 @@ class ProspectionStatsViewSet(RestrictToUserOwnedQueryset, GenericViewSet):
                 for code in dep_codes:
                     q_dep |= Q(centre__code_postal__startswith=code)
                 q |= q_dep
-
             return qs.filter(q).distinct()
 
-        return qs
+        # ✅ Cas candidat/stagiaire → uniquement ses propres prospections
+        if hasattr(user, "is_candidat_or_stagiaire") and user.is_candidat_or_stagiaire():
+            return qs.filter(owner_id=user.id)
+
+        # Autres → aucun accès
+        return qs.none()
 
     # ────────────────────────────────────────────────────────────
     # Helpers data

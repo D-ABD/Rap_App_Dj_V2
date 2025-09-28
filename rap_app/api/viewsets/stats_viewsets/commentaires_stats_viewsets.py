@@ -13,6 +13,8 @@ from rest_framework import permissions, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
+from ...permissions import IsStaffOrAbove
+
 try:
     from ..permissions import IsOwnerOrStaffOrAbove  # type: ignore
 except Exception:  # pragma: no cover
@@ -28,7 +30,7 @@ class CommentaireStatsViewSet(viewsets.ViewSet):
     /api/commentaire-stats/grouped/     -> groupé par centre|departement|formation|auteur
     /api/commentaire-stats/tops/        -> tops formations / auteurs
     """
-    permission_classes = [IsOwnerOrStaffOrAbove]
+    permission_classes = [IsStaffOrAbove]
 
     # ────────────────────────────────────────────────────────────
     # Helpers — scope staff (centres + départements)

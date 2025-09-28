@@ -12,7 +12,8 @@ from rest_framework.viewsets import GenericViewSet
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from rap_app.models.appairage import Appairage, AppairageStatut
+from ....models.appairage import Appairage, AppairageStatut
+from ...permissions import IsStaffOrAbove
 
 logger = logging.getLogger(__name__)
 
@@ -39,7 +40,7 @@ class AppairageStatsViewSet(GenericViewSet):
     GET /appairage-stats/grouped/?by=...   → groupés par centre|departement|statut|formation|partenaire
     GET /appairage-stats/tops/             → tops partenaires / formations
     """
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsStaffOrAbove]
 
     # ────────────────────────────────────────────────────────────
     # Helpers périmètre staff/admin
