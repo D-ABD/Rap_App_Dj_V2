@@ -153,7 +153,7 @@ class CustomUserViewSet(viewsets.ModelViewSet):
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
         instance.is_active = False
-        instance.save()
+        instance.save(update_fields=["is_active"])
         LogUtilisateur.log_action(
             instance=instance,
             action=LogUtilisateur.ACTION_DELETE,
@@ -163,11 +163,50 @@ class CustomUserViewSet(viewsets.ModelViewSet):
         return Response(
             {
                 "success": True,
-                "message": "Utilisateur supprimé avec succès.",
+                "message": "Utilisateur désactivé avec succès (suppression logique).",
                 "data": None,
             },
-            status=status.HTTP_204_NO_CONTENT,
+            status=status.HTTP_200_OK,  # ✅ cohérent avec le body
         )
+
+    @action(detail=False, methods=["post"], url_path="deactivate", permission_classes=[permissions.IsAuthenticated])
+    def deactivate_self(self, request):
+        user = request.user
+        user.is_active = False
+        user.save(update_fields=["is_active"])
+        LogUtilisateur.log_action(
+            instance=user,
+            action=LogUtilisateur.ACTION_DELETE,
+            user=user,
+            details="Auto-désactivation du compte",
+        )
+        return Response(
+            {
+                "success": True,
+                "message": "Votre compte a été désactivé. Vous pouvez demander une réactivation.",
+            },
+            status=status.HTTP_200_OK,
+        )
+
+    @action(detail=True, methods=["post"], url_path="reactivate", permission_classes=[permissions.IsAdminUser])
+    def reactivate(self, request, pk=None):
+        user = self.get_object()
+        user.is_active = True
+        user.save(update_fields=["is_active"])
+        LogUtilisateur.log_action(
+            instance=user,
+            action=LogUtilisateur.ACTION_UPDATE,
+            user=request.user,
+            details="Réactivation du compte utilisateur",
+        )
+        return Response(
+            {
+                "success": True,
+                "message": "Utilisateur réactivé avec succès.",
+            },
+            status=status.HTTP_200_OK,
+        )
+
 
     @transaction.atomic
     def create(self, request, *args, **kwargs):

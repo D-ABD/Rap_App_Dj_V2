@@ -2278,3 +2278,6 @@ AttributeError: 'HistoriqueProspection' object has no attribute 'prochain_contac
 2025-09-26 20:13:30,438 | INFO | candidats_signals | ➕ Candidat créé (ou récupéré) pour User #8 (role=stagiaire)
 2025-09-26 20:13:30,480 | INFO | custom_user | ✅ Utilisateur créé : app@mail.com avec rôle Stagiaire
 2025-09-26 20:16:42,923 | INFO | custom_user | 🔄 Utilisateur mis à jour : app@mail.com
+2025-09-28 10:09:19,367 | INFO | candidats_signals | ➕ Candidat créé (ou récupéré) pour User #9 (role=stagiaire)
+2025-09-28 10:09:19,405 | INFO | custom_user | ✅ Utilisateur créé : marielle@mail.com avec rôle Stagiaire
+2025-09-28 10:10:16,747 | INFO | custom_user | 🔄 Utilisateur mis à jour : marielle@mail.com
