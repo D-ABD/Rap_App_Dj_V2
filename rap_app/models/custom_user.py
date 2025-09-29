@@ -78,6 +78,7 @@ class CustomUser(AbstractUser):
     ROLE_ADMIN = "admin"
     ROLE_STAGIAIRE = "stagiaire"
     ROLE_STAFF = "staff"
+    ROLE_STAFF_READ = "staff_read"   # ✅ nouveau rôle
     ROLE_TEST = "test"
     ROLE_CANDIDAT = "candidat"
     ROLE_CANDIDAT_USER = "candidatuser"
@@ -87,6 +88,7 @@ class CustomUser(AbstractUser):
         (ROLE_ADMIN, "Administrateur"),
         (ROLE_STAGIAIRE, "Stagiaire"),
         (ROLE_STAFF, "Membre du staff"),
+        (ROLE_STAFF_READ, "Staff lecture seule"),  # ✅ affichage lisible
         (ROLE_TEST, "Test"),
         (ROLE_CANDIDAT, "Candidat"),
         (ROLE_CANDIDAT_USER, "Candidat validé"),
@@ -288,6 +290,9 @@ class CustomUser(AbstractUser):
 
     def is_staff_or_admin(self) -> bool:
         return self.is_staff_role() or self.is_admin() or self.is_superadmin()
+    
+    def is_staff_read(self):
+        return self.role == self.ROLE_STAFF_READ
 
     def is_stagiaire(self):
         return self.role == self.ROLE_STAGIAIRE

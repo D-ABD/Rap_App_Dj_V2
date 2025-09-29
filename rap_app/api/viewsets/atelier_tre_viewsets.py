@@ -21,7 +21,7 @@ from ..serializers.atelier_tre_serializers import (
     AtelierTRESerializer,
     AtelierTREMetaSerializer,
 )
-from ..permissions import IsStaffOrAbove
+from ..permissions import IsStaffOrAbove, is_staff_or_staffread
 from ..paginations import RapAppPagination
 
 
@@ -55,36 +55,50 @@ class AtelierTREViewSet(viewsets.ModelViewSet):
     # --------------------- helpers scope/permissions ---------------------
 
     def _is_admin_like(self, user) -> bool:
-        return getattr(user, "is_superuser", False) or (hasattr(user, "is_admin") and user.is_admin())
+        """True si admin ou superadmin."""
+        return getattr(user, "is_superuser", False) or (
+            hasattr(user, "is_admin") and user.is_admin()
+        )
 
     def _staff_centre_ids(self, user):
-        """Liste des centres du staff (None si admin-like = accès global)."""
+        """Liste des centres visibles par staff/staff_read (None si admin-like = accès global)."""
         if self._is_admin_like(user):
             return None
-        if getattr(user, "is_staff", False):
+        if is_staff_or_staffread(user):  # ✅ inclut staff_read
             return list(user.centres.values_list("id", flat=True))
         return []
 
     def _scope_qs_to_user_centres(self, qs):
+        """Filtre le queryset selon les centres accessibles."""
         user = self.request.user
-        # admin/superadmin
+        if not user.is_authenticated:
+            return qs.none()
+
+        # Candidats/stagiaires → pas d'accès
+        if hasattr(user, "is_candidat_or_stagiaire") and user.is_candidat_or_stagiaire():
+            return qs.none()
+
         centre_ids = self._staff_centre_ids(user)
+
+        # admin/superadmin → pas de restriction
         if centre_ids is None:
             return qs
-        # staff
+
+        # staff/staff_read avec centres
         if centre_ids:
-            return qs.filter(centre_id__in=centre_ids)
-        # staff sans centre (ou non-staff, couvert par permission) -> rien
+            return qs.filter(centre_id__in=centre_ids).distinct()
+
+        # staff/staff_read sans centre → aucun résultat
         return qs.none()
 
     def _assert_staff_can_use_centre(self, centre):
-        """Empêche un staff d'écrire hors de son périmètre de centres."""
+        """Empêche un staff/staff_read d'écrire hors de son périmètre de centres."""
         if not centre:
             return
         user = self.request.user
         if self._is_admin_like(user):
             return
-        if getattr(user, "is_staff", False):
+        if is_staff_or_staffread(user):  # ✅ inclut staff_read
             allowed = set(user.centres.values_list("id", flat=True))
             if getattr(centre, "id", None) not in allowed:
                 raise PermissionDenied("Centre hors de votre périmètre.")

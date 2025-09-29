@@ -6,9 +6,6 @@ from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.exceptions import ValidationError, PermissionDenied
 from django.http import HttpResponse
-from django.template.loader import render_to_string
-from weasyprint import HTML
-import csv
 from openpyxl import Workbook
 from openpyxl.utils import get_column_letter
 
@@ -23,10 +20,13 @@ from ..serializers.appairage_serializers import (
     HistoriqueAppairageSerializer,
     CommentaireAppairageSerializer,
 )
-from ..permissions import IsStaffOrAbove
+from ..permissions import IsStaffOrAbove, is_staff_or_staffread
 from ..paginations import RapAppPagination
 
 
+# ==========================================================================
+# APPARIAGE VIEWSET
+# ==========================================================================
 class AppairageViewSet(viewsets.ModelViewSet):
     base_queryset = (
         Appairage.objects.all()
@@ -79,14 +79,15 @@ class AppairageViewSet(viewsets.ModelViewSet):
     ]
 
     # ------------------------- helpers scope/permission -------------------------
-
     def _is_admin_like(self, user) -> bool:
-        return getattr(user, "is_superuser", False) or (hasattr(user, "is_admin") and user.is_admin())
+        return getattr(user, "is_superuser", False) or (
+            hasattr(user, "is_admin") and user.is_admin()
+        )
 
     def _staff_centre_ids(self, user):
         if self._is_admin_like(user):
             return None
-        if getattr(user, "is_staff", False):
+        if is_staff_or_staffread(user):
             return list(user.centres.values_list("id", flat=True))
         return []
 
@@ -95,14 +96,12 @@ class AppairageViewSet(viewsets.ModelViewSet):
         if not user.is_authenticated:
             return qs.none()
 
+        # ❌ on bloque totalement les candidats/stagiaires
         if hasattr(user, "is_candidat_or_stagiaire") and user.is_candidat_or_stagiaire():
-            formation = getattr(getattr(user, "candidat_associe", None), "formation", None)
-            if formation:
-                return qs.filter(Q(formation=formation) | Q(candidat__formation=formation))
             return qs.none()
 
         centre_ids = self._staff_centre_ids(user)
-        if centre_ids is None:
+        if centre_ids is None:  # admin/superuser
             return qs
 
         if centre_ids:
@@ -119,13 +118,13 @@ class AppairageViewSet(viewsets.ModelViewSet):
         user = self.request.user
         if self._is_admin_like(user):
             return
-        if getattr(user, "is_staff", False):
+        if is_staff_or_staffread(user):
             allowed = set(user.centres.values_list("id", flat=True))
             if getattr(formation, "centre_id", None) not in allowed:
                 raise PermissionDenied("Formation hors de votre périmètre (centre).")
 
-    # ------------------------------- DRF hooks ---------------------------------
 
+    # ------------------------------- DRF hooks ---------------------------------
     def get_serializer_class(self):
         if self.action == "list":
             return AppairageListSerializer
@@ -135,66 +134,50 @@ class AppairageViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         qs = self.base_queryset
-
-        # 🔹 Annoter le dernier commentaire via Subquery
+        # 🔹 Annoter le dernier commentaire
         last_comment_qs = (
             CommentaireAppairage.objects.filter(appairage=OuterRef("pk"))
             .order_by("-created_at")
             .values("body")[:1]
         )
         qs = qs.annotate(last_commentaire=Subquery(last_comment_qs))
-
         return self._scope_qs_to_user_centres(qs)
 
     def perform_create(self, serializer):
         user = self.request.user
 
+        # ❌ candidats/stagiaires n’ont pas le droit de créer
         if hasattr(user, "is_candidat_or_stagiaire") and user.is_candidat_or_stagiaire():
-            formation = getattr(getattr(user, "candidat_associe", None), "formation", None)
-            if not formation:
-                raise PermissionDenied("Votre compte n'est associé à aucune formation.")
+            raise PermissionDenied("Les candidats/stagiaires ne peuvent pas créer d’appairage.")
+
+        formation_payload = serializer.validated_data.get("formation")
+        candidat_payload = serializer.validated_data.get("candidat")
+        formation = (
+            formation_payload
+            or (
+                getattr(getattr(candidat_payload, "formation", None), "pk", None)
+                and candidat_payload.formation
+            )
+            or None
+        )
+
+        if formation:
             self._assert_staff_can_use_formation(formation)
 
-            candidat_payload = serializer.validated_data.get("candidat")
-            partenaire_payload = serializer.validated_data.get("partenaire")
+        partenaire_payload = serializer.validated_data.get("partenaire")
 
-            if Appairage.objects.filter(
-                candidat=candidat_payload, partenaire=partenaire_payload, formation=formation
-            ).exists():
-                raise ValidationError(
-                    {
-                        "detail": "Un appairage existe déjà pour ce candidat, ce partenaire et cette formation."
-                    }
-                )
-
-            instance = serializer.save(created_by=user, formation=formation)
-
-        else:
-            formation_payload = serializer.validated_data.get("formation")
-            candidat_payload = serializer.validated_data.get("candidat")
-            formation = (
-                formation_payload
-                or (getattr(getattr(candidat_payload, "formation", None), "pk", None) and candidat_payload.formation)
-                or None
+        if Appairage.objects.filter(
+            candidat=candidat_payload, partenaire=partenaire_payload, formation=formation
+        ).exists():
+            raise ValidationError(
+                {
+                    "detail": "Un appairage existe déjà pour ce candidat, ce partenaire et cette formation."
+                }
             )
 
-            if formation:
-                self._assert_staff_can_use_formation(formation)
-
-            partenaire_payload = serializer.validated_data.get("partenaire")
-
-            if Appairage.objects.filter(
-                candidat=candidat_payload, partenaire=partenaire_payload, formation=formation
-            ).exists():
-                raise ValidationError(
-                    {
-                        "detail": "Un appairage existe déjà pour ce candidat, ce partenaire et cette formation."
-                    }
-                )
-
-            instance = serializer.save(
-                created_by=user, formation=formation or serializer.validated_data.get("formation")
-            )
+        instance = serializer.save(
+            created_by=user, formation=formation or serializer.validated_data.get("formation")
+        )
 
         if hasattr(instance, "set_user"):
             instance.set_user(user)
@@ -208,19 +191,15 @@ class AppairageViewSet(viewsets.ModelViewSet):
         user = self.request.user
         instance = serializer.instance
 
-        data_formation = serializer.validated_data.get("formation", instance.formation)
-
+        # ❌ candidats/stagiaires ne peuvent pas modifier
         if hasattr(user, "is_candidat_or_stagiaire") and user.is_candidat_or_stagiaire():
-            user_formation = getattr(getattr(user, "candidat_associe", None), "formation", None)
-            if data_formation != user_formation:
-                raise PermissionDenied("Vous ne pouvez pas modifier la formation associée.")
-            formation = user_formation
-        else:
-            formation = data_formation
-            if formation:
-                self._assert_staff_can_use_formation(formation)
+            raise PermissionDenied("Les candidats/stagiaires ne peuvent pas modifier un appairage.")
 
-        instance = serializer.save(formation=formation)
+        data_formation = serializer.validated_data.get("formation", instance.formation)
+        if data_formation:
+            self._assert_staff_can_use_formation(data_formation)
+
+        instance = serializer.save(formation=data_formation)
         if hasattr(instance, "set_user"):
             instance.set_user(user)
         try:
@@ -233,86 +212,10 @@ class AppairageViewSet(viewsets.ModelViewSet):
         serializer = AppairageMetaSerializer(instance={}, context={"request": request})
         return Response(serializer.data)
 
-    # ---------------------------- Helpers export ----------------------------
-
-    def _parse_selected_ids(self, request):
-        ids = set()
-
-        qp_list = request.query_params.getlist("ids")
-        for v in qp_list:
-            for p in str(v).split(","):
-                p = p.strip()
-                if p.isdigit():
-                    ids.add(int(p))
-
-        qp = request.query_params.get("ids")
-        if qp:
-            for p in str(qp).split(","):
-                p = p.strip()
-                if p.isdigit():
-                    ids.add(int(p))
-
-        if request.method in ("POST", "PUT", "PATCH"):
-            data = getattr(request, "data", {}) or {}
-            for key in ("ids", "selected"):
-                val = data.get(key)
-                if isinstance(val, (list, tuple)):
-                    for x in val:
-                        try:
-                            ids.add(int(x))
-                        except (TypeError, ValueError):
-                            pass
-
-        return list(ids)
-
-    def _get_export_queryset(self, request):
-        qs = self.filter_queryset(self.get_queryset())
-        selected_ids = self._parse_selected_ids(request)
-        if selected_ids:
-            qs = qs.filter(pk__in=selected_ids)
-        return qs
-
-    def _formation_id(self, appairage):
-        if getattr(appairage, "formation_id", None):
-            return appairage.formation_id
-        cand_form = getattr(getattr(appairage, "candidat", None), "formation", None)
-        return getattr(cand_form, "id", "") or ""
-
-    def _formation_label(self, appairage):
-        if appairage.formation:
-            return appairage.formation.nom or ""
-        cand_form = getattr(getattr(appairage, "candidat", None), "formation", None)
-        return getattr(cand_form, "nom", "") or ""
-
-    def _formation_type_offre(self, appairage):
-        f = appairage.formation or getattr(getattr(appairage, "candidat", None), "formation", None)
-        if not f or not getattr(f, "type_offre", None):
-            return ""
-        to = f.type_offre
-        return getattr(to, "libelle", None) or getattr(to, "nom", None) or str(to) or ""
-
-    def _formation_num_offre(self, appairage):
-        f = appairage.formation or getattr(getattr(appairage, "candidat", None), "formation", None)
-        return getattr(f, "num_offre", "") or ""
-
-    def _partenaire_email(self, appairage):
-        p = getattr(appairage, "partenaire", None)
-        return getattr(p, "contact_email", "") if p else ""
-
-    def _partenaire_telephone(self, appairage):
-        p = getattr(appairage, "partenaire", None)
-        return getattr(p, "contact_telephone", "") if p else ""
-
-    def _user_display(self, u):
-        if not u:
-            return ""
-        return u.get_full_name() or getattr(u, "username", "") or getattr(u, "email", "") or ""
-
     # ---------------------------- Commentaires ----------------------------
-
     @action(detail=True, methods=["get", "post"], url_path="commentaires")
     def commentaires(self, request, pk=None):
-        """📌 Liste ou ajout de commentaires liés à un appairage"""
+        """Liste ou ajout de commentaires liés à un appairage"""
         appairage = self.get_object()
 
         if request.method == "GET":
@@ -327,12 +230,10 @@ class AppairageViewSet(viewsets.ModelViewSet):
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
     # ---------------------------- Actions export ----------------------------
     @action(detail=False, methods=["get", "post"], url_path="export-xlsx")
     def export_xlsx(self, request):
         qs = self._get_export_queryset(request)
-
         wb = Workbook()
         ws = wb.active
         ws.title = "Appairages"
@@ -362,8 +263,6 @@ class AppairageViewSet(viewsets.ModelViewSet):
             "created_at",
             "updated_at",
         ]
-
-        # écrire en-têtes
         ws.append(headers)
 
         for a in qs:
@@ -393,7 +292,7 @@ class AppairageViewSet(viewsets.ModelViewSet):
                 a.updated_at.isoformat() if getattr(a, "updated_at", None) else "",
             ])
 
-        # ajuster la largeur des colonnes automatiquement
+        # ajustement largeur colonnes
         for col in ws.columns:
             max_length = 0
             col_letter = get_column_letter(col[0].column)
@@ -401,11 +300,10 @@ class AppairageViewSet(viewsets.ModelViewSet):
                 try:
                     if cell.value:
                         max_length = max(max_length, len(str(cell.value)))
-                except:
+                except Exception:
                     pass
             ws.column_dimensions[col_letter].width = min(max_length + 2, 50)
 
-        # créer la réponse HTTP
         from io import BytesIO
         buffer = BytesIO()
         wb.save(buffer)
@@ -413,13 +311,16 @@ class AppairageViewSet(viewsets.ModelViewSet):
 
         response = HttpResponse(
             buffer,
-            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         )
         filename = f'appairages_{dj_timezone.now().strftime("%Y%m%d_%H%M%S")}.xlsx'
         response["Content-Disposition"] = f'attachment; filename="{filename}"'
         return response
 
 
+# ==========================================================================
+# HISTORIQUE APPARIAGE VIEWSET
+# ==========================================================================
 class HistoriqueAppairageViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = HistoriqueAppairage.objects.all().select_related(
         "appairage", "auteur", "appairage__formation", "appairage__candidat__formation"
@@ -443,18 +344,14 @@ class HistoriqueAppairageViewSet(viewsets.ReadOnlyModelViewSet):
         if not u.is_authenticated:
             return qs.none()
 
+        # ❌ candidats/stagiaires n’ont pas accès
         if hasattr(u, "is_candidat_or_stagiaire") and u.is_candidat_or_stagiaire():
-            formation = getattr(getattr(u, "candidat_associe", None), "formation", None)
-            if formation:
-                return qs.filter(
-                    Q(appairage__formation=formation) | Q(appairage__candidat__formation=formation)
-                )
             return qs.none()
 
         if getattr(u, "is_superuser", False) or (hasattr(u, "is_admin") and u.is_admin()):
             return qs
 
-        if getattr(u, "is_staff", False):
+        if is_staff_or_staffread(u):
             centre_ids = list(u.centres.values_list("id", flat=True))
             if not centre_ids:
                 return qs.none()

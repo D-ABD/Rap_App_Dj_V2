@@ -16,7 +16,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from ...permissions import IsStaffOrAbove
+from ...permissions import IsStaffOrAbove, is_staff_or_staffread
 
 logger = logging.getLogger("application.candidat_stats")
 
@@ -81,15 +81,12 @@ class CandidatStatsViewSet(RestrictToUserOwnedQueryset, GenericViewSet):
         )
 
     def _staff_centre_ids(self, user) -> Optional[list[int]]:
-        """
-        - None => admin/superadmin → accès global
-        - []   => staff sans centre → aucun résultat
-        """
         if self._is_admin_like(user):
             return None
-        if getattr(user, "is_staff", False) and hasattr(user, "centres"):
+        if is_staff_or_staffread(user) and hasattr(user, "centres"):
             return list(user.centres.values_list("id", flat=True))
         return []
+
 
     def _staff_departement_codes(self, user) -> list[str]:
         """
@@ -129,9 +126,10 @@ class CandidatStatsViewSet(RestrictToUserOwnedQueryset, GenericViewSet):
         if self._is_admin_like(user):
             return qs
 
-        if getattr(user, "is_staff", False):
+        if is_staff_or_staffread(user):
             centre_ids = self._staff_centre_ids(user)
             dep_codes = self._staff_departement_codes(user)
+  
 
             if not centre_ids and not dep_codes:
                 return qs.none()
@@ -169,10 +167,12 @@ class CandidatStatsViewSet(RestrictToUserOwnedQueryset, GenericViewSet):
         is_staff_like = bool(
             user and (
                 getattr(user, "is_superuser", False)
-                or getattr(user, "is_staff", False)
+                or is_staff_or_staffread(user)
                 or (hasattr(user, "is_admin") and callable(user.is_admin) and user.is_admin())
             )
         )
+
+
         if not is_staff_like and hasattr(self, "restrict_queryset_to_user"):
             qs = self.restrict_queryset_to_user(qs)
         return qs

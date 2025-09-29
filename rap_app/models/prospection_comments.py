@@ -61,7 +61,7 @@ class ProspectionComment(BaseModel):
     def is_visible_to(self, user) -> bool:
         if not user or not user.is_authenticated:
             return False
-        if getattr(user, "is_staff", False) or getattr(user, "is_admin", False) or getattr(user, "is_superuser", False):
+        if is_staff_or_staffread(user) or getattr(user, "is_admin", False) or getattr(user, "is_superuser", False):
             return True
         if hasattr(user, "is_candidat_or_stagiaire") and user.is_candidat_or_stagiaire():
             return (not self.is_internal) and (self.prospection.owner_id == user.id)

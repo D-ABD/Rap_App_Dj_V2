@@ -25,7 +25,7 @@ from ...utils.filters import HistoriqueFormationFilter
 
 from ...models.formations import Formation, HistoriqueFormation
 from ...api.paginations import RapAppPagination
-from ...api.permissions import IsStaffOrAbove, ReadWriteAdminReadStaff, RestrictToUserOwnedQuerysetMixin
+from ...api.permissions import IsStaffOrAbove, ReadWriteAdminReadStaff, UserVisibilityScopeMixin
 from ...api.serializers.formations_serializers import (
     FormationCreateSerializer,
     FormationListSerializer,
@@ -37,7 +37,7 @@ logger = logging.getLogger("application.api")
 
 
 @extend_schema(tags=["Formations"])
-class FormationViewSet(RestrictToUserOwnedQuerysetMixin, viewsets.ModelViewSet):
+class FormationViewSet(UserVisibilityScopeMixin, viewsets.ModelViewSet):
     """
     📚 ViewSet pour gérer les formations.
     Inclut les opérations CRUD, l'historique, les documents, les commentaires, les prospections,
@@ -556,7 +556,7 @@ class FormationViewSet(RestrictToUserOwnedQuerysetMixin, viewsets.ModelViewSet):
     summary="Lister tous les historiques",
     description="Retourne tous les historiques de modifications (même si la formation n'existe plus)."
 )
-class HistoriqueFormationViewSet(RestrictToUserOwnedQuerysetMixin, viewsets.ReadOnlyModelViewSet):
+class HistoriqueFormationViewSet(UserVisibilityScopeMixin, viewsets.ReadOnlyModelViewSet):
     """
     ViewSet en lecture seule pour l'historique des formations.
 

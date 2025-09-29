@@ -66,7 +66,7 @@ class CommentaireViewSet(viewsets.ModelViewSet):
         """Liste des centres du staff (None si admin-like = accès global)."""
         if self._is_admin_like(user):
             return None
-        if getattr(user, "is_staff", False):
+        if is_staff_or_staffread(user):
             # nécessite le M2M user.centres déjà mis en place
             return list(user.centres.values_list("id", flat=True))
         return []
@@ -87,7 +87,7 @@ class CommentaireViewSet(viewsets.ModelViewSet):
         user = self.request.user
         if self._is_admin_like(user):
             return
-        if getattr(user, "is_staff", False):
+        if is_staff_or_staffread(user):
             allowed = set(user.centres.values_list("id", flat=True))
             if getattr(formation, "centre_id", None) not in allowed:
                 raise PermissionDenied("Formation hors de votre périmètre (centre).")

@@ -9,7 +9,7 @@ from rest_framework import permissions, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from ...permissions import IsStaffOrAbove
+from ...permissions import IsStaffOrAbove, is_staff_or_staffread
 
 from ....models.atelier_tre import AtelierTRE, AtelierTREPresence, PresenceStatut
 
@@ -50,9 +50,10 @@ class AtelierTREStatsViewSet(viewsets.ViewSet):
     def _staff_centre_ids(self, user) -> Optional[List[int]]:
         if self._is_admin_like(user):
             return None
-        if getattr(user, "is_staff", False) and hasattr(user, "centres"):
+        if is_staff_or_staffread(user) and hasattr(user, "centres"):
             return list(user.centres.values_list("id", flat=True))
         return []
+
 
     def _staff_departement_codes(self, user) -> List[str]:
         def _norm_codes(val):
@@ -81,7 +82,7 @@ class AtelierTREStatsViewSet(viewsets.ViewSet):
             return qs.none()
         if self._is_admin_like(user):
             return qs
-        if getattr(user, "is_staff", False):
+        if is_staff_or_staffread(user):
             centre_ids = self._staff_centre_ids(user)
             dep_codes = self._staff_departement_codes(user)
             if centre_ids is None:
@@ -97,7 +98,7 @@ class AtelierTREStatsViewSet(viewsets.ViewSet):
                     q_dep |= Q(centre__code_postal__startswith=str(code)[:2])
                 q |= q_dep
             return qs.filter(q).distinct()
-        return qs
+        return qs.none()
 
     def get_base_queryset(self):
         qs = AtelierTRE.objects.select_related("centre")

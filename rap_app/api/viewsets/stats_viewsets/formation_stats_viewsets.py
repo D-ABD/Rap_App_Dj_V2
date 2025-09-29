@@ -13,7 +13,7 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from ...permissions import IsStaffOrAbove
+from ...permissions import IsStaffOrAbove, is_staff_or_staffread
 
 try:
     from ..permissions import IsOwnerOrStaffOrAbove  # type: ignore
@@ -50,17 +50,19 @@ class FormationStatsViewSet(RestrictToUserOwnedQueryset, GenericViewSet):
         )
 
     def _staff_centre_ids(self, user) -> Optional[list[int]]:
+        """Retourne la liste des centres visibles pour un staff/staff_read, None si admin-like."""
         if self._is_admin_like(user):
             return None
-        if getattr(user, "is_staff", False) and hasattr(user, "centres"):
+        if is_staff_or_staffread(user) and hasattr(user, "centres"):
             return list(user.centres.values_list("id", flat=True))
         return []
 
     def _staff_departement_codes(self, user) -> list[str]:
+        """Collecte des codes départements ([:2]) depuis user ou user.profile."""
         def _norm_codes(val):
             if val is None:
                 return []
-            if hasattr(val, "all"):
+            if hasattr(val, "all"):  # M2M
                 out = []
                 for obj in val.all():
                     code = getattr(obj, "code", None) or str(obj)
@@ -71,6 +73,7 @@ class FormationStatsViewSet(RestrictToUserOwnedQueryset, GenericViewSet):
                 return list({str(x)[:2] for x in val if x is not None and str(x).strip()})
             s = str(val).strip()
             return [s[:2]] if s else []
+
         for owner in (user, getattr(user, "profile", None)):
             if not owner:
                 continue
@@ -82,13 +85,14 @@ class FormationStatsViewSet(RestrictToUserOwnedQueryset, GenericViewSet):
         return []
 
     def _scope_formations_for_user(self, qs, user):
+        """Applique le périmètre user (admin = global, staff = centres/départements, autres = none)."""
         if not (user and user.is_authenticated):
             return qs.none()
 
         if self._is_admin_like(user):
             return qs
 
-        if getattr(user, "is_staff", False):
+        if is_staff_or_staffread(user):
             centre_ids = self._staff_centre_ids(user)  # [] si pas d'attribut/valeur
             dep_codes = self._staff_departement_codes(user)
 
@@ -119,7 +123,7 @@ class FormationStatsViewSet(RestrictToUserOwnedQueryset, GenericViewSet):
         is_staff_like = bool(
             user and (
                 getattr(user, "is_superuser", False)
-                or getattr(user, "is_staff", False)
+                or is_staff_or_staffread(user)
                 or (hasattr(user, "is_admin") and callable(user.is_admin) and user.is_admin())
             )
         )

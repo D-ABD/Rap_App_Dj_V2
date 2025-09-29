@@ -9,6 +9,8 @@ from rest_framework import viewsets, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
+from ...permissions import is_staff_or_staffread
+
 from ....models.appairage import AppairageStatut
 from ....models.partenaires import Partenaire
 from ....models.prospection_choices import ProspectionChoices
@@ -36,7 +38,7 @@ class PartenaireStatsViewSet(viewsets.ViewSet):
         """None => admin/superadmin → accès global ; [] => staff sans centre."""
         if self._is_admin_like(user):
             return None
-        if getattr(user, "is_staff", False) and hasattr(user, "centres"):
+        if is_staff_or_staffread(user) and hasattr(user, "centres"):
             return list(user.centres.values_list("id", flat=True))
         return []
 
@@ -94,7 +96,7 @@ class PartenaireStatsViewSet(viewsets.ViewSet):
             return qs
 
         # Restriction staff
-        if getattr(user, "is_staff", False):
+        if is_staff_or_staffread(user):
             centre_ids = self._staff_centre_ids(user)
             dep_codes = self._staff_departement_codes(user)
 

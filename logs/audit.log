@@ -2282,3 +2282,28 @@ AttributeError: 'HistoriqueProspection' object has no attribute 'prochain_contac
 2025-09-28 10:09:19,405 | INFO | custom_user | ✅ Utilisateur créé : marielle@mail.com avec rôle Stagiaire
 2025-09-28 10:10:16,747 | INFO | custom_user | 🔄 Utilisateur mis à jour : marielle@mail.com
 2025-09-28 12:30:26,241 | INFO | prospections_signals | [Signal] Création prospection #10 pour partenaire Apple
+2025-09-28 16:26:54,613 | INFO | candidats_signals | 🔗 Lien Candidat #8 ↔ User #9 (email=marielle@mail.com)
+2025-09-28 16:26:54,625 | INFO | custom_user | 🔄 Utilisateur mis à jour : marielle@mail.com
+2025-09-28 16:26:54,674 | INFO | candidats_signals | 🚫 Lien Candidat #8 ↔ User #9 supprimé (role=staff_read)
+2025-09-28 16:26:54,675 | INFO | custom_user | 🔄 Utilisateur mis à jour : marielle@mail.com
+2025-09-28 20:27:51,448 | INFO | custom_user | 🔄 Utilisateur mis à jour : testgirl@test.com
+2025-09-28 20:47:17,217 | INFO | custom_user | 🔄 Utilisateur mis à jour : testgirl@test.com
+2025-09-28 20:52:27,431 | INFO | custom_user | 🔄 Utilisateur mis à jour : testgirl@test.com
+2025-09-28 20:56:45,531 | INFO | custom_user | 🔄 Utilisateur mis à jour : testgirl@test.com
+2025-09-30 01:14:54,374 | INFO | prospections_signals | [Signal] Modification prospection #8 pour partenaire Test entreprise
+2025-09-30 01:14:54,376 | INFO | prospection | [Prospection #8] Changements par ABD : commentaire: None→
+2025-09-30 01:14:54,377 | WARNING | prospection | Historique sans changement de statut pour prospection #8
+2025-09-30 01:14:54,419 | WARNING | prospection | Historique sans changement de statut pour prospection #8
+2025-09-30 01:14:54,483 | INFO | prospections_signals | [Signal] Historique ajouté pour prospection #8 – Changement de statut : À faire → À faire
+2025-09-30 01:15:37,126 | WARNING | prospection | Historique sans changement de statut pour prospection #8
+2025-09-30 01:15:37,162 | INFO | prospections_signals | [Signal] Modification prospection #8 pour partenaire Test entreprise
+2025-09-30 01:18:16,279 | INFO | prospections_signals | [Signal] Modification prospection #1 pour partenaire Acorus
+2025-09-30 01:18:43,473 | INFO | prospections_signals | [Signal] Modification prospection #5 pour partenaire Apple
+2025-09-30 01:30:27,189 | INFO | prospections_signals | [Signal] Modification prospection #5 pour partenaire Apple
+2025-09-30 01:30:27,191 | INFO | prospection | [Prospection #5] Changements par girl.test : formation_id: 2→3; centre_id: 2→4
+2025-09-30 01:30:27,193 | WARNING | prospection | Historique sans changement de statut pour prospection #5
+2025-09-30 01:30:27,193 | WARNING | prospection | Historique sans changement de statut pour prospection #5
+2025-09-30 01:30:27,210 | INFO | prospections_signals | [Signal] Historique ajouté pour prospection #5 – Changement de statut : À faire → À faire
+2025-09-30 01:30:27,256 | WARNING | prospection | Historique sans changement de statut pour prospection #5
+2025-09-30 01:30:27,257 | WARNING | prospection | Historique sans changement de statut pour prospection #5
+2025-09-30 01:30:27,259 | INFO | prospections_signals | [Signal] Historique ajouté pour prospection #5 – Changement de statut : À faire → À faire

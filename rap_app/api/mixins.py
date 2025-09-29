@@ -1,4 +1,3 @@
-# rap_app/api/mixins.py
 from typing import Optional, Tuple
 from django.db.models import Q, QuerySet
 
@@ -8,6 +7,7 @@ class StaffCentresScopeMixin:
     Restreint le queryset au périmètre staff :
       - Admin/Superadmin : accès global (pas de filtre).
       - Staff : limité aux centres ET/OU départements auxquels il est affecté.
+      - Staff_read : idem staff mais lecture seule (géré par la permission).
       - Non-staff : aucun résultat (si jamais les permissions laissaient passer).
 
     Personnalisation par ViewSet :
@@ -16,13 +16,9 @@ class StaffCentresScopeMixin:
                              (ex: ("centre__code_postal",) ou ("centre__departement_code",))
       - departement_code_len: longueur du préfixe à matcher (défaut 2 → "92", "75", ...)
 
-    Comment le mixin récupère le périmètre de l'utilisateur staff :
-      - Centres : ManyToMany `user.centres` (par défaut) -> ids
-      - Départements : plusieurs possibilités, essayées dans cet ordre sur user puis user.profile :
-            • `departements_codes` -> liste/JSON de codes ("92", "75", ...)
-            • `departements` -> M2M vers un modèle avec attribut `code`
-        => Tu peux renommer ces attributs côté ViewSet si besoin via
-           `staff_centres_attr` et `staff_departements_attrs`.
+    Récupération du périmètre staff :
+      - Centres : via M2M `user.centres` (par défaut)
+      - Départements : via `departements_codes` ou `departements` (user ou user.profile)
     """
 
     # ---- config par défaut (override dans les ViewSets si nécessaire) ----
@@ -30,8 +26,7 @@ class StaffCentresScopeMixin:
     departement_lookups: Tuple[str, ...] = ("centre__code_postal",)
     departement_code_len: int = 2
 
-    # noms d'attributs possibles côté user / user.profile
-    staff_centres_attr: str = "centres"  # M2M -> Centre
+    staff_centres_attr: str = "centres"
     staff_departements_attrs: Tuple[str, ...] = ("departements_codes", "departements")
 
     # ---- helpers ----
@@ -41,16 +36,22 @@ class StaffCentresScopeMixin:
             or (hasattr(u, "is_admin") and callable(u.is_admin) and u.is_admin())
         )
 
+    def _is_staff_or_read(self, u) -> bool:
+        """True si staff classique ou staff_read"""
+        if not u:
+            return False
+        return getattr(u, "is_staff", False) or getattr(u, "role", "") == "staff_read"
+
     def _user_centre_ids(self) -> Optional[list[int]]:
         """
-        Retourne la liste d'IDs de centres de l'utilisateur staff.
+        Retourne la liste d'IDs de centres visibles par l'utilisateur staff.
         - None => accès global (admin/superadmin)
         - []   => staff sans centre : aucun résultat via centres (peut être compensé par les départements)
         """
         u = self.request.user
         if self._is_admin_like(u):
             return None
-        if getattr(u, "is_staff", False):
+        if self._is_staff_or_read(u):
             centres_rel = getattr(u, self.staff_centres_attr, None)
             if hasattr(centres_rel, "values_list"):
                 return list(centres_rel.values_list("id", flat=True))
@@ -59,14 +60,14 @@ class StaffCentresScopeMixin:
 
     def _user_departement_codes(self) -> Optional[list[str]]:
         """
-        Retourne la liste des codes département (ex: ["92","75"]) pour l'utilisateur staff.
+        Retourne la liste des codes département (ex: ["92","75"]) pour l'utilisateur staff/staff_read.
         - None => accès global (admin/superadmin)
         - []   => pas de scope département
         """
         u = self.request.user
         if self._is_admin_like(u):
             return None
-        if not getattr(u, "is_staff", False):
+        if not self._is_staff_or_read(u):
             return []
 
         # chercher sur user puis user.profile
@@ -91,7 +92,7 @@ class StaffCentresScopeMixin:
                     if codes:
                         return list(set(codes))
 
-                # liste/tuple/set de codes
+                # liste/tuple/set
                 if isinstance(val, (list, tuple, set)):
                     codes = [
                         str(x)[: self.departement_code_len]
@@ -101,7 +102,7 @@ class StaffCentresScopeMixin:
                     if codes:
                         return list(set(codes))
 
-                # string/unique
+                # string unique
                 s = str(val).strip()
                 if s:
                     return [s[: self.departement_code_len]]
@@ -110,7 +111,7 @@ class StaffCentresScopeMixin:
 
     def scope_queryset_to_centres(self, qs: QuerySet):
         """
-        Applique le scope staff:
+        Applique le scope staff/staff_read:
           (centre_lookups IN centre_ids) OR (departement_lookups STARTSWITH dep_code)
         """
         ids = self._user_centre_ids()
@@ -120,7 +121,6 @@ class StaffCentresScopeMixin:
         if ids is None or dep_codes is None:
             return qs
 
-        # staff sans affectation explicite -> aucun accès
         if not ids and not dep_codes:
             return qs.none()
 
@@ -146,29 +146,26 @@ class StaffCentresScopeMixin:
         base = super().get_queryset()
         return self.scope_queryset_to_centres(base)
 
-
 class UserVisibilityScopeMixin:
     """
-    Restreint un queryset selon l'utilisateur connecté (non-staff).
-    - Admin/Superadmin : accès global (pas de filtre).
-    - Staff : par défaut, PAS de filtrage ici (laisse StaffCentresScopeMixin gérer).
-    - Non-staff : applique un filtre OR sur `user_visibility_lookups`.
+    Restreint le queryset aux objets appartenant à l'utilisateur connecté (non staff/admin).
+    - Admin/Superadmin : accès global.
+    - Staff/Staff_read : pas de filtrage ici (c’est StaffCentresScopeMixin qui gère).
+    - Non-staff (candidat/stagiaire) : applique un filtre OR sur `user_visibility_lookups`.
 
-    Configuration par ViewSet :
-      class MyViewSet(UserVisibilityScopeMixin, ModelViewSet):
+    Exemple d’utilisation dans un ViewSet :
+      class MyViewSet(StaffCentresScopeMixin, UserVisibilityScopeMixin, ModelViewSet):
           user_visibility_lookups = ("created_by", "prospections__owner")
-
-    Notes:
-    - Chaque chemin de `user_visibility_lookups` est comparé à `user` (ou `user.id` si le chemin se termine par '_id').
-      Ex: "created_by" → Q(created_by=user), "prospections__owner_id" → Q(...=user.id)
-    - Pour des règles plus complexes, override `user_visibility_q(self, user)` et retourne un Q.
     """
-    user_visibility_lookups: Tuple[str, ...] = ("created_by",)
-    include_staff: bool = False  # si True, applique aussi le scope aux staff
 
-    # ---- helpers ----
+    user_visibility_lookups: Tuple[str, ...] = ("created_by",)
+    include_staff: bool = False
+
     def _is_admin_like(self, u) -> bool:
-        return bool(getattr(u, "is_superuser", False) or (hasattr(u, "is_admin") and callable(u.is_admin) and u.is_admin()))
+        return bool(
+            getattr(u, "is_superuser", False)
+            or (hasattr(u, "is_admin") and callable(u.is_admin) and u.is_admin())
+        )
 
     def _build_q_from_lookups(self, user) -> Q:
         q = Q()
@@ -181,7 +178,6 @@ class UserVisibilityScopeMixin:
         return q
 
     def user_visibility_q(self, user) -> Q:
-        """Override si besoin de logique plus fine."""
         return self._build_q_from_lookups(user)
 
     def scope_queryset_to_user_visibility(self, qs: QuerySet):
@@ -189,17 +185,15 @@ class UserVisibilityScopeMixin:
         if not (user and user.is_authenticated):
             return qs.none()
 
-        # Admin/superadmin -> pas de filtre
         if self._is_admin_like(user):
             return qs
 
-        # Staff -> on bypass par défaut (laisser StaffCentresScopeMixin gérer si présent)
-        if getattr(user, "is_staff", False) and not self.include_staff:
+        # Staff et staff_read → laissé à StaffCentresScopeMixin
+        if (getattr(user, "is_staff", False) or getattr(user, "role", "") == "staff_read") and not self.include_staff:
             return qs
 
         return qs.filter(self.user_visibility_q(user)).distinct()
 
-    # ---- hook DRF ----
     def get_queryset(self):
         base = super().get_queryset()
         return self.scope_queryset_to_user_visibility(base)

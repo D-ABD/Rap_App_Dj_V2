@@ -7,7 +7,6 @@ from rest_framework.renderers import JSONRenderer
 from django.http import HttpResponse
 from django.db import transaction
 from django.db.models import Q, Count, OuterRef, Subquery, IntegerField, Value, Prefetch
-from django.db.models.functions import Coalesce
 from django.template.loader import render_to_string
 from weasyprint import HTML
 import csv
@@ -18,6 +17,7 @@ from rest_framework.exceptions import PermissionDenied
 from openpyxl import Workbook
 from openpyxl.utils import get_column_letter
 from io import BytesIO
+from ..roles import is_admin_like, is_staff_or_staffread, staff_centre_ids
 from ...models import atelier_tre
 
 # ✅ imports modèles
@@ -65,15 +65,31 @@ def _sanitize_dict(d: dict) -> dict:
 # ✅ Construction robuste du payload /candidats/meta/ (scope staff inclus)
 # ─────────────────────────────────────────────────────────────────────────────
 def _build_candidat_meta(user=None) -> dict:
-    # Scope centres/formations selon l'utilisateur
-    is_admin_like = bool(getattr(user, "is_superuser", False) or (hasattr(user, "is_admin") and user.is_admin()))
-    if is_admin_like:
+    """Construit les métadonnées pour /candidats/meta en respectant le scope de l’utilisateur."""
+
+    if is_admin_like(user):
         centres_qs = Centre.objects.order_by("nom").only("id", "nom")
-        formations_qs = Formation.objects.select_related("centre").only("id", "nom", "num_offre", "centre__nom").order_by("nom")
+        formations_qs = (
+            Formation.objects.select_related("centre")
+            .only("id", "nom", "num_offre", "centre__nom")
+            .order_by("nom")
+        )
+    elif is_staff_or_staffread(user):
+        centre_ids = staff_centre_ids(user) or []
+        centres_qs = (
+            Centre.objects.filter(id__in=centre_ids)
+            .order_by("nom")
+            .only("id", "nom")
+        )
+        formations_qs = (
+            Formation.objects.select_related("centre")
+            .filter(centre_id__in=centre_ids)
+            .only("id", "nom", "num_offre", "centre__nom")
+            .order_by("nom")
+        )
     else:
-        centre_ids = list(getattr(user, "centres", Centre.objects.none()).values_list("id", flat=True)) if getattr(user, "is_staff", False) else []
-        centres_qs = Centre.objects.filter(id__in=centre_ids).order_by("nom").only("id", "nom") if centre_ids else Centre.objects.none()
-        formations_qs = Formation.objects.select_related("centre").filter(centre_id__in=centre_ids).only("id", "nom", "num_offre", "centre__nom").order_by("nom") if centre_ids else Formation.objects.none()
+        centres_qs = Centre.objects.none()
+        formations_qs = Formation.objects.none()
 
     return {
         "statut_choices": [{"value": k, "label": v} for k, v in Candidat.StatutCandidat.choices],
@@ -92,7 +108,6 @@ def _build_candidat_meta(user=None) -> dict:
             for f in formations_qs
         ],
     }
-
 
 class CandidatViewSet(viewsets.ModelViewSet):
     permission_classes = [IsStaffOrAbove]
@@ -170,17 +185,7 @@ class CandidatViewSet(viewsets.ModelViewSet):
         except Exception:
             logger.exception("Erreur pendant le logging des filtres.")
 
-    # ---------- helpers scope/permission ----------
-
-    def _is_admin_like(self, user) -> bool:
-        return getattr(user, "is_superuser", False) or (hasattr(user, "is_admin") and user.is_admin())
-
-    def _staff_centre_ids(self, user):
-        if self._is_admin_like(user):
-            return None  # accès global
-        if getattr(user, "is_staff", False):
-            return list(user.centres.values_list("id", flat=True))
-        return []  # non-staff (ne devrait pas passer IsStaffOrAbove)
+# ---------- helpers scope/permission ----------
 
     def _scope_qs_to_user_centres(self, qs):
         """
@@ -188,9 +193,10 @@ class CandidatViewSet(viewsets.ModelViewSet):
         Admin/superadmin : global.
         """
         user = self.request.user
-        centre_ids = self._staff_centre_ids(user)
-        if centre_ids is None:
-            return qs  # admin-like
+        if is_admin_like(user):
+            return qs  # admin-like → accès global
+
+        centre_ids = staff_centre_ids(user) or []
         if centre_ids:
             return qs.filter(formation__centre_id__in=centre_ids)
         return qs.none()
@@ -200,15 +206,15 @@ class CandidatViewSet(viewsets.ModelViewSet):
         if not formation:
             return
         user = self.request.user
-        if self._is_admin_like(user):
+        if is_admin_like(user):
             return
-        if getattr(user, "is_staff", False):
+        if is_staff_or_staffread(user):
             allowed = set(user.centres.values_list("id", flat=True))
             if getattr(formation, "centre_id", None) not in allowed:
                 raise PermissionDenied("Formation hors de votre périmètre (centre).")
+        # ---------- queryset de base + annotations ----------
 
-    # ---------- queryset de base + annotations ----------
-
+ # ---------- queryset de base + annotations ----------
     def base_queryset(self):
         qs = (
             Candidat.objects
@@ -258,7 +264,7 @@ class CandidatViewSet(viewsets.ModelViewSet):
         # (optionnel) ajoute les flags/compteurs par type d’atelier
         qs = atelier_tre.AtelierTRE.annotate_candidats_with_atelier_flags(qs)
         return qs
-
+    
     def get_queryset(self):
         return self._scope_qs_to_user_centres(self.base_queryset())
 
@@ -558,10 +564,10 @@ class HistoriquePlacementViewSet(viewsets.ReadOnlyModelViewSet):
     def get_queryset(self):
         qs = super().get_queryset()
         u = self.request.user
-        if self._is_admin_like(u):
+        if is_admin_like(u):
             return qs
-        if getattr(u, "is_staff", False):
-            centre_ids = list(u.centres.values_list("id", flat=True))
+        if is_staff_or_staffread(u):
+            centre_ids = staff_centre_ids(u) or []
             if not centre_ids:
                 return qs.none()
             return qs.filter(candidat__formation__centre_id__in=centre_ids)

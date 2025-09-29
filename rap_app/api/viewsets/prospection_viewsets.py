@@ -14,6 +14,7 @@ from drf_spectacular.utils import (
     OpenApiExample,
 )
 import datetime
+from django.db.models import Q, Exists, OuterRef
 
 from openpyxl import Workbook
 from openpyxl.utils import get_column_letter
@@ -40,7 +41,15 @@ from ..serializers.prospection_serializers import (
 )
 from ...models.logs import LogUtilisateur
 from ...models.candidat import Candidat
-from ..permissions import IsOwnerOrStaffOrAbove  # ✅ protection R/W
+from ..permissions import CanAccessProspectionComment, IsOwnerOrStaffOrAbove
+from ...api.roles import (
+    is_admin_like,
+    is_staff_or_staffread,
+    is_candidate,
+    is_staff_like,
+    staff_centre_ids,
+    role_of,
+)
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -59,44 +68,29 @@ def get_owner_formation(owner):
 
 
 def annotate_last_visible_comment(queryset, user):
-    base = ProspectionComment.objects.filter(prospection=OuterRef('pk'))
+    base = ProspectionComment.objects.filter(prospection=OuterRef("pk"))
 
-    is_staff_like = bool(
-        user.is_authenticated and (user.is_staff or getattr(user, "is_admin", False) or getattr(user, "is_superuser", False))
-    )
-    is_candidat = bool(
-        user.is_authenticated and hasattr(user, "is_candidat_or_stagiaire") and user.is_candidat_or_stagiaire()
-    )
-
-    if is_staff_like:
+    if is_staff_like(user):
         visible_sub = base
-    elif is_candidat:
-        visible_sub = base.filter(Q(is_internal=False) | Q(created_by=user))
-    else:
-        visible_sub = base.filter(is_internal=False)
-
-    if is_staff_like:
         comments_filter = Q()
-    elif is_candidat:
+    elif is_candidate(user):
+        visible_sub = base.filter(Q(is_internal=False) | Q(created_by=user))
         comments_filter = Q(comments__is_internal=False) | Q(comments__created_by=user)
     else:
+        visible_sub = base.filter(is_internal=False)
         comments_filter = Q(comments__is_internal=False)
 
     return queryset.annotate(
-        last_comment=Subquery(visible_sub.order_by('-created_at').values('body')[:1]),
-        last_comment_at=Subquery(visible_sub.order_by('-created_at').values('created_at')[:1]),
-        last_comment_id=Subquery(visible_sub.order_by('-created_at').values('id')[:1]),
-        comments_count=Count('comments', filter=comments_filter, distinct=True),
+        last_comment=Subquery(visible_sub.order_by("-created_at").values("body")[:1]),
+        last_comment_at=Subquery(visible_sub.order_by("-created_at").values("created_at")[:1]),
+        last_comment_id=Subquery(visible_sub.order_by("-created_at").values("id")[:1]),
+        comments_count=Count("comments", filter=comments_filter, distinct=True),
     )
 
-
 # ─────────────────────────────────────────────────────────────────────────────
-# Utils parsing ids CSV (pour ?centre=1,2,3 etc.)
+# Utils parsing ids CSV
 # ─────────────────────────────────────────────────────────────────────────────
 def _parse_id_list(raw):
-    """
-    Accepte '12' ou '12,13,14' → renvoie liste d'int valides.
-    """
     if raw is None:
         return []
     if isinstance(raw, (list, tuple)):
@@ -116,10 +110,9 @@ def _parse_id_list(raw):
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Serializers « créer depuis prospection » (autonomes dans ce fichier)
+# Serializers « créer depuis prospection »
 # ─────────────────────────────────────────────────────────────────────────────
 class PartenaireCreateFromProspectionSerializer(serializers.ModelSerializer):
-    """Payload minimal pour créer un partenaire depuis une prospection."""
     class Meta:
         model = Partenaire
         fields = [
@@ -131,37 +124,16 @@ class PartenaireCreateFromProspectionSerializer(serializers.ModelSerializer):
         ]
 
 
-class PartenaireReadMinimalSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Partenaire
-        fields = [
-            "id", "nom", "type", "secteur_activite",
-            "city", "zip_code",
-            "contact_nom", "contact_email", "contact_telephone",
-            "website", "is_active", "created_at", "updated_at",
-        ]
-
-
 class CandidatCreateFromProspectionSerializer(serializers.ModelSerializer):
-    """Création rapide d'un candidat depuis une prospection.
-       - Remplit la formation à partir de la prospection si non fournie.
-       - Défauts sûrs : statut='accompagnement', cv_statut='en_cours' si absents.
-    """
     formation = serializers.PrimaryKeyRelatedField(
         queryset=Formation.objects.all(), required=False, allow_null=True
     )
 
     class Meta:
         model = Candidat
-        fields = [
-            "nom", "prenom", "email", "telephone",
-            "ville", "code_postal",
-            "formation",
-            "statut", "cv_statut",
-        ]
+        fields = ["nom", "prenom", "email", "telephone", "ville", "code_postal", "formation", "statut", "cv_statut"]
 
     def validate_formation(self, value):
-        # Même règle usuelle côté CandidatCreateUpdate : staff requis si on fixe la formation
         request = self.context.get("request")
         user = getattr(request, "user", None)
         if value is not None and (not user or getattr(user, "role", None) not in ["admin", "superadmin", "staff"]):
@@ -172,7 +144,6 @@ class CandidatCreateFromProspectionSerializer(serializers.ModelSerializer):
         attrs.setdefault("statut", getattr(Candidat.StatutCandidat, "ACCOMPAGNEMENT", "accompagnement"))
         attrs.setdefault("cv_statut", getattr(Candidat.CVStatut, "EN_COURS", "en_cours"))
         return attrs
-
 
 class CandidatReadMinimalSerializer(serializers.ModelSerializer):
     class Meta:
@@ -242,69 +213,50 @@ class ProspectionViewSet(viewsets.ModelViewSet):
         "formation__nom", "formation__num_offre",
     ]
 
-    # ---------- helpers scope/permissions ----------
-    def _is_admin_like(self, user) -> bool:
-        # ✅ micro-fix: ne pas appeler is_admin comme un callable
-        return bool(getattr(user, "is_superuser", False) or getattr(user, "is_admin", False))
-
-    def _staff_centre_ids(self, user):
-        if self._is_admin_like(user):
-            return None
-        if getattr(user, "is_staff", False):
-            return list(user.centres.values_list("id", flat=True))
-        return []
-
+ # ---------- helpers scope/permissions ----------
     def _scoped_for_user(self, qs, user):
-        """Applique le périmètre de visibilité par rôle."""
-        if not user.is_authenticated:
-            return Prospection.objects.none()
+        if not user or not user.is_authenticated:
+            return qs.none()
 
-        # candidats / stagiaires → seulement leurs prospections
-        if hasattr(user, "is_candidat_or_stagiaire") and user.is_candidat_or_stagiaire():
-            return qs.filter(owner=user)
-
-        # admin/superadmin → tout
-        if self._is_admin_like(user):
+        if is_admin_like(user):
             return qs
 
-        # staff → prospections dont la formation est dans ses centres
-        # + fallback: celles qu'il possède (owner) ou a créées (created_by) si formation absente
-        if getattr(user, "is_staff", False):
-            centre_ids = self._staff_centre_ids(user) or []
-            if not centre_ids:
-                return qs.filter(Q(owner=user) | Q(created_by=user))
+        if is_staff_or_staffread(user):
+            centre_ids = staff_centre_ids(user) or []
+            conds = Q(formation__centre_id__in=centre_ids) if centre_ids else Q()
             return qs.filter(
-                Q(formation__centre_id__in=centre_ids) |
-                Q(owner=user) |
-                Q(created_by=user)
+                conds
+                | Q(owner=user)
+                | Q(created_by=user)
+                | Exists(ProspectionComment.objects.filter(prospection=OuterRef("pk"), created_by=user))
             ).distinct()
 
-        # autres rôles non staff → possède ou a créé
+        # ✅ candidat : prospections où il est owner (même si créées par staff/admin)
+        if is_candidate(user):
+            return qs.filter(owner=user)
+
         return qs.filter(Q(owner=user) | Q(created_by=user))
 
     def _ensure_staff_can_use_formation(self, user, formation: Formation | None):
-        """Empêche un staff (non admin) d'utiliser une formation hors de ses centres."""
         if not formation:
             return
-        if self._is_admin_like(user):
+        if is_admin_like(user):
             return
-        if getattr(user, "is_staff", False):
+        if is_staff_or_staffread(user):
             allowed = set(user.centres.values_list("id", flat=True))
             if formation.centre_id not in allowed:
                 raise PermissionDenied("Formation hors de votre périmètre (centres).")
 
     # ---------- Queryset & visibilité ----------
     def get_queryset(self):
-        """
-        Annote chaque prospection avec:
-          - last_comment, last_comment_at, last_comment_id
-          - comments_count (filtré selon la visibilité)
-        Et limite la visibilité selon le rôle + centres.
-        """
         base = super().get_queryset()
         user = getattr(self.request, "user", None)
         qs = annotate_last_visible_comment(base, user)
         qs = self._scoped_for_user(qs, user)
+
+        ids = list(qs.values_list("id", flat=True))
+        print(f"[DEBUG get_queryset] action={getattr(self, 'action', '?')} ids={ids}")
+
         return qs
 
     @action(detail=False, methods=["get"], url_path="filtres")
@@ -434,12 +386,15 @@ class ProspectionViewSet(viewsets.ModelViewSet):
         instance = serializer.instance
 
         if hasattr(user, "is_candidat_or_stagiaire") and user.is_candidat_or_stagiaire():
+            # ⚠️ candidat ne peut pas changer owner ni formation
             new_form = serializer.validated_data.get("formation")
             if new_form and new_form != instance.formation:
                 raise PermissionDenied("Vous n’avez pas le droit de modifier la formation associée.")
             data_owner = instance.owner
             data_formation = instance.formation
+
         else:
+            # ✅ staff / admin → peut modifier le owner
             new_owner = serializer.validated_data.get("owner", instance.owner)
             owner_changed = (new_owner is not None and new_owner.pk != instance.owner_id)
 
@@ -454,12 +409,13 @@ class ProspectionViewSet(viewsets.ModelViewSet):
             else:
                 data_formation = serializer.validated_data.get("formation", instance.formation)
 
-            # ✅ staff non admin : contrôle périmètre formation
+            # ✅ staff non admin : on vérifie juste que la formation reste dans ses centres
             self._ensure_staff_can_use_formation(user, data_formation)
 
+            # ⚠️ ici on autorise staff/admin à modifier le owner sans restriction
             data_owner = new_owner
 
-        # ✅ recalcul centre : formation.centre > partenaire.default_centre > centre existant
+        # recalcul du centre
         partenaire = serializer.validated_data.get("partenaire", instance.partenaire)
         if data_formation:
             centre_id = data_formation.centre_id
@@ -468,8 +424,18 @@ class ProspectionViewSet(viewsets.ModelViewSet):
         else:
             centre_id = instance.centre_id
 
-        instance = serializer.save(updated_by=user, owner=data_owner, formation=data_formation, centre_id=centre_id)
-        LogUtilisateur.log_action(instance, LogUtilisateur.ACTION_UPDATE, user, "Mise à jour d’une prospection")
+        instance = serializer.save(
+            updated_by=user,
+            owner=data_owner,
+            formation=data_formation,
+            centre_id=centre_id,
+        )
+        LogUtilisateur.log_action(
+            instance,
+            LogUtilisateur.ACTION_UPDATE,
+            user,
+            "Mise à jour d’une prospection (incl. owner)"
+        )
 
     # ---------- DRF actions ----------
     def list(self, request, *args, **kwargs):
@@ -815,6 +781,25 @@ class ProspectionViewSet(viewsets.ModelViewSet):
         response["Content-Length"] = len(binary_content)
         return response
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class HistoriqueProspectionViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = HistoriqueProspection.objects.select_related(
         "prospection",
@@ -831,10 +816,6 @@ class HistoriqueProspectionViewSet(viewsets.ReadOnlyModelViewSet):
     ordering_fields = ["date_modification", "prochain_contact"]
     ordering = ["-date_modification"]
 
-    def _is_admin_like(self, user) -> bool:
-        # ✅ micro-fix ici aussi
-        return bool(getattr(user, "is_superuser", False) or getattr(user, "is_admin", False))
-
     def get_queryset(self):
         qs = self.queryset
         user = self.request.user
@@ -842,22 +823,22 @@ class HistoriqueProspectionViewSet(viewsets.ReadOnlyModelViewSet):
             return HistoriqueProspection.objects.none()
 
         # candidats → historiques de leurs prospections
-        if hasattr(user, "is_candidat_or_stagiaire") and user.is_candidat_or_stagiaire():
+        if is_candidate(user):
             return qs.filter(prospection__owner=user)
 
         # admin/superadmin → tout
-        if self._is_admin_like(user):
+        if is_admin_like(user):
             return qs
 
         # staff → restreint à ses centres + fallback owner/creator
-        if getattr(user, "is_staff", False):
-            centre_ids = list(user.centres.values_list("id", flat=True))
+        if is_staff_or_staffread(user):
+            centre_ids = staff_centre_ids(user) or []
             if not centre_ids:
                 return qs.filter(Q(prospection__owner=user) | Q(prospection__created_by=user))
             return qs.filter(
-                Q(prospection__formation__centre_id__in=centre_ids) |
-                Q(prospection__owner=user) |
-                Q(prospection__created_by=user)
+                Q(prospection__formation__centre_id__in=centre_ids)
+                | Q(prospection__owner=user)
+                | Q(prospection__created_by=user)
             ).distinct()
 
         # autres rôles → owner/creator uniquement

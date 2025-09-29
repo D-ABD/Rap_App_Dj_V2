@@ -13,7 +13,7 @@ from rest_framework import permissions, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from ...permissions import IsStaffOrAbove
+from ...permissions import IsStaffOrAbove, is_staff_or_staffread
 
 try:
     from ..permissions import IsOwnerOrStaffOrAbove  # type: ignore
@@ -78,7 +78,7 @@ class CommentaireStatsViewSet(viewsets.ViewSet):
     def _staff_centre_ids(self, user) -> Optional[list[int]]:
         if self._is_admin_like(user):
             return None
-        if getattr(user, "is_staff", False) and hasattr(user, "centres"):
+        if is_staff_or_staffread(user) and hasattr(user, "centres"):
             return list(user.centres.values_list("id", flat=True))
         return []
 
@@ -117,7 +117,7 @@ class CommentaireStatsViewSet(viewsets.ViewSet):
         if self._is_admin_like(user):
             return qs
 
-        if getattr(user, "is_staff", False):
+        if is_staff_or_staffread(user):
             centre_ids = self._staff_centre_ids(user)
             if centre_ids is None:
                 return qs

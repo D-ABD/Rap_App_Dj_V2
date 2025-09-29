@@ -12,7 +12,7 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from ...permissions import IsStaffOrAbove
+from ...permissions import IsStaffOrAbove, is_staff_or_staffread
 
 from ....models.commentaires_appairage import CommentaireAppairage
 
@@ -55,9 +55,10 @@ class AppairageCommentaireStatsViewSet(RestrictToUserOwnedQueryset, GenericViewS
     def _staff_centre_ids(self, user) -> Optional[list[int]]:
         if self._is_admin_like(user):
             return None
-        if getattr(user, "is_staff", False) and hasattr(user, "centres"):
+        if is_staff_or_staffread(user) and hasattr(user, "centres"):
             return list(user.centres.values_list("id", flat=True))
         return []
+
 
     def _staff_departement_codes(self, user) -> list[str]:
         def _norm(val):
@@ -83,9 +84,10 @@ class AppairageCommentaireStatsViewSet(RestrictToUserOwnedQueryset, GenericViewS
             return qs.none()
         if self._is_admin_like(user):
             return qs
-        if getattr(user, "is_staff", False):
+        if is_staff_or_staffread(user):
             centre_ids = self._staff_centre_ids(user)
             dep_codes = self._staff_departement_codes(user)
+
             if centre_ids is None:
                 return qs
             if not centre_ids and not dep_codes:

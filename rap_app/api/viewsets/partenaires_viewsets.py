@@ -13,7 +13,7 @@ from django.http import HttpResponse
 from django.utils import timezone as dj_timezone
 import datetime
 
-from ...api.permissions import IsOwnerOrStaffOrAbove, RestrictToUserOwnedQuerysetMixin
+from ...api.permissions import IsOwnerOrStaffOrAbove, UserVisibilityScopeMixin, is_staff_or_staffread
 from ...models.partenaires import Partenaire
 from ..serializers.partenaires_serializers import PartenaireChoicesResponseSerializer, PartenaireSerializer
 from ...models.logs import LogUtilisateur
@@ -36,7 +36,7 @@ class PartenaireAccessPermission(BasePermission):
 
     def has_object_permission(self, request, view, obj):
         user = request.user
-        if getattr(user, "is_superuser", False) or getattr(user, "is_staff", False) or (
+        if getattr(user, "is_superuser", False) or is_staff_or_staffread(user) or (
             hasattr(user, "is_admin") and callable(user.is_admin) and user.is_admin()
         ):
             return True
@@ -142,7 +142,7 @@ class InlinePartenaireFilter(FilterSet):
         responses={204: OpenApiResponse(description="Suppression réussie")}
     ),
 )
-class PartenaireViewSet(RestrictToUserOwnedQuerysetMixin, viewsets.ModelViewSet):
+class PartenaireViewSet(UserVisibilityScopeMixin, viewsets.ModelViewSet):
     serializer_class = PartenaireSerializer
     # ✅ utilise la permission locale pour autoriser la lecture des partenaires attribués via prospection
     permission_classes = [PartenaireAccessPermission]
@@ -180,7 +180,7 @@ class PartenaireViewSet(RestrictToUserOwnedQuerysetMixin, viewsets.ModelViewSet)
     def _staff_centre_ids(self, user):
         if self._is_admin_like(user):
             return None  # accès global
-        if getattr(user, "is_staff", False):
+        if is_staff_or_staffread(user):
             return list(user.centres.values_list("id", flat=True))
         return []  # non-staff
 
@@ -209,7 +209,7 @@ class PartenaireViewSet(RestrictToUserOwnedQuerysetMixin, viewsets.ModelViewSet)
         """Vérifie qu'un staff est dans le périmètre du partenaire."""
         if self._is_admin_like(user):
             return True
-        if not getattr(user, "is_staff", False):
+        if not is_staff_or_staffread(user):
             # non-staff : déjà géré par permission/queryset
             return True
         centre_ids = set(user.centres.values_list("id", flat=True))
@@ -251,7 +251,7 @@ class PartenaireViewSet(RestrictToUserOwnedQuerysetMixin, viewsets.ModelViewSet)
 
         if self._is_admin_like(user):
             return qs
-        if getattr(user, "is_staff", False):
+        if is_staff_or_staffread(user):
             return self._scoped_for_staff(qs, user)
 
         # ✅ Candidat·e : créés par lui/elle + attribués via prospection (owner=user)
@@ -341,12 +341,12 @@ class PartenaireViewSet(RestrictToUserOwnedQuerysetMixin, viewsets.ModelViewSet)
         user = request.user
 
         # Non-staff non-admin : ne peut modifier que ses partenaires
-        if not getattr(user, "is_staff", False) and not getattr(user, "is_superuser", False):
+        if not is_staff_or_staffread(user) and not getattr(user, "is_superuser", False):
             if instance.created_by_id != user.id:
                 raise PermissionDenied("Vous ne pouvez modifier que vos propres partenaires.")
 
         # Staff : doit être dans son périmètre (liens centres) ou owner
-        if getattr(user, "is_staff", False) and not self._is_admin_like(user):
+        if is_staff_or_staffread(user) and not self._is_admin_like(user):
             if not self._user_can_access_partenaire(instance, user):
                 raise PermissionDenied("Partenaire hors de votre périmètre (centres).")
 
@@ -363,11 +363,11 @@ class PartenaireViewSet(RestrictToUserOwnedQuerysetMixin, viewsets.ModelViewSet)
         instance = self.get_object()  # respecte le scope
         user = request.user
 
-        if not getattr(user, "is_staff", False) and not getattr(user, "is_superuser", False):
+        if not is_staff_or_staffread(user) and not getattr(user, "is_superuser", False):
             if instance.created_by_id != user.id:
                 raise PermissionDenied("Vous ne pouvez supprimer que vos propres partenaires.")
 
-        if getattr(user, "is_staff", False) and not self._is_admin_like(user):
+        if is_staff_or_staffread(user) and not self._is_admin_like(user):
             if not self._user_can_access_partenaire(instance, user):
                 raise PermissionDenied("Partenaire hors de votre périmètre (centres).")
 

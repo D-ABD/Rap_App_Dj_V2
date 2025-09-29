@@ -13,7 +13,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from ....models.appairage import Appairage, AppairageStatut
-from ...permissions import IsStaffOrAbove
+from ...permissions import IsStaffOrAbove, is_staff_or_staffread
 
 logger = logging.getLogger(__name__)
 
@@ -52,12 +52,13 @@ class AppairageStatsViewSet(GenericViewSet):
         )
 
     def _staff_centre_ids(self, user) -> Optional[List[int]]:
-        """None = admin-like → global ; [] = staff sans centres → aucun résultat."""
+        """None = admin-like → global ; [] = staff/staff_read sans centres → aucun résultat."""
         if self._is_admin_like(user):
             return None
-        if getattr(user, "is_staff", False) and hasattr(user, "centres"):
+        if is_staff_or_staffread(user) and hasattr(user, "centres"):
             return list(user.centres.values_list("id", flat=True))
         return []
+
 
     def _staff_departement_codes(self, user) -> List[str]:
         """
@@ -85,12 +86,6 @@ class AppairageStatsViewSet(GenericViewSet):
         return []
 
     def _scope_appairages_for_user(self, qs: QuerySet) -> QuerySet:
-        """
-        Périmètre:
-          - admin/superuser → global
-          - staff → union (OR) des centres assignés **OU** des départements (via centre **ou** partenaire)
-          - autres → pas de restriction spécifique ici
-        """
         user = getattr(self.request, "user", None)
         if not (user and user.is_authenticated):
             return qs.none()
@@ -98,8 +93,8 @@ class AppairageStatsViewSet(GenericViewSet):
         if self._is_admin_like(user):
             return qs
 
-        if getattr(user, "is_staff", False):
-            centre_ids = self._staff_centre_ids(user)  # [] si pas d'attribut/valeur
+        if is_staff_or_staffread(user):
+            centre_ids = self._staff_centre_ids(user)
             dep_codes = self._staff_departement_codes(user)
 
             if centre_ids is None:
@@ -113,12 +108,13 @@ class AppairageStatsViewSet(GenericViewSet):
             if dep_codes:
                 q_dep = Q()
                 for code in dep_codes:
-                    # visibilité par département soit côté centre de la formation, soit côté partenaire
-                    q_dep |= Q(formation__centre__code_postal__startswith=code) | Q(partenaire__zip_code__startswith=code)
+                    q_dep |= Q(
+                        formation__centre__code_postal__startswith=code
+                    ) | Q(partenaire__zip_code__startswith=code)
                 q |= q_dep
             return qs.filter(q).distinct()
 
-        return qs
+        return qs.none()
 
     # ────────────────────────────────────────────────────────────
     # Base QS + filtres

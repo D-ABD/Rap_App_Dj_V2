@@ -18,7 +18,7 @@ from ...api.serializers.documents_serializers import (
     TypeDocumentChoiceSerializer,
 )
 from ...api.paginations import RapAppPagination
-from ...api.permissions import IsStaffOrAbove  # ✅ staff/admin/superadmin only
+from ...api.permissions import IsStaffOrAbove, is_staff_or_staffread  # ✅ staff/admin/superadmin only
 
 logger = logging.getLogger("application.api")
 
@@ -65,7 +65,7 @@ class DocumentViewSet(viewsets.ModelViewSet):
         """Liste des centres du staff (None si admin-like = accès global)."""
         if self._is_admin_like(user):
             return None
-        if getattr(user, "is_staff", False):
+        if is_staff_or_staffread(user):
             # nécessite le M2M user.centres (déjà ajouté)
             return list(user.centres.values_list("id", flat=True))
         return []
@@ -87,7 +87,7 @@ class DocumentViewSet(viewsets.ModelViewSet):
         user = self.request.user
         if self._is_admin_like(user):
             return
-        if getattr(user, "is_staff", False):
+        if is_staff_or_staffread(user):
             allowed = set(user.centres.values_list("id", flat=True))
             if getattr(formation, "centre_id", None) not in allowed:
                 raise PermissionDenied("Formation hors de votre périmètre (centre).")
