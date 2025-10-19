@@ -180,13 +180,26 @@ class ProspectionStatsViewSet(RestrictToUserOwnedQueryset, GenericViewSet):
     # Helpers data
     # ────────────────────────────────────────────────────────────
     def get_queryset(self):
-        qs = Prospection.objects.select_related("centre", "formation", "formation__centre", "partenaire", "owner")
+        qs = Prospection.objects.select_related(
+            "centre", "formation", "formation__centre", "partenaire", "owner"
+        )
+
         # éventuel scope "owned" générique
         if hasattr(self, "restrict_queryset_to_user"):
             qs = self.restrict_queryset_to_user(qs)
+
         # périmètre staff (centres + départements)
         qs = self._scope_prospections_for_user(qs, getattr(self.request, "user", None))
+
+        # 🔹 Gestion du filtre archivées
+        inclure_archivees = str(self.request.query_params.get("avec_archivees", "false")).lower() in [
+            "1", "true", "yes", "on"
+        ]
+        if not inclure_archivees:
+            qs = qs.filter(activite=Prospection.ACTIVITE_ACTIVE)
+
         return qs
+
 
     def _apply_common_filters(self, qs):
         p = self.request.query_params

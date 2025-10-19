@@ -2,6 +2,7 @@ import logging
 import unicodedata
 import re
 from datetime import date
+from django.core.validators import RegexValidator
 
 from django.conf import settings
 from django.db import models, transaction
@@ -36,6 +37,7 @@ def generate_unique_username(base: str) -> str:
         username = f"{base}_{suffix}"
         suffix += 1
     return username
+
 
 
 class ResultatPlacementChoices(models.TextChoices):
@@ -86,20 +88,41 @@ class Candidat(BaseModel):
         A_MODIFIER = "a_modifier", _("À modifier")
 
     # ----------------- Identité & contact -----------------
-    nom = models.CharField(max_length=100, verbose_name=_("Nom"))
+    # --- État civil ---
+    sexe = models.CharField(max_length=1, choices=[("M", "Masculin"), ("F", "Féminin")], blank=True, null=True)
+    nom_naissance = models.CharField(max_length=100, blank=True, null=True)
+    nom = models.CharField(max_length=100, verbose_name=_("Nom d'usage"))
     prenom = models.CharField(max_length=100, verbose_name=_("Prénom"))
+    date_naissance = models.DateField(null=True, blank=True, verbose_name=_("Date de naissance"))
+    departement_naissance = models.CharField(max_length=3, blank=True, null=True)
+    commune_naissance = models.CharField(max_length=100, blank=True, null=True)
+    pays_naissance = models.CharField(max_length=100,blank=True,null=True,verbose_name=_("Pays de naissance"),default="France",)    
+    nationalite = models.CharField(max_length=100, blank=True, null=True, default="Française")
+    nir = models.CharField(max_length=15, blank=True, null=True, verbose_name=_("Numéro de sécurité sociale (NIR)"))
+    
+
+
+    # --- Contact ---
     email = models.EmailField(blank=True, null=True, verbose_name=_("Email"))
-    telephone = models.CharField(max_length=20, blank=True, null=True, verbose_name=_("Téléphone"))
+    phone_regex = RegexValidator(
+    regex=r'^0\d{9}$',
+    message=_("Le numéro doit comporter 10 chiffres et commencer par 0 (ex : 0612345678)."),
+    )
+    telephone = models.CharField(validators=[phone_regex], max_length=10, blank=True, null=True, verbose_name=_("Téléphone"))
+   
+    # --- Adresse détaillée ---
+    street_number = models.CharField(max_length=10, blank=True, null=True, verbose_name=_("Numéro de voie"),)
+    street_name = models.CharField(max_length=255, blank=True, null=True, verbose_name=_("Nom de la rue"),)
+    street_complement = models.CharField(max_length=255, blank=True, null=True, verbose_name=_("Complément d'adresse"),)
     ville = models.CharField(max_length=100, blank=True, null=True, verbose_name=_("Ville"))
     code_postal = models.CharField(max_length=10, blank=True, null=True, verbose_name=_("Code postal"))
 
     compte_utilisateur = models.OneToOneField(
         settings.AUTH_USER_MODEL,
-        null=True,
-        blank=True,
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
         related_name="candidat_associe",
         verbose_name=_("Compte utilisateur"),
+        null=True, blank=True,   # ✅ garder temporairement nullable
     )
 
     # ----------------- Statut & formation -----------------
@@ -145,7 +168,6 @@ class Candidat(BaseModel):
     origine_sourcing = models.CharField(max_length=255, blank=True, null=True, verbose_name=_("Origine du sourcing"))
 
     date_inscription = models.DateTimeField(auto_now_add=True, verbose_name=_("Date d’inscription"), db_index=True)
-    date_naissance = models.DateField(null=True, blank=True, verbose_name=_("Date de naissance"))
     rqth = models.BooleanField(default=False, verbose_name=_("RQTH"))
 
     type_contrat = models.CharField(
@@ -186,6 +208,99 @@ class Candidat(BaseModel):
         related_name="candidats_vus",
         verbose_name=_("Vu par (staff)"),
     )
+    # ----------------- Champs Contrats -----------------
+
+    # --- Situation particulière ---
+    regime_social = models.CharField(max_length=100, blank=True, null=True, verbose_name=_("Régime social (Sécurité sociale)"),)
+    sportif_haut_niveau = models.BooleanField(default=False, verbose_name=_("Sportif de haut niveau?"),)
+    equivalence_jeunes = models.BooleanField(default=False, verbose_name=_("Equivalence jeune?"),)
+    extension_boe = models.BooleanField(default=False, verbose_name=_("Extension BOE?"),)
+    situation_actuelle = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        verbose_name=_("Situation avant ce contrat"),
+        help_text=_("Ex. demandeur d’emploi, lycéen, salarié…"),
+    )
+    # --- Parcours scolaire ---
+    dernier_diplome_prepare = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        verbose_name=_("Dernier diplôme préparé"),
+    )
+    diplome_plus_eleve_obtenu = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        verbose_name=_("Diplôme ou titre le plus élevé obtenu"),
+    )
+    derniere_classe = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        verbose_name=_("Dernière classe fréquentée"),
+    )
+    intitule_diplome_prepare = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        verbose_name=_("Intitulé du diplôme préparé"),
+    )
+    situation_avant_contrat = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        verbose_name=_("Situation avant le contrat"),
+    )
+
+    # --- Projet professionnel ---
+    projet_creation_entreprise = models.BooleanField(default=False)
+
+    # --- Représentant légal ---
+    representant_lien = models.CharField(
+    max_length=50,
+    blank=True,
+    null=True,
+    verbose_name=_("Lien avec le candidat"),
+    help_text=_("Ex. père, mère, tuteur, autre"),
+    )
+    representant_nom_naissance = models.CharField(
+        max_length=150,
+        blank=True,
+        null=True,
+        verbose_name=_("Nom de naissance du représentant légal"),
+    )
+    representant_prenom = models.CharField(
+        max_length=150,
+        blank=True,
+        null=True,
+        verbose_name=_("Prénom du représentant légal"),
+    )
+    representant_email = models.EmailField(
+        blank=True,
+        null=True,
+        verbose_name=_("Courriel du représentant légal"),
+    )
+    representant_street_name = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        verbose_name=_("Adresse du représentant légal"),
+    )
+    representant_zip_code = models.CharField(
+        max_length=10,
+        blank=True,
+        null=True,
+        verbose_name=_("Code postal du représentant légal"),
+    )
+    representant_city = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True,
+        verbose_name=_("Commune du représentant légal"),
+    )
+
 
     # ----------------- Champs "placement" (gardés pour le front) -----------------
     responsable_placement = models.ForeignKey(
@@ -342,26 +457,11 @@ class Candidat(BaseModel):
     def valider_comme_stagiaire(self):
         if not self.admissible:
             raise ValidationError(_("Ce candidat n'est pas admissible."))
-        if self.compte_utilisateur:
-            user = self.compte_utilisateur
-            user.role = CustomUser.ROLE_STAGIAIRE
-            user.save()
-        else:
-            email = f"{self.prenom.lower()}.{self.nom.lower()}@exemple.com"
-            if CustomUser.objects.filter(email=email).exists():
-                raise ValidationError(_("Un utilisateur avec cet email existe déjà."))
-            username = generate_unique_username(f"{self.prenom.lower()}_{self.nom.lower()}")
-            user = CustomUser.objects.create_user_with_role(
-                email=email,
-                username=username,
-                password="changeme123",
-                role=CustomUser.ROLE_STAGIAIRE,
-                first_name=self.prenom,
-                last_name=self.nom,
-            )
-            self.compte_utilisateur = user
-            self.save()
-        return user
+        if not self.compte_utilisateur:
+            raise ValidationError(_("Ce candidat n’a pas de compte utilisateur associé."))
+        self.compte_utilisateur.role = CustomUser.ROLE_STAGIAIRE
+        self.compte_utilisateur.save()
+        return self.compte_utilisateur
 
     def valider_comme_candidatuser(self):
         if self.compte_utilisateur:
@@ -458,7 +558,11 @@ class Candidat(BaseModel):
 
     def delete(self, *args, **kwargs):
         logger.warning(f"❌ Suppression du candidat : {self} (id={self.pk})")
+        user = self.compte_utilisateur
         super().delete(*args, **kwargs)
+        if user:
+            user.delete()
+
 
     def _log_changes(self):
         changements = []

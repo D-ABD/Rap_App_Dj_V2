@@ -4,6 +4,8 @@ from rest_framework import serializers
 from drf_spectacular.utils import extend_schema_serializer, OpenApiExample
 from django.utils.translation import gettext_lazy as _
 
+from ..serializers.prospection_comment_serializers import ProspectionCommentSerializer
+
 from ...models.formations import Formation
 from ...models.prospection import Prospection, ProspectionChoices, HistoriqueProspection
 
@@ -33,8 +35,13 @@ class BaseProspectionSerializer(serializers.ModelSerializer):
     objectif_display = serializers.CharField(source="get_objectif_display", read_only=True)
     motif_display = serializers.CharField(source="get_motif_display", read_only=True)
     type_prospection_display = serializers.CharField(source="get_type_prospection_display", read_only=True)
+    activite = serializers.ChoiceField(
+        choices=Prospection.ACTIVITE_CHOICES,
+        default=Prospection.ACTIVITE_ACTIVE,
+    )
+    activite_display = serializers.CharField(source="get_activite_display", read_only=True)
 
-    # Moyen de contact (champ direct du modèle)
+    # Moyen de contact
     moyen_contact = serializers.ChoiceField(
         choices=ProspectionChoices.MOYEN_CONTACT_CHOICES,
         required=False,
@@ -98,7 +105,7 @@ class BaseProspectionSerializer(serializers.ModelSerializer):
 
 
 # ---------------------------------------------------------------------
-# R/W
+# R/W (create / update)
 # ---------------------------------------------------------------------
 @extend_schema_serializer(
     examples=[
@@ -129,50 +136,54 @@ class ProspectionSerializer(BaseProspectionSerializer):
     relance_prevue = serializers.DateField(required=False, allow_null=True)
 
     class Meta:
-        model = Prospection
-        fields = [
-            "id",
-            "partenaire",
-            "partenaire_nom",
-            "formation",
-            "formation_nom",
-            "centre",            # PK du centre (RO)
-            "centre_nom",        # libellé centre (RO)
-            "num_offre",
-            "date_prospection",
-            "type_prospection",
-            "type_prospection_display",
-            "motif",
-            "motif_display",
-            "statut",
-            "statut_display",
-            "objectif",
-            "objectif_display",
-            "commentaire",
-            "relance_prevue",
-            "moyen_contact",
-            "moyen_contact_display",
-            "is_active",
-            "relance_necessaire",
-            "created_by",
-            "created_at",
-            "updated_at",
-            "owner",
-            "owner_username",
-            "last_comment",
-            "last_comment_at",
-            "last_comment_id",
-            "comments_count",
-            "partenaire_ville",
-            "partenaire_tel",
-            "partenaire_email",
-            "formation_date_debut",
-            "formation_date_fin",
-            "type_offre_display",
-            "formation_statut_display",
-            "places_disponibles",
-        ]
-        read_only_fields = [
+            model = Prospection
+            fields = [
+                "id",
+                "partenaire",
+                "partenaire_nom",
+                "formation",
+                "formation_nom",
+                "centre",
+                "centre_nom",
+                "num_offre",
+                "date_prospection",
+                "type_prospection",
+                "type_prospection_display",
+                "motif",
+                "motif_display",
+                "statut",
+                "statut_display",
+                "objectif",
+                "objectif_display",
+                "commentaire",
+                "relance_prevue",
+                "moyen_contact",
+                "moyen_contact_display",
+                # 🟢 AJOUTS ICI
+                "activite",
+                "activite_display",
+                # 🟢 fin ajout
+                "is_active",
+                "relance_necessaire",
+                "created_by",
+                "created_at",
+                "updated_at",
+                "owner",
+                "owner_username",
+                "last_comment",
+                "last_comment_at",
+                "last_comment_id",
+                "comments_count",
+                "partenaire_ville",
+                "partenaire_tel",
+                "partenaire_email",
+                "formation_date_debut",
+                "formation_date_fin",
+                "type_offre_display",
+                "formation_statut_display",
+                "places_disponibles",
+            ]
+            read_only_fields = [
             "id",
             "created_at",
             "updated_at",
@@ -198,10 +209,18 @@ class ProspectionSerializer(BaseProspectionSerializer):
             "formation_statut_display",
             "places_disponibles",
             "moyen_contact_display",
+            "last_comment",
+            "last_comment_at",
+            "last_comment_id",
+            "comments_count",
         ]
+            
+    def validate_activite(self, value):
+        if value not in dict(Prospection.ACTIVITE_CHOICES):
+            raise serializers.ValidationError(_("Valeur d'activité invalide."))
+        return value
 
     def validate(self, data):
-        # ✅ On ne force plus "acceptée ⇒ contrat" (règle retirée du modèle)
         if (
             data.get("statut") in [ProspectionChoices.STATUT_REFUSEE, ProspectionChoices.STATUT_ANNULEE]
             and not data.get("commentaire")
@@ -226,127 +245,17 @@ class ProspectionSerializer(BaseProspectionSerializer):
 # List / Detail
 # ---------------------------------------------------------------------
 class ProspectionListSerializer(BaseProspectionSerializer):
+    """Serializer pour la liste (mêmes champs que detail, allégés côté API)."""
     class Meta:
         model = Prospection
-        fields = [
-            "id",
-            "partenaire",
-            "partenaire_nom",
-            "formation",
-            "formation_nom",
-            "centre",
-            "centre_nom",
-            "num_offre",
-            "date_prospection",
-            "type_prospection",
-            "type_prospection_display",
-            "motif",
-            "motif_display",
-            "statut",
-            "statut_display",
-            "objectif",
-            "objectif_display",
-            "commentaire",
-            "relance_prevue",
-            "moyen_contact",
-            "moyen_contact_display",
-            "is_active",
-            "relance_necessaire",
-            "created_by",
-            "created_at",
-            "updated_at",
-            "owner",
-            "owner_username",
-            "last_comment",
-            "last_comment_at",
-            "last_comment_id",
-            "comments_count",
-            "partenaire_ville",
-            "partenaire_tel",
-            "partenaire_email",
-            "formation_date_debut",
-            "formation_date_fin",
-            "type_offre_display",
-            "formation_statut_display",
-            "places_disponibles",
-        ]
+        fields = ProspectionSerializer.Meta.fields
 
 
 class ProspectionDetailSerializer(ProspectionSerializer):
+    commentaires = ProspectionCommentSerializer(many=True, read_only=True, source="comments")
+
     class Meta(ProspectionSerializer.Meta):
-        read_only_fields = ProspectionSerializer.Meta.fields
-
-
-# ---------------------------------------------------------------------
-# Historiques
-# ---------------------------------------------------------------------
-class HistoriqueProspectionSerializer(serializers.ModelSerializer):
-    owner = serializers.PrimaryKeyRelatedField(source="prospection.owner", read_only=True)
-    owner_username = serializers.StringRelatedField(source="prospection.owner", read_only=True)
-
-    type_prospection_display = serializers.CharField(source="get_type_prospection_display", read_only=True)
-    ancien_statut_display = serializers.CharField(source="get_ancien_statut_display", read_only=True)
-    nouveau_statut_display = serializers.CharField(source="get_nouveau_statut_display", read_only=True)
-    moyen_contact_display = serializers.CharField(source="get_moyen_contact_display", read_only=True)
-
-    champ_modifie = serializers.CharField(read_only=True)
-    ancienne_valeur = serializers.CharField(read_only=True, allow_null=True)
-    nouvelle_valeur = serializers.CharField(read_only=True, allow_null=True)
-
-    jours_avant_relance = serializers.IntegerField(read_only=True)
-    relance_urgente = serializers.BooleanField(read_only=True)
-    est_recent = serializers.BooleanField(read_only=True)
-    created_by = serializers.StringRelatedField(read_only=True)
-
-    type_prospection = serializers.ChoiceField(choices=ProspectionChoices.TYPE_PROSPECTION_CHOICES)
-    ancien_statut = serializers.ChoiceField(choices=ProspectionChoices.PROSPECTION_STATUS_CHOICES)
-    nouveau_statut = serializers.ChoiceField(choices=ProspectionChoices.PROSPECTION_STATUS_CHOICES)
-    moyen_contact = serializers.ChoiceField(choices=ProspectionChoices.MOYEN_CONTACT_CHOICES, required=False)
-
-    class Meta:
-        model = HistoriqueProspection
-        fields = [
-            "id",
-            "prospection",
-            "date_modification",
-            "champ_modifie",
-            "ancienne_valeur",
-            "nouvelle_valeur",
-            "ancien_statut",
-            "ancien_statut_display",
-            "nouveau_statut",
-            "nouveau_statut_display",
-            "type_prospection",
-            "type_prospection_display",
-            "commentaire",
-            "resultat",
-            "prochain_contact",
-            "moyen_contact",
-            "moyen_contact_display",
-            "jours_avant_relance",
-            "relance_urgente",
-            "est_recent",
-            "created_by",
-            "owner",
-            "owner_username",
-        ]
-        read_only_fields = [
-            "id",
-            "date_modification",
-            "champ_modifie",
-            "ancienne_valeur",
-            "nouvelle_valeur",
-            "ancien_statut_display",
-            "nouveau_statut_display",
-            "type_prospection_display",
-            "moyen_contact_display",
-            "jours_avant_relance",
-            "relance_urgente",
-            "est_recent",
-            "created_by",
-            "owner",
-            "owner_username",
-        ]
+        fields = ProspectionSerializer.Meta.fields + ["commentaires"]
 
 
 # ---------------------------------------------------------------------

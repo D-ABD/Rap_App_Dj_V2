@@ -7,6 +7,7 @@ from django.db.models import Count, Sum, F, Q, Value
 from django.db.models.functions import Coalesce, Substr, Greatest, NullIf
 from django.utils import timezone
 from django.utils.dateparse import parse_date
+from drf_spectacular.utils import extend_schema, OpenApiParameter
 
 from rest_framework.viewsets import GenericViewSet
 from rest_framework.decorators import action
@@ -115,10 +116,18 @@ class FormationStatsViewSet(RestrictToUserOwnedQueryset, GenericViewSet):
     # ────────────────────────────────────────────────────────────
     # Helpers data
     # ────────────────────────────────────────────────────────────
+
     def get_queryset(self):
-        qs = Formation.objects.select_related("centre", "type_offre", "statut")
+        qs = Formation._base_manager.select_related("centre", "type_offre", "statut")
         qs = self._scope_formations_for_user(qs, getattr(self.request, "user", None))
 
+        # 🔹 Exclure les formations archivées par défaut
+        #    Inclure si ?avec_archivees=true dans l’URL
+        inclure_archivees = str(self.request.query_params.get("avec_archivees", "false")).lower() in ["1", "true", "yes", "on"]
+        if not inclure_archivees:
+            qs = qs.exclude(activite="archivee")
+
+        # 🔐 Restriction éventuelle pour les non-staffs
         user = getattr(self.request, "user", None)
         is_staff_like = bool(
             user and (
@@ -131,6 +140,7 @@ class FormationStatsViewSet(RestrictToUserOwnedQueryset, GenericViewSet):
             qs = self.restrict_queryset_to_user(qs)
 
         return qs
+
 
     def _apply_common_filters(self, qs):
         p = self.request.query_params
@@ -220,6 +230,16 @@ class FormationStatsViewSet(RestrictToUserOwnedQueryset, GenericViewSet):
     # ────────────────────────────────────────────────────────────
     # LIST (overview)
     # ────────────────────────────────────────────────────────────
+    @extend_schema(
+    parameters=[
+        OpenApiParameter(
+            name="avec_archivees",
+            type=bool,
+            required=False,
+            description="Inclure les formations archivées (true/false)"
+        ),
+    ],
+)
     def list(self, request, *args, **kwargs):
         qs = self._apply_common_filters(self.get_queryset())
         base = self._base_metrics(qs)
@@ -306,6 +326,18 @@ class FormationStatsViewSet(RestrictToUserOwnedQueryset, GenericViewSet):
     # ────────────────────────────────────────────────────────────
     # Grouped
     # ────────────────────────────────────────────────────────────
+
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="avec_archivees",
+                type=bool,
+                required=False,
+                description="Inclure les formations archivées (true/false)"
+            ),
+        ],
+)
+
     @action(detail=False, methods=["GET"], url_path="grouped")
     def grouped(self, request):
         by: GroupKey = (request.query_params.get("by") or "departement").lower()
@@ -327,13 +359,15 @@ class FormationStatsViewSet(RestrictToUserOwnedQueryset, GenericViewSet):
             "type_offre": ["type_offre_id"],
             "statut": ["statut_id"],
         }[by]
+        qs = qs.distinct()
 
         rows = list(
             qs.values(*group_fields).annotate(
-                nb_formations=Count("id"),
-                nb_actives=Count("id", filter=Q(start_date__lte=today, end_date__gte=today)),
-                nb_a_venir=Count("id", filter=Q(start_date__gt=today)),
-                nb_terminees=Count("id", filter=Q(end_date__lt=today)),
+                nb_formations=Count("id", distinct=True),
+                nb_actives=Count("id", filter=Q(start_date__lte=today, end_date__gte=today), distinct=True),
+                nb_a_venir=Count("id", filter=Q(start_date__gt=today), distinct=True),
+                nb_terminees=Count("id", filter=Q(end_date__lt=today), distinct=True),
+
 
                 total_places=Coalesce(Sum(F("prevus_crif") + F("prevus_mp")), Value(0)),
                 total_places_crif=Coalesce(Sum("prevus_crif"), Value(0)),
@@ -433,6 +467,18 @@ class FormationStatsViewSet(RestrictToUserOwnedQueryset, GenericViewSet):
     # ────────────────────────────────────────────────────────────
     # Tops (règles: saturées ≥ 80%, tension < 50% & places > 0)
     # ────────────────────────────────────────────────────────────
+
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="avec_archivees",
+                type=bool,
+                required=False,
+                description="Inclure les formations archivées (true/false)"
+            ),
+        ],
+)
+
     @action(detail=False, methods=["GET"], url_path="tops")
     def tops(self, request):
         qs = self._apply_common_filters(self.get_queryset()).annotate(

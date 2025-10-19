@@ -1,5 +1,6 @@
 import logging
 from datetime import timedelta
+import bleach
 from django.db import models
 from django.db.models import Q, F, Avg, Count
 from django.urls import reverse
@@ -8,8 +9,9 @@ from django.utils import timezone
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.core.exceptions import ValidationError
 from django.template.loader import render_to_string
-from weasyprint import HTML
 from .base import BaseModel
+from weasyprint import HTML, CSS
+
 from .formations import Formation
 import csv
 import io
@@ -17,7 +19,6 @@ from docx import Document
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
 from django.http import HttpResponse
-from rest_framework.decorators import action
 
 logger = logging.getLogger(__name__)
 
@@ -26,62 +27,47 @@ logger = logging.getLogger(__name__)
 # ----------------------------------------------------
 
 
-class CommentaireManager(models.Manager):
+# ============================================================
+# 🔍 QuerySet & Manager personnalisés
+# ============================================================
+
+class CommentaireQuerySet(models.QuerySet):
+    """QuerySet personnalisé pour les commentaires de formation."""
+
+    def actifs(self):
+        """Commentaires non archivés."""
+        return self.filter(statut_commentaire="actif")
+
+    def archives(self):
+        """Commentaires archivés."""
+        return self.filter(statut_commentaire="archive")
+
+class CommentaireManager(models.Manager.from_queryset(CommentaireQuerySet)):
     """
-    Manager personnalisé pour le modèle Commentaire.
-    Fournit des méthodes optimisées pour les requêtes courantes.
+    Manager combiné :
+    - Fournit les filtres actifs()/archives()
+    - Conserve les helpers métier (recents, for_formation, search, etc.)
     """
-    
+
     def recents(self, days=7):
-        """
-        Retourne les commentaires postés dans les derniers jours.
-        
-        Args:
-            days (int): Nombre de jours à considérer comme récents
-            
-        Returns:
-            QuerySet: Commentaires récents
-        """
         date_limite = timezone.now() - timedelta(days=days)
         return self.filter(created_at__gte=date_limite)
-    
+
     def for_formation(self, formation_id):
-        """
-        Retourne tous les commentaires pour une formation donnée.
-        
-        Args:
-            formation_id (int): ID de la formation
-            
-        Returns:
-            QuerySet: Commentaires liés à la formation spécifiée
-        """
-        return self.filter(formation_id=formation_id).select_related('created_by')
-    
+        return self.filter(formation_id=formation_id).select_related("created_by")
+
     def with_saturation(self):
-        """
-        Retourne uniquement les commentaires avec une valeur de saturation.
-        
-        Returns:
-            QuerySet: Commentaires avec saturation renseignée
-        """
         return self.exclude(saturation__isnull=True)
-    
+
     def search(self, query):
-        """
-        Recherche dans les commentaires.
-        
-        Args:
-            query (str): Terme de recherche
-            
-        Returns:
-            QuerySet: Commentaires correspondants
-        """
         if not query:
             return self.all()
-        
-        return self.filter(Q(contenu__icontains=query) | 
-                          Q(created_by__username__icontains=query) |
-                          Q(formation__nom__icontains=query))
+        return self.filter(
+            Q(contenu__icontains=query)
+            | Q(created_by__username__icontains=query)
+            | Q(formation__nom__icontains=query)
+        )
+
 
 
 class Commentaire(BaseModel):
@@ -148,8 +134,81 @@ class Commentaire(BaseModel):
     )
 
     # === Managers === 
-    objects = models.Manager()  # Manager par défaut
-    custom = CommentaireManager()  # Manager personnalisé
+    objects = CommentaireManager()
+
+
+
+    # ============================================================
+# 🔁 Archivage logique
+# ============================================================
+
+    # --- Constantes de statut ---
+    STATUT_ACTIF = "actif"
+    STATUT_ARCHIVE = "archive"
+
+    STATUT_CHOICES = [
+        (STATUT_ACTIF, "Actif"),
+        (STATUT_ARCHIVE, "Archivé"),
+    ]
+
+    # --- Champ statut logique ---
+    statut_commentaire = models.CharField(
+        max_length=20,
+        choices=STATUT_CHOICES,
+        default=STATUT_ACTIF,
+        db_index=True,
+        verbose_name="Statut du commentaire",
+        help_text="Permet d’archiver ou de restaurer logiquement un commentaire.",
+    )
+
+    # ============================================================
+    # 🔁 Méthodes d’archivage logique — corrigées
+    # ============================================================
+
+    def archiver(self, user=None, save: bool = True):
+        """Archive logiquement le commentaire."""
+        if self.statut_commentaire != self.STATUT_ARCHIVE:
+            self.statut_commentaire = self.STATUT_ARCHIVE
+            # Optionnel : enregistrer qui a archivé
+            if hasattr(self, "archived_by") and user:
+                self.archived_by = user
+            if hasattr(self, "archived_at"):
+                self.archived_at = timezone.now()
+            if save:
+                # ✅ Pas d’update_fields ici : on veut forcer un vrai UPDATE SQL
+                super(Commentaire, self).save()
+            logger.info(f"✅ Commentaire #{self.pk} archivé (formation #{self.formation_id})")
+
+    def desarchiver(self, save: bool = True):
+        """Restaure un commentaire archivé."""
+        if self.statut_commentaire != self.STATUT_ACTIF:
+            self.statut_commentaire = self.STATUT_ACTIF
+            if hasattr(self, "archived_at"):
+                self.archived_at = None
+            if hasattr(self, "archived_by"):
+                self.archived_by = None
+            if save:
+                super(Commentaire, self).save()
+            logger.info(f"♻️ Commentaire #{self.pk} désarchivé (formation #{self.formation_id})")
+
+
+    # --- Aliases rétro-compatibles ---
+    def archive(self):
+        return self.archiver()
+
+    def restore(self):
+        return self.desarchiver()
+
+    @property
+    def est_archive(self) -> bool:
+        """Retourne True si le commentaire est archivé."""
+        return self.statut_commentaire == self.STATUT_ARCHIVE
+
+    @property
+    def activite(self) -> str:
+        """Alias rétro-compatible (pour ViewSets ou filtres anciens)."""
+        return "archivee" if self.est_archive else "active"
+
 
     # === Méta options ===
     class Meta:
@@ -169,6 +228,8 @@ class Commentaire(BaseModel):
             )
         ]
 
+        
+
     def __str__(self):
         """
         🔁 Représentation textuelle du commentaire.
@@ -185,53 +246,49 @@ class Commentaire(BaseModel):
     def clean(self):
         """
         Validation métier spécifique pour le commentaire.
-        
-        Raises:
-            ValidationError: Si les données ne sont pas valides
+        (Le nettoyage HTML est désormais géré dans le serializer.)
         """
         super().clean()
-        
+
         # Validation de la saturation
         if self.saturation is not None:
-            if self.saturation < self.SATURATION_MIN or self.saturation > self.SATURATION_MAX:
+            if not (self.SATURATION_MIN <= self.saturation <= self.SATURATION_MAX):
                 raise ValidationError({
-                    'saturation': f"La saturation doit être comprise entre {self.SATURATION_MIN} et {self.SATURATION_MAX}%"
+                    "saturation": f"La saturation doit être comprise entre {self.SATURATION_MIN} et {self.SATURATION_MAX}%"
                 })
-        
+
         # Validation du contenu (non vide)
-        if not self.contenu.strip():
-            raise ValidationError({
-                'contenu': "Le contenu ne peut pas être vide"
-            })
+        if not self.contenu or not self.contenu.strip():
+            raise ValidationError({"contenu": "Le contenu ne peut pas être vide."})
 
     def save(self, *args, **kwargs):
         """
         💾 Sauvegarde le commentaire après nettoyage et validation.
 
         - Vérifie et contraint la valeur de `saturation` entre 0 et 100.
-        - Copie la saturation de la formation (si disponible).
-        - Validation des données métier via `clean()`.
+        - Copie la saturation actuelle de la formation dans `saturation_formation`
+        au moment de la création (instantané historique).
         """
 
-        # ✅ NE PAS nettoyer ici : on suppose que le frontend a déjà validé/sécurisé le HTML
-        pass
-
-        # Clamp de la saturation
+        # Clamp de la saturation (au cas où elle serait saisie manuellement)
         if self.saturation is not None:
             self.saturation = max(self.SATURATION_MIN, min(self.SATURATION_MAX, self.saturation))
 
-        # Copier la saturation de la formation (au moment de la création)
-        if self.formation and hasattr(self.formation, 'saturation'):
+        is_new = self.pk is None
+
+        # ✅ Copier la saturation de la formation uniquement à la création
+        if is_new and self.formation and hasattr(self.formation, "saturation"):
             self.saturation_formation = self.formation.saturation
 
         # Validation métier
         self.clean()
 
-        is_new = self.pk is None
-
         super().save(*args, **kwargs)
 
-        logger.debug(f"Commentaire #{self.pk} {'créé' if is_new else 'mis à jour'} pour la formation #{self.formation_id}")
+        logger.debug(
+            f"Commentaire #{self.pk} {'créé' if is_new else 'mis à jour'} "
+            f"pour la formation #{self.formation_id} — sat_form={self.saturation_formation}"
+        )
         
     def delete(self, *args, **kwargs):
         """
@@ -588,19 +645,3 @@ class Commentaire(BaseModel):
         """
         return reverse("commentaire-delete", kwargs={"pk": self.pk})
     
-    @action(detail=False, methods=["get"], url_path="export-pdf")
-    def export_pdf(self, request):
-        ids = request.GET.getlist("ids")
-        commentaires = self.queryset.filter(id__in=ids)
-
-        html_string = render_to_string("commentaires/export_pdf.html", {"commentaires": commentaires})
-        pdf_file = HTML(string=html_string).write_pdf()
-
-        return HttpResponse(
-            pdf_file,
-            content_type="application/pdf",
-            headers={"Content-Disposition": 'attachment; filename="commentaires.pdf"'}
-        )
-
-
-

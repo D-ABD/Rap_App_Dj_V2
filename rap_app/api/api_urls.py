@@ -1,6 +1,8 @@
 from django.urls import path
 from rest_framework.routers import DefaultRouter
 
+from .viewsets.cerfa_contrat_viewset import CerfaContratViewSet
+
 
 from .viewsets.stats_viewsets.prospection_comment_stats_viewset import ProspectionCommentStatsViewSet
 from .viewsets.stats_viewsets.commentaires_stats_viewsets import CommentaireStatsViewSet
@@ -13,21 +15,21 @@ from .viewsets.stats_viewsets.formation_stats_viewsets import FormationStatsView
 from .viewsets.stats_viewsets.appairage_comment_stats_viewset import AppairageCommentaireStatsViewSet
 
 # ViewSets
-from .viewsets.appairage_viewsets import AppairageViewSet, HistoriqueAppairageViewSet
+from .viewsets.appairage_viewsets import AppairageViewSet
 from .viewsets.appairage_commentaires_viewset import CommentaireAppairageViewSet
 from .viewsets.atelier_tre_viewsets import AtelierTREViewSet
 from .viewsets.auth_viewset import EmailTokenObtainPairView
-from .viewsets.candidat_viewsets import CandidatViewSet, HistoriquePlacementViewSet
+from .viewsets.candidat_viewsets import CandidatViewSet
 from .viewsets.centres_viewsets import CentreViewSet
 from .viewsets.commentaires_viewsets import CommentaireViewSet
 from .viewsets.documents_viewsets import DocumentViewSet
 from .viewsets.evenements_viewsets import EvenementViewSet
-from .viewsets.formations_viewsets import FormationViewSet, HistoriqueFormationGroupedView, HistoriqueFormationViewSet
+from .viewsets.formations_viewsets import FormationViewSet
 from .viewsets.login_logout_viewset import LoginAPIView, LogoutAPIView
 from .viewsets.logs_viewsets import LogUtilisateurViewSet
 from .viewsets.partenaires_viewsets import PartenaireViewSet
 from .viewsets.prepacomp_viewsets import PrepaCompGlobalViewSet, SemaineViewSet
-from .viewsets.prospection_viewsets import HistoriqueProspectionViewSet, ProspectionViewSet
+from .viewsets.prospection_viewsets import ProspectionViewSet
 from .viewsets.prospection_comment_viewsets import ProspectionCommentViewSet
 from .viewsets.rapports_viewsets import RapportViewSet
 from .viewsets.search_viewset import SearchView
@@ -36,7 +38,7 @@ from .viewsets.temporaire_viewset import test_token_view
 from .viewsets.types_offre_viewsets import TypeOffreViewSet
 from .viewsets.user_viewsets import CustomUserViewSet, RegisterView
 from .viewsets.jury_viewsets import SuiviJuryViewSet
-from .viewsets.vae_viewsets import HistoriqueStatutVAEViewSet, VAEViewSet
+from .viewsets.vae_viewsets import VAEViewSet
 
 # Ajout des APIView Me & Roles
 from .viewsets.me_viewsets import MeAPIView, RoleChoicesView
@@ -50,7 +52,6 @@ urlpatterns = [
     path("login/", LoginAPIView.as_view(), name="login"),
     path("token/", EmailTokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("test-token/", test_token_view, name="test_token"),
-    path("formations/historique/grouped/", HistoriqueFormationGroupedView.as_view(), name="historique-grouped"),
 
     # Profil & rôles
     path("me/", MeAPIView.as_view(), name="me"),
@@ -66,18 +67,15 @@ router.register(r'typeoffres', TypeOffreViewSet, basename='typeoffre')
 
 # 📚 Formations & contenus associés
 router.register(r'formations', FormationViewSet, basename='formation')
-router.register(r'historiques', HistoriqueFormationViewSet, basename='historiques')
 router.register(r'documents', DocumentViewSet, basename='document')
 router.register(r'evenements', EvenementViewSet, basename='evenement')
 router.register(r'commentaires', CommentaireViewSet, basename='commentaire')
 
 # 👥 Candidats & accompagnement
 router.register(r'candidats', CandidatViewSet, basename='candidat')
-router.register(r'historiques-placements', HistoriquePlacementViewSet, basename='historiqueplacement')
 
 # 🤝 Appairages
 router.register(r'appairages', AppairageViewSet, basename='appairage')
-router.register(r'historiques-appairages', HistoriqueAppairageViewSet, basename='historique-appairage')
 
 # 🧑‍🏫 Ateliers TRE
 router.register(r'ateliers-tre', AtelierTREViewSet, basename='ateliers-tre')
@@ -85,14 +83,12 @@ router.register(r'ateliers-tre', AtelierTREViewSet, basename='ateliers-tre')
 # 🧭 Prospection & partenaires
 router.register(r'partenaires', PartenaireViewSet, basename='partenaire')
 router.register(r'prospections', ProspectionViewSet, basename='prospection')
-router.register(r'historiques-prospection', HistoriqueProspectionViewSet, basename='historiqueprospection')
 router.register(r"prospection-comments", ProspectionCommentViewSet, basename="prospection-comment")
 router.register(r"prospection-commentaires", ProspectionCommentViewSet, basename="prospection-comment-fr")
 
 # 🧾 Suivi jury & VAE
 router.register(r'suivis-jury', SuiviJuryViewSet, basename='suivijury')
 router.register(r'vaes', VAEViewSet, basename='vae')
-router.register(r'historiques-vae', HistoriqueStatutVAEViewSet, basename='historiquestatutsvae')
 
 # 📊 Prépa compétences
 router.register(r'semaines', SemaineViewSet, basename='semaine')
@@ -119,6 +115,9 @@ router.register(r"prospection-comment-stats", ProspectionCommentStatsViewSet, ba
 router.register(r"appairage-commentaires", CommentaireAppairageViewSet, basename="appairage-commentaire")
 router.register(r"appairage-commentaire-stats", AppairageCommentaireStatsViewSet, basename="appairage-commentaire-stats")
 router.register(r"appairage-comment-stats", AppairageCommentaireStatsViewSet, basename="appairage-comment-stats")
+
+
+router.register(r"cerfa-contrats", CerfaContratViewSet, basename="cerfa-contrat")
 
 # 🔗 Ajout des routes REST
 urlpatterns += router.urls

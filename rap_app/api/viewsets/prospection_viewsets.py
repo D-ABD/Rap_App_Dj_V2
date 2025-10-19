@@ -1,6 +1,7 @@
 # views/prospection.py
 
 from django.db import transaction
+from django.shortcuts import get_object_or_404
 from rest_framework import viewsets, status, filters, serializers
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -15,13 +16,28 @@ from drf_spectacular.utils import (
 )
 import datetime
 from django.db.models import Q, Exists, OuterRef
-
+from openpyxl import Workbook
+from openpyxl.styles import Font, PatternFill, Border, Side, Alignment
+from openpyxl.utils import get_column_letter
+from openpyxl.drawing.image import Image as XLImage
 from openpyxl import Workbook
 from openpyxl.utils import get_column_letter
 from io import BytesIO
 from django.http import HttpResponse
 from django.utils import timezone as dj_timezone
-
+from io import BytesIO
+from pathlib import Path
+import datetime
+from django.http import HttpResponse
+from django.utils import timezone as dj_timezone
+from django.conf import settings
+from django.templatetags.static import static
+from openpyxl import Workbook
+from openpyxl.utils import get_column_letter
+from openpyxl.styles import PatternFill, Font, Alignment
+from openpyxl.drawing.image import Image as XLImage
+from rest_framework.decorators import action
+from drf_spectacular.utils import extend_schema
 from django.contrib.auth import get_user_model
 from rest_framework.exceptions import PermissionDenied
 
@@ -31,13 +47,12 @@ from ...utils.filters import ProspectionFilterSet
 from ...models.partenaires import Partenaire
 from ...models.custom_user import CustomUser
 from ...api.paginations import RapAppPagination
-from ...models.prospection import Prospection, HistoriqueProspection, ProspectionChoices
+from ...models.prospection import Prospection, ProspectionChoices
 from ..serializers.prospection_serializers import (
     ProspectionChoiceListSerializer,
     ProspectionListSerializer,
     ProspectionSerializer,
     ProspectionDetailSerializer,
-    HistoriqueProspectionSerializer,
 )
 from ...models.logs import LogUtilisateur
 from ...models.candidat import Candidat
@@ -200,8 +215,8 @@ class ProspectionViewSet(viewsets.ModelViewSet):
     pagination_class = RapAppPagination
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_class = ProspectionFilterSet
-    ordering_fields = ["date_prospection", "created_at", "owner__username", "last_comment_at", "comments_count"]
-    ordering = ["created_at"]
+    ordering_fields = ["created_at", "date_prospection", "owner__username", "last_comment_at", "comments_count"]
+    ordering = ["-date_prospection", "-created_at"]
 
     search_fields = [
         "commentaire",
@@ -254,10 +269,30 @@ class ProspectionViewSet(viewsets.ModelViewSet):
         qs = annotate_last_visible_comment(base, user)
         qs = self._scoped_for_user(qs, user)
 
+        # ─────────────────────────────────────────────
+        # 🆕 Gestion du filtre d'activité (active / archivée)
+        # ─────────────────────────────────────────────
+        activite_param = self.request.query_params.get("activite")
+
+        # ✅ compatibilité front : inclure_archives (nouveau) OU avec_archivees (ancien)
+        inclure_archivees = any(
+            self.request.query_params.get(k) in ("1", "true", "True", "yes", "oui")
+            for k in ("inclure_archives", "avec_archivees")
+        )
+
+        if activite_param in ("active", "archivee"):
+            qs = qs.filter(activite=activite_param)
+        elif not inclure_archivees:
+            # Par défaut : on ne montre que les actives
+            qs = qs.filter(activite=Prospection.ACTIVITE_ACTIVE)
+
+        # Debug utile (à garder ou supprimer)
         ids = list(qs.values_list("id", flat=True))
-        print(f"[DEBUG get_queryset] action={getattr(self, 'action', '?')} ids={ids}")
+        (f"[DEBUG get_queryset] action={getattr(self, 'action', '?')} activite={activite_param} ids={ids}")
 
         return qs
+
+
 
     @action(detail=False, methods=["get"], url_path="filtres")
     def get_filters(self, request):
@@ -332,6 +367,63 @@ class ProspectionViewSet(viewsets.ModelViewSet):
                 }
             }
         )
+    
+    @action(detail=True, methods=["post"], url_path="archiver")
+    @extend_schema(
+        summary="🗃 Archiver une prospection",
+        description="Marque une prospection comme archivée (désactivée).",
+        tags=["Prospections"],
+        responses={200: OpenApiResponse(response=ProspectionSerializer)},
+    )
+    def archiver(self, request, pk=None):
+        instance = self.get_object()
+        resultat = request.data.get("resultat")
+        instance.archiver(user=request.user, resultat=resultat)
+        LogUtilisateur.log_action(
+            instance,
+            LogUtilisateur.ACTION_UPDATE,
+            request.user,
+            f"Archivée ({resultat or 'sans résultat'})"
+        )
+        serializer = self.get_serializer(instance)
+        return Response(
+            {"success": True, "message": "Prospection archivée avec succès.", "data": serializer.data},
+            status=status.HTTP_200_OK,
+        )
+
+    @action(detail=True, methods=["post"], url_path="desarchiver")
+    @extend_schema(
+        summary="📂 Désarchiver une prospection",
+        description="Rétablit une prospection archivée vers l’état actif.",
+        tags=["Prospections"],
+        responses={200: OpenApiResponse(response=ProspectionSerializer)},
+    )
+    def desarchiver(self, request, pk=None):
+        instance = self.get_object()
+
+        if instance.activite != Prospection.ACTIVITE_ARCHIVEE:
+            return Response(
+                {"success": False, "message": "La prospection n’est pas archivée."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        instance.desarchiver(user=request.user)
+        LogUtilisateur.log_action(instance, LogUtilisateur.ACTION_UPDATE, request.user, "Désarchivée")
+
+        serializer = self.get_serializer(instance)
+        return Response(
+            {"success": True, "message": "Prospection désarchivée avec succès.", "data": serializer.data},
+            status=status.HTTP_200_OK,
+        )
+    
+    def get_object(self):
+        """Permet de récupérer même les prospections archivées."""
+        queryset = Prospection.objects.all()  # ne filtre pas sur is_active
+        obj = get_object_or_404(queryset, pk=self.kwargs["pk"])
+        self.check_object_permissions(self.request, obj)
+        return obj
+
+
 
     def get_serializer_class(self):
         if self.action == "list":
@@ -455,9 +547,30 @@ class ProspectionViewSet(viewsets.ModelViewSet):
         )
 
     def retrieve(self, request, *args, **kwargs):
+        user = request.user
         instance = self.get_object()
+
+        # 🟢 Ré-annote le queryset pour inclure last_comment / last_comment_at / comments_count
+        qs = annotate_last_visible_comment(
+            Prospection.objects.filter(pk=instance.pk)
+            .select_related(
+                "partenaire",
+                "formation",
+                "formation__centre",
+                "formation__type_offre",
+                "formation__statut",
+            ),
+            user,
+        )
+
+        instance = qs.first()
+
         serializer = self.get_serializer(instance)
-        return Response({"success": True, "message": "Détail de la prospection", "data": serializer.data})
+        return Response({
+            "success": True,
+            "message": "Détail de la prospection",
+            "data": serializer.data,
+        })
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data, context={"request": request})
@@ -588,17 +701,6 @@ class ProspectionViewSet(viewsets.ModelViewSet):
             }
         )
 
-    @action(detail=True, methods=["get"], url_path="historiques")
-    @extend_schema(
-        summary="📜 Voir l’historique d’une prospection",
-        tags=["Prospections"],
-        responses={200: OpenApiResponse(response=HistoriqueProspectionSerializer(many=True))},
-    )
-    def historiques(self, request, pk=None):
-        instance = self.get_object()
-        qs = instance.historiques.order_by("-date_modification")
-        serializer = HistoriqueProspectionSerializer(qs, many=True, context={"request": request})
-        return Response({"success": True, "message": "Historique chargé avec succès.", "data": serializer.data})
 
     @action(detail=False, methods=["get"], url_path="choices")
     @extend_schema(
@@ -643,10 +745,15 @@ class ProspectionViewSet(viewsets.ModelViewSet):
             }
         )
 
-    # ---------- Actions exports ----------
+    @extend_schema(summary="Exporter les prospections au format XLSX")
     @action(detail=False, methods=["get", "post"], url_path="export-xlsx")
     def export_xlsx(self, request):
+        """Export des prospections en Excel (avec logo, titre, date d’export et mise en forme)."""
         user = request.user
+
+        # ==========================================================
+        # 🔍 Queryset filtré
+        # ==========================================================
         qs = self.filter_queryset(
             self.get_queryset().select_related(
                 "formation",
@@ -659,44 +766,87 @@ class ProspectionViewSet(viewsets.ModelViewSet):
             )
         )
 
-        ids = request.data.get("ids") if request.method == "POST" else None
-        if ids:
-            ids = _parse_id_list(ids)
-            qs = qs.filter(id__in=ids)
+        if request.method == "POST":
+            ids = request.data.get("ids", [])
+            if isinstance(ids, str):
+                ids = [int(x) for x in ids.split(",") if x.isdigit()]
+            elif isinstance(ids, list):
+                ids = [int(x) for x in ids if str(x).isdigit()]
+            else:
+                ids = []
+            if ids:
+                qs = qs.filter(id__in=ids)
 
+        # ==========================================================
+        # 📘 Workbook
+        # ==========================================================
         wb = Workbook()
         ws = wb.active
         ws.title = "Prospections"
 
-        # Prospection toujours
-        prospection_fields = [
-            "id", "date_prospection", "statut", "objectif",
-            "motif", "type_prospection", "commentaire", "relance_prevue",
+        # ==========================================================
+        # 🖼️ Logo Rap_App
+        # ==========================================================
+        try:
+            logo_path = Path(settings.BASE_DIR) / "rap_app/static/images/logo.png"
+            if logo_path.exists():
+                img = XLImage(str(logo_path))
+                img.height = 60
+                img.width = 60
+                ws.add_image(img, "A1")
+        except Exception:
+            pass
+
+        # ==========================================================
+        # 🧾 Titre + date d’export
+        # ==========================================================
+        ws.merge_cells("B1:Y1")
+        ws["B1"] = "Export des prospections — Rap_App"
+        ws["B1"].font = Font(bold=True, size=14, color="004C99")
+        ws["B1"].alignment = Alignment(horizontal="center", vertical="center")
+
+        ws.merge_cells("B2:Y2")
+        ws["B2"] = f"Export réalisé le {dj_timezone.now().strftime('%d/%m/%Y à %H:%M')}"
+        ws["B2"].font = Font(italic=True, size=10, color="666666")
+        ws["B2"].alignment = Alignment(horizontal="center", vertical="center")
+
+        ws.append([])
+
+        # ==========================================================
+        # 📋 En-têtes
+        # ==========================================================
+        headers = [
+            "ID", "Date prospection", "Statut", "Activité", "Type prospection",
+            "Objectif", "Motif", "Dernier commentaire", "Date Relance prévue",
+            "Partenaire", "Code postal", "Contact", "Email", "Téléphone",
+            "Formation", "Centre", "Type offre", "Statut formation",
+            "Date début", "Date fin", "Numéro offre",
+            "Places dispo", "Taux saturation (%)", "Places totales", "Inscrits totaux",
         ]
-
-        # Rôle candidat/stagiaire → Formation limitée
-        if hasattr(user, "is_candidat_or_stagiaire") and user.is_candidat_or_stagiaire():
-            formation_fields = ["nom", "centre_nom"]
-        else:
-            formation_fields = [
-                "id", "nom", "centre_nom", "type_offre_nom", "statut_nom",
-                "start_date", "end_date", "num_offre", "places_disponibles",
-                "taux_saturation", "total_places", "total_inscrits",
-            ]
-
-        # Partenaire : toujours toutes les infos demandées
-        partenaire_fields = [
-            "nom", "zip_code", "contact_nom", "contact_email", "contact_telephone",
-        ]
-
-        # Ajout staff-only : owner / created_by
-        extra_fields = []
-        if not (hasattr(user, "is_candidat_or_stagiaire") and user.is_candidat_or_stagiaire()):
-            extra_fields = ["owner_username", "created_by_username"]
-
-        headers = prospection_fields + [f"formation__{f}" for f in formation_fields] + [f"partenaire__{f}" for f in partenaire_fields] + extra_fields
         ws.append(headers)
 
+        header_row = ws.max_row
+        last_col_letter = get_column_letter(len(headers))
+
+        header_fill = PatternFill("solid", fgColor="B7DEE8")
+        header_font = Font(bold=True, color="000000")
+        border = Border(
+            left=Side(style="thin", color="CCCCCC"),
+            right=Side(style="thin", color="CCCCCC"),
+            top=Side(style="thin", color="CCCCCC"),
+            bottom=Side(style="thin", color="CCCCCC"),
+        )
+
+        for cell in ws[header_row]:
+            cell.font = header_font
+            cell.alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            cell.fill = header_fill
+            cell.border = border
+        ws.row_dimensions[header_row].height = 28
+
+        # ==========================================================
+        # 🧮 Données
+        # ==========================================================
         def _fmt(val):
             if val is None:
                 return ""
@@ -708,160 +858,122 @@ class ProspectionViewSet(viewsets.ModelViewSet):
                 return round(val, 2)
             return str(val)
 
-        for p in qs:
-            row = []
-            # Prospection
-            for field in prospection_fields:
-                row.append(_fmt(getattr(p, field, "")))
+        even_fill = PatternFill("solid", fgColor="EEF3FF")
+        odd_fill = PatternFill("solid", fgColor="FAFBFD")
+        archived_fill = PatternFill("solid", fgColor="E0E0E0")
 
-            # Formation
-            f = p.formation
-            if f:
-                if hasattr(user, "is_candidat_or_stagiaire") and user.is_candidat_or_stagiaire():
-                    row += [
-                        f.nom,
-                        getattr(f.centre, "nom", ""),
-                    ]
-                else:
-                    row += [
-                        f.id,
-                        f.nom,
-                        getattr(f.centre, "nom", ""),
-                        getattr(f.type_offre, "nom", ""),
-                        getattr(f.statut, "nom", ""),
-                        _fmt(f.start_date),
-                        _fmt(f.end_date),
-                        f.num_offre or "",
-                        f.places_disponibles,
-                        f.taux_saturation,
-                        f.total_places,
-                        f.total_inscrits,
-                    ]
-            else:
-                row += [""] * len(formation_fields)
+        for i, p in enumerate(qs, start=1):
+            f = getattr(p, "formation", None)
+            part = getattr(p, "partenaire", None)
 
-            # Partenaire
-            part = p.partenaire
-            row += [
+            taux_pct = getattr(f, "taux_saturation", 0) or 0
+            if taux_pct <= 1:
+                taux_pct *= 100.0
+
+            last_comment = (getattr(p, "last_comment", "") or "").strip()
+
+            row = [
+                p.id,
+                _fmt(getattr(p, "date_prospection", None)),
+                getattr(p, "statut", ""),
+                getattr(p, "get_activite_display", lambda: getattr(p, "activite", ""))(),
+                getattr(p, "type_prospection", ""),
+                getattr(p, "objectif", ""),
+                getattr(p, "motif", ""),
+                last_comment,
+                _fmt(getattr(p, "relance_prevue", None)),
                 getattr(part, "nom", ""),
                 getattr(part, "zip_code", ""),
                 getattr(part, "contact_nom", ""),
                 getattr(part, "contact_email", ""),
                 getattr(part, "contact_telephone", ""),
+                getattr(f, "nom", "") if f else "",
+                getattr(f.centre, "nom", "") if f and f.centre else "",
+                getattr(f.type_offre, "nom", "") if f and f.type_offre else "",
+                getattr(f.statut, "nom", "") if f and f.statut else "",
+                _fmt(getattr(f, "start_date", None)) if f else "",
+                _fmt(getattr(f, "end_date", None)) if f else "",
+                getattr(f, "num_offre", "") if f else "",
+                getattr(f, "places_disponibles", "") if f else "",
+                taux_pct,
+                getattr(f, "total_places", "") if f else "",
+                getattr(f, "total_inscrits", "") if f else "",
             ]
-
-            # Staff-only extras
-            if not (hasattr(user, "is_candidat_or_stagiaire") and user.is_candidat_or_stagiaire()):
-                row += [
-                    getattr(p.owner, "username", ""),
-                    getattr(p.created_by, "username", ""),
-                ]
-
             ws.append(row)
 
-        # Ajustement colonnes
-        for col in ws.columns:
-            max_length = 0
-            col_letter = get_column_letter(col[0].column)
-            for cell in col:
-                if cell.value:
-                    max_length = max(max_length, len(str(cell.value)))
-            ws.column_dimensions[col_letter].width = min(max_length + 2, 50)
+            # Alternance et archive
+            fill = archived_fill if getattr(p, "activite", "") == Prospection.ACTIVITE_ARCHIVEE else (
+                even_fill if i % 2 == 0 else odd_fill
+            )
 
+            for cell in ws[ws.max_row]:
+                cell.fill = fill
+                cell.border = border
+                cell.alignment = Alignment(vertical="center", wrapText=True)
+
+            # === KPI couleur sur taux saturation ===
+            taux_cell = ws.cell(row=ws.max_row, column=22)
+            try:
+                taux_value = float(taux_cell.value or 0)
+            except ValueError:
+                taux_value = 0.0
+
+            if taux_value <= 30:
+                taux_color, taux_fill = ("9C0006", "FFC7CE")   # Rouge clair
+            elif taux_value <= 50:
+                taux_color, taux_fill = ("9C6500", "FFEB9C")   # Orange
+            elif taux_value < 100:
+                taux_color, taux_fill = ("1F4E79", "BDD7EE")   # Bleu
+            else:
+                taux_color, taux_fill = ("006100", "C6EFCE")   # Vert
+
+            taux_cell.fill = PatternFill("solid", fgColor=taux_fill)
+            taux_cell.font = Font(color=taux_color, bold=True)
+            taux_cell.number_format = "0%"
+
+            # Force conversion pour affichage correct
+            taux_cell.value = taux_value / 100.0
+            ws.row_dimensions[ws.max_row].height = 25
+
+        # ==========================================================
+        # 📊 Filtres + mise en page
+        # ==========================================================
+        end_row = ws.max_row
+        if end_row > header_row:
+            ws.auto_filter.ref = f"A{header_row}:{last_col_letter}{end_row}"
+
+        ws.freeze_panes = f"A{header_row + 1}"
+
+        # ==========================================================
+        # 📏 Largeurs auto-ajustées
+        # ==========================================================
+        for col in ws.columns:
+            letter = get_column_letter(col[0].column)
+            max_len = max((len(str(c.value)) for c in col if c.value), default=0)
+            ws.column_dimensions[letter].width = min(max_len + 3, 42)
+
+        # Colonnes spécifiques (meilleur confort lecture)
+        ws.column_dimensions["E"].width = 35  # Objectif
+        ws.column_dimensions["H"].width = 55  # Dernier commentaire
+        ws.column_dimensions["N"].width = 28  # Téléphone
+        ws.column_dimensions["Q"].width = 25  # Type offre
+
+        ws.oddFooter.center.text = f"© Rap_App — export du {dj_timezone.now().strftime('%d/%m/%Y %H:%M')}"
+
+        # ==========================================================
+        # 📤 Réponse HTTP
+        # ==========================================================
         buffer = BytesIO()
         wb.save(buffer)
-        binary_content = buffer.getvalue()
+        binary = buffer.getvalue()
+        buffer.close()
 
         filename = f'prospections_{dj_timezone.now().strftime("%Y%m%d_%H%M%S")}.xlsx'
         response = HttpResponse(
-            binary_content,
+            binary,
             content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         )
         response["Content-Disposition"] = f'attachment; filename="{filename}"'
-        response["Content-Length"] = len(binary_content)
+        response["Content-Length"] = len(binary)
         return response
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-class HistoriqueProspectionViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = HistoriqueProspection.objects.select_related(
-        "prospection",
-        "prospection__partenaire",
-        "prospection__formation",
-        "prospection__formation__centre",
-    )
-    serializer_class = HistoriqueProspectionSerializer
-    permission_classes = [IsOwnerOrStaffOrAbove]  # ✅ protection lecture objet
-    pagination_class = RapAppPagination
-    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filterset_fields = ["prospection", "nouveau_statut", "type_prospection"]
-    search_fields = ["commentaire", "resultat"]
-    ordering_fields = ["date_modification", "prochain_contact"]
-    ordering = ["-date_modification"]
-
-    def get_queryset(self):
-        qs = self.queryset
-        user = self.request.user
-        if not user.is_authenticated:
-            return HistoriqueProspection.objects.none()
-
-        # candidats → historiques de leurs prospections
-        if is_candidate(user):
-            return qs.filter(prospection__owner=user)
-
-        # admin/superadmin → tout
-        if is_admin_like(user):
-            return qs
-
-        # staff → restreint à ses centres + fallback owner/creator
-        if is_staff_or_staffread(user):
-            centre_ids = staff_centre_ids(user) or []
-            if not centre_ids:
-                return qs.filter(Q(prospection__owner=user) | Q(prospection__created_by=user))
-            return qs.filter(
-                Q(prospection__formation__centre_id__in=centre_ids)
-                | Q(prospection__owner=user)
-                | Q(prospection__created_by=user)
-            ).distinct()
-
-        # autres rôles → owner/creator uniquement
-        return qs.filter(Q(prospection__owner=user) | Q(prospection__created_by=user))
-
-    def list(self, request, *args, **kwargs):
-        qs = self.filter_queryset(self.get_queryset())
-        page = self.paginate_queryset(qs)
-        serializer = self.get_serializer(page, many=True)
-        return Response(
-            {
-                "success": True,
-                "message": "Liste paginée des historiques de prospection.",
-                "data": {
-                    "count": self.paginator.page.paginator.count,
-                    "next": self.paginator.get_next_link(),
-                    "previous": self.paginator.get_previous_link(),
-                    "results": serializer.data,
-                },
-            }
-        )
-
-    def retrieve(self, request, *args, **kwargs):
-        instance = self.get_object()
-        serializer = self.get_serializer(instance)
-        return Response({"success": True, "message": "Historique récupéré avec succès.", "data": serializer.data})

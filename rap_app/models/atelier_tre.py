@@ -100,10 +100,11 @@ class AtelierTRE(BaseModel):
     
 
 class PresenceStatut(models.TextChoices):
-    INCONNU = "inconnu", _("Non renseigné")
-    PRESENT = "present", _("Présent")
-    ABSENT = "absent", _("Absent")
-    EXCUSE = "excuse", _("Excusé")
+    PRESENT = "present", "Présent"
+    ABSENT = "absent", "Absent"
+    EXCUSE = "excuse", "Excusé"
+    INCONNU = "inconnu", "Non renseigné"  
+
 
 class AtelierTREPresence(BaseModel):
     """

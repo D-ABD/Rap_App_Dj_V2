@@ -192,6 +192,7 @@ class AppairageLiteSerializer(serializers.ModelSerializer):
     ]
 )
 class CandidatSerializer(serializers.ModelSerializer):
+    # Champs calculés déjà présents
     age = serializers.IntegerField(read_only=True)
     nom_complet = serializers.CharField(read_only=True)
     nb_appairages = serializers.IntegerField(source="nb_appairages_calc", read_only=True)
@@ -204,11 +205,11 @@ class CandidatSerializer(serializers.ModelSerializer):
     centre_id = serializers.IntegerField(source="formation.centre_id", read_only=True)
     centre_nom = serializers.CharField(source="formation.centre.nom", read_only=True)
 
-    # ✅ projections utiles UI
+    # Projections
     formation_info = FormationLiteSerializer(source="formation", read_only=True)
-    last_appairage = serializers.SerializerMethodField()  # ✅ dernier appairage complet (lite)
+    last_appairage = serializers.SerializerMethodField()
 
-    # ✅ Libellés visibles même pour non-staff
+    # Libellés liés
     responsable_placement_nom = serializers.SerializerMethodField()
     entreprise_placement_nom = serializers.SerializerMethodField()
     entreprise_validee_nom = serializers.SerializerMethodField()
@@ -217,29 +218,61 @@ class CandidatSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Candidat
-        fields = "__all__"
-        read_only_fields = [
-            "age",
-            "nom_complet",
-            "nb_appairages",
-            "nb_prospections",
-            "role_utilisateur",
-            "ateliers_resume",
-            "peut_modifier",
-            "cv_statut_display",
-            "formation_info",
-            "centre_nom", 
-            "centre_id",
-            "last_appairage",
-            # read-only exposés
-            "responsable_placement_nom",
-            "entreprise_placement_nom",
-            "entreprise_validee_nom",
-            "vu_par_nom",
-            "resultat_placement_display",
-            "ateliers_counts",
+        # ⚠️ Inclure 100 % des champs du modèle Candidat
+        fields = [
+            # Identité et contact
+            "id", "sexe", "nom_naissance", "nom", "prenom",
+            "date_naissance", "departement_naissance", "commune_naissance",
+            "pays_naissance", "nationalite", "nir",
+            "email", "telephone",
+            "street_number", "street_name", "street_complement", "ville", "code_postal",
+
+            "compte_utilisateur", "role_utilisateur",
+
+            # Statut & formation
+            "entretien_done", "test_is_ok", "cv_statut", "cv_statut_display", "statut",
+            "formation", "formation_info", "evenement", "notes", "origine_sourcing",
+            "date_inscription", "rqth", "type_contrat", "disponibilite", "permis_b",
+            "communication", "experience", "csp", "vu_par", "vu_par_nom",
+
+            # Champs Contrats / Parcours
+            "regime_social", "sportif_haut_niveau", "equivalence_jeunes", "extension_boe",
+            "situation_actuelle", "dernier_diplome_prepare", "diplome_plus_eleve_obtenu",
+            "derniere_classe", "intitule_diplome_prepare", "situation_avant_contrat",
+            "projet_creation_entreprise",
+
+            # Représentant légal
+            "representant_lien", "representant_nom_naissance", "representant_prenom",
+            "representant_email", "representant_street_name", "representant_zip_code",
+            "representant_city",
+
+            # Placement
+            "responsable_placement", "responsable_placement_nom", "date_placement",
+            "entreprise_placement", "entreprise_placement_nom", "resultat_placement",
+            "resultat_placement_display", "entreprise_validee", "entreprise_validee_nom",
+            "contrat_signe", "inscrit_gespers", "courrier_rentree", "date_rentree",
+            "admissible", "numero_osia", "placement_appairage",
+
+            # Calculs / relations
+            "age", "nom_complet", "nb_appairages", "nb_prospections",
+            "ateliers_resume", "ateliers_counts", "peut_modifier",
+            "centre_id", "centre_nom", "last_appairage",
+
+            # Champs hérités BaseModel
+            "created_at", "updated_at", "created_by", "updated_by", "is_active",
         ]
 
+        read_only_fields = [
+            "id", "date_inscription", "created_at", "updated_at",
+            "age", "nom_complet", "nb_appairages", "nb_prospections",
+            "role_utilisateur", "ateliers_resume", "peut_modifier",
+            "cv_statut_display", "formation_info", "centre_nom",
+            "centre_id", "last_appairage",
+            "responsable_placement_nom", "entreprise_placement_nom",
+            "entreprise_validee_nom", "vu_par_nom",
+            "resultat_placement_display", "ateliers_counts",
+        ]
+        
     # ------- label getters -------
     def get_centre_nom(self, obj):
         f = getattr(obj, "formation", None)
@@ -329,7 +362,7 @@ class CandidatSerializer(serializers.ModelSerializer):
 @extend_schema_serializer()
 class CandidatListSerializer(serializers.ModelSerializer):
     formation_info = FormationLiteSerializer(source="formation", read_only=True)
-    last_appairage = serializers.SerializerMethodField()  # ✅ dernier appairage pour la table
+    last_appairage = serializers.SerializerMethodField()
     nom_complet = serializers.CharField(read_only=True)
     age = serializers.IntegerField(read_only=True)
     nb_appairages = serializers.IntegerField(source="nb_appairages_calc", read_only=True)
@@ -352,28 +385,44 @@ class CandidatListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Candidat
         fields = [
+            # ---------------- Identité & contact ----------------
             "id",
+            "sexe",
+            "nom_naissance",
             "nom",
             "prenom",
             "nom_complet",
+            "date_naissance",
+            "departement_naissance",
+            "commune_naissance",
+            "pays_naissance",
+            "nationalite",
+            "nir",
             "email",
             "telephone",
+            "street_number",
+            "street_name",
+            "street_complement",
             "ville",
             "code_postal",
-            "age",
+
+            "compte_utilisateur",
+            "role_utilisateur",
+
+            # ---------------- Statut & formation ----------------
             "statut",
             "cv_statut",
             "cv_statut_display",
+            "entretien_done",
+            "test_is_ok",
             "formation",
-            "centre_nom",
-            "centre_id",
             "formation_info",
+            "centre_id",
             "centre_nom",
             "evenement",
             "notes",
             "origine_sourcing",
             "date_inscription",
-            "date_naissance",
             "rqth",
             "type_contrat",
             "disponibilite",
@@ -381,36 +430,172 @@ class CandidatListSerializer(serializers.ModelSerializer):
             "communication",
             "experience",
             "csp",
-            "entretien_done",
-            "test_is_ok",
-            "admissible",
-            "compte_utilisateur",
-            "role_utilisateur",
+            "vu_par",
+            "vu_par_nom",
+
+            # ---------------- Situation particulière ----------------
+            "regime_social",
+            "sportif_haut_niveau",
+            "equivalence_jeunes",
+            "extension_boe",
+            "situation_actuelle",
+
+            # ---------------- Parcours scolaire ----------------
+            "dernier_diplome_prepare",
+            "diplome_plus_eleve_obtenu",
+            "derniere_classe",
+            "intitule_diplome_prepare",
+            "situation_avant_contrat",
+
+            # ---------------- Projet professionnel ----------------
+            "projet_creation_entreprise",
+
+            # ---------------- Représentant légal ----------------
+            "representant_lien",
+            "representant_nom_naissance",
+            "representant_prenom",
+            "representant_email",
+            "representant_street_name",
+            "representant_zip_code",
+            "representant_city",
+
+            # ---------------- Placement ----------------
             "responsable_placement",
+            "responsable_placement_nom",
             "date_placement",
             "entreprise_placement",
+            "entreprise_placement_nom",
             "resultat_placement",
+            "resultat_placement_display",
             "entreprise_validee",
+            "entreprise_validee_nom",
             "contrat_signe",
-             "inscrit_gespers",
+            "inscrit_gespers",
             "courrier_rentree",
             "date_rentree",
-            "vu_par",
+            "admissible",
+            "numero_osia",
+            "placement_appairage",
+
+            # ---------------- Calculs & projections ----------------
+            "age",
             "nb_appairages",
             "nb_prospections",
             "ateliers_resume",
-            "ateliers_counts",  
+            "ateliers_counts",
             "peut_modifier",
-            "numero_osia",
-            # ✅ nouveaux champs libellés
+            "last_appairage",
+
+            # ---------------- BaseModel ----------------
+            "created_at",
+            "updated_at",
+            "created_by",
+            "updated_by",
+            "is_active",
+        ]
+        read_only_fields = [
+            "id",
+            "date_inscription",
+            "created_at",
+            "updated_at",
+            "age",
+            "nom_complet",
+            "nb_appairages",
+            "nb_prospections",
+            "role_utilisateur",
+            "ateliers_resume",
+            "peut_modifier",
+            "cv_statut_display",
+            "formation_info",
+            "centre_nom",
+            "centre_id",
+            "last_appairage",
             "responsable_placement_nom",
             "entreprise_placement_nom",
             "entreprise_validee_nom",
             "vu_par_nom",
             "resultat_placement_display",
-            # ✅ dernier appairage prêt pour l’UI
-            "last_appairage",
+            "ateliers_counts",
         ]
+
+    # ------- label getters -------
+    def get_centre_nom(self, obj):
+        f = getattr(obj, "formation", None)
+        c = getattr(f, "centre", None) if f else None
+        return getattr(c, "nom", None)
+
+    def get_ateliers_counts(self, obj):
+        return _ateliers_counts_for(obj)
+
+    def get_responsable_placement_nom(self, obj):
+        return _user_display(getattr(obj, "responsable_placement", None))
+
+    def get_entreprise_placement_nom(self, obj):
+        p = getattr(obj, "entreprise_placement", None)
+        return getattr(p, "nom", None) if p else None
+
+    def get_entreprise_validee_nom(self, obj):
+        p = getattr(obj, "entreprise_validee", None)
+        return getattr(p, "nom", None) if p else None
+
+    def get_vu_par_nom(self, obj):
+        return _user_display(getattr(obj, "vu_par", None))
+
+    def get_resultat_placement_display(self, obj):
+        return obj.get_resultat_placement_display() if getattr(obj, "resultat_placement", None) else None
+
+    def get_last_appairage(self, obj):
+        last = (
+            obj.appairages.order_by("-date_appairage", "-pk")
+            .select_related("partenaire", "created_by")
+            .first()
+        )
+        return AppairageLiteSerializer(last, context=self.context).data if last else None
+
+    def get_peut_modifier(self, instance):
+        request = self.context.get("request")
+        user = request.user if request and request.user.is_authenticated else None
+        if not user:
+            return False
+        return user.role in ["admin", "superadmin", "staff"] or instance.compte_utilisateur == user
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        nom, prenom, nom_complet = _normalize_nom_prenom(instance)
+        data["nom"] = nom
+        data["prenom"] = prenom
+        data["nom_complet"] = nom_complet
+
+        # 🔒 Masquage conditionnel
+        request = self.context.get("request")
+        user = request.user if request and request.user.is_authenticated else None
+        role = getattr(user, "role", None)
+        is_staff_or_admin = role in ["staff", "admin", "superadmin"]
+
+        reserved_fields = [
+            "notes",
+            "resultat_placement",
+            "responsable_placement",
+            "date_placement",
+            "entreprise_placement",
+            "contrat_signe",
+            "entreprise_validee",
+            "courrier_rentree",
+            "vu_par",
+            "admissible",
+            "entretien_done",
+            "test_is_ok",
+            "communication",
+            "experience",
+            "csp",
+            "nb_appairages",
+            "nb_prospections",
+        ]
+        if not is_staff_or_admin:
+            for field in reserved_fields:
+                data.pop(field, None)
+
+        return data
 
     # ------- label getters -------
     def get_centre_nom(self, obj):
@@ -586,54 +771,6 @@ class CandidatMetaSerializer(serializers.Serializer):
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Historique placement
-# ─────────────────────────────────────────────────────────────────────────────
-@extend_schema_serializer()
-class HistoriquePlacementSerializer(serializers.ModelSerializer):
-    candidat_nom = serializers.CharField(source="candidat.nom_complet", read_only=True)
-    entreprise_nom = serializers.CharField(source="entreprise.nom", read_only=True)
-    responsable_nom = serializers.CharField(source="responsable.get_full_name", read_only=True)
-
-    class Meta:
-        model = HistoriquePlacement
-        fields = [
-            "id",
-            "candidat",
-            "candidat_nom",
-            "entreprise",
-            "entreprise_nom",
-            "responsable",
-            "responsable_nom",
-            "resultat",
-            "date_placement",
-            "commentaire",
-            "created_at",
-        ]
-        read_only_fields = ["id", "created_at", "candidat_nom", "entreprise_nom", "responsable_nom"]
-
-
-class HistoriquePlacementCreateUpdateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = HistoriquePlacement
-        fields = [
-            "candidat",
-            "entreprise",
-            "responsable",
-            "resultat",
-            "date_placement",
-            "commentaire",
-        ]
-
-
-@extend_schema_serializer()
-class HistoriquePlacementMetaSerializer(serializers.Serializer):
-    resultat_choices = serializers.SerializerMethodField()
-
-    def get_resultat_choices(self, _):
-        return [{"value": k, "label": v} for k, v in ResultatPlacementChoices.choices]
-
-
-# ─────────────────────────────────────────────────────────────────────────────
 # Query params
 # ─────────────────────────────────────────────────────────────────────────────
 class LabelOrValueChoiceField(serializers.ChoiceField):
@@ -697,3 +834,24 @@ class CandidatQueryParamsSerializer(serializers.Serializer):
                 attrs[key] = self._labels_to_values(raw, choices)
 
         return attrs
+
+# ─────────────────────────────────────────────
+# Candidat (lite, pour select modal)
+# ─────────────────────────────────────────────
+class CandidatLiteSerializer(serializers.ModelSerializer):
+    formation_nom = serializers.CharField(source="formation.nom", read_only=True)
+    formation_num_offre = serializers.CharField(source="formation.num_offre", read_only=True)
+    formation_type_offre = serializers.CharField(source="formation.type_offre.nom", read_only=True)
+    centre_nom = serializers.CharField(source="formation.centre.nom", read_only=True)
+
+    class Meta:
+        model = Candidat
+        fields = [
+            "id",
+            "nom",
+            "prenom",
+            "formation_nom",
+            "formation_num_offre",
+            "formation_type_offre",
+            "centre_nom",
+        ]

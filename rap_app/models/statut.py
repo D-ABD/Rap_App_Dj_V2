@@ -27,17 +27,17 @@ def get_default_color(statut_nom):
         str: Code couleur hexadécimal correspondant au statut
     """
     COULEURS_PREDEFINIES = {
-        'non_defini': "#080807",             # Jaune
+        'non_defini': "#080807",
         'projet_de_developpement': "#0E0E11",
-        'a_recruter': "#051401",             # vert foncé
-        'recrutement_en_cours': "#0A54F4",   # Vert
-        'formation_en_cours': "#110452",     # Bleu
-        'formation_a_annuler': "#FD570A",    # Orange
-        'formation_a_repousser': "#D6C424",  # Jaune
-        'formation_annulee': "#922119",      # Rouge
-        'pleine': "#00980F",                 # Violet
-        'quasi_pleine': "#04758C",           # Indigo
-        'autre': "#7B8386",                  # Marron
+        'a_recruter': "#051401",
+        'recrutement_en_cours': "#0A54F4",
+        'formation_en_cours': "#110452",
+        'formation_a_annuler': "#FD570A",
+        'formation_a_repousser': "#D6C424",
+        'formation_annulee': "#922119",
+        'pleine': "#00980F",
+        'quasi_pleine': "#04758C",
+        'autre': "#7B8386",
     }
     return COULEURS_PREDEFINIES.get(statut_nom, "#607D8B")  # Bleu-gris par défaut
 
@@ -92,8 +92,8 @@ class Statut(BaseModel):
 
     STATUT_CHOICES = [
         (NON_DEFINI, 'Non défini'),
-        (PROJET_DE_DEVELOPPEMENT, ' Projet de developpement'),
-        (A_RECRUTER, 'A recruter'),
+        (PROJET_DE_DEVELOPPEMENT, 'Projet de développement'),
+        (A_RECRUTER, 'À recruter'),
         (RECRUTEMENT_EN_COURS, 'Recrutement en cours'),
         (FORMATION_EN_COURS, 'Formation en cours'),
         (FORMATION_A_ANNULER, 'Formation à annuler'),
@@ -103,6 +103,7 @@ class Statut(BaseModel):
         (QUASI_PLEINE, 'Quasi-pleine'),
         (AUTRE, 'Autre'),
     ]
+
 
     nom = models.CharField(
         max_length=100,

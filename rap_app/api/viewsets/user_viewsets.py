@@ -54,14 +54,23 @@ from ...models.formations import Formation
         responses={204: OpenApiResponse(description="Utilisateur supprimé avec succès.")},
     ),
 )
+@extend_schema(
+    summary="Inscription d’un utilisateur",
+    description=(
+        "Crée un nouvel utilisateur stagiaire avec email, mot de passe et consentement RGPD. "
+        "L’inscription nécessite l’acceptation explicite de la politique de confidentialité."
+    ),
+    request=RegistrationSerializer,
+    responses={
+        201: OpenApiResponse(description="Utilisateur créé avec succès (en attente de validation)."),
+        400: OpenApiResponse(description="Erreur de validation ou consentement RGPD manquant."),
+    },
+    tags=["Utilisateurs"],
+)
 class RegisterView(APIView):
-    def get_permissions(self):
-        # Ouvert à tous pour l'inscription
-        return [AllowAny()]
+    permission_classes = [AllowAny]
 
     def post(self, request):
-        print("📥 RegisterView POST data:", request.data)
-        print("🔐 User:", request.user, "- Authenticated:", request.user.is_authenticated)
         serializer = RegistrationSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.save()
@@ -69,11 +78,19 @@ class RegisterView(APIView):
                 {
                     "success": True,
                     "message": "Compte créé. En attente de validation.",
-                    "user": {"email": user.email},
+                    "user": {
+                        "email": user.email,
+                        "consent_rgpd": user.consent_rgpd,
+                        "consent_date": user.consent_date,
+                    },
                 },
                 status=status.HTTP_201_CREATED,
             )
-        return Response({"errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response(
+            {"success": False, "errors": serializer.errors},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
 
 
 def _ensure_candidate_for_user(user: CustomUser, formation_id: int | None) -> Candidat:
@@ -149,6 +166,46 @@ class CustomUserViewSet(viewsets.ModelViewSet):
         return self._restrict_users_to_staff_centres(base)
 
     # -------------------------------------------------------
+
+    @action(detail=False, methods=["delete"], url_path="delete-account", permission_classes=[permissions.IsAuthenticated])
+    @extend_schema(
+        summary="Supprimer mon compte (RGPD)",
+        description="Supprime définitivement toutes les données personnelles de l'utilisateur connecté.",
+        tags=["Utilisateurs"],
+        responses={
+            200: OpenApiResponse(description="Compte supprimé conformément au RGPD."),
+            403: OpenApiResponse(description="Authentification requise."),
+        },
+    )
+    def delete_account(self, request):
+        user = request.user
+        email = user.email
+
+        # Suppression logique + anonymisation (pour conformité RGPD)
+        user.is_active = False
+        user.email = f"deleted_{user.id}@example.com"
+        user.first_name = ""
+        user.last_name = ""
+        user.phone = ""
+        user.bio = ""
+        user.consent_rgpd = False
+        user.save()
+
+        LogUtilisateur.log_action(
+            instance=user,
+            action=LogUtilisateur.ACTION_DELETE,
+            user=user,
+            details="Suppression complète du compte (RGPD)",
+        )
+
+        return Response(
+            {
+                "success": True,
+                "message": f"Le compte associé à {email} a été supprimé conformément au RGPD.",
+            },
+            status=status.HTTP_200_OK,
+        )
+
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -245,21 +302,21 @@ class CustomUserViewSet(viewsets.ModelViewSet):
         partial = kwargs.pop("partial", False)
         instance: CustomUser = self.get_object()
 
-        print("🔁 Requête PATCH reçue pour l'utilisateur:", instance.id)
-        print("📦 Données brutes reçues:", request.data)
+        ("🔁 Requête PATCH reçue pour l'utilisateur:", instance.id)
+        ("📦 Données brutes reçues:", request.data)
 
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
         try:
             serializer.is_valid(raise_exception=True)
         except ValidationError:
-            print("❌ Erreurs de validation:", serializer.errors)
+            ("❌ Erreurs de validation:", serializer.errors)
             return Response(
                 {"success": False, "message": "Erreur de validation", "errors": serializer.errors},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
         user: CustomUser = serializer.save()
-        print(f"✅ Utilisateur mis à jour : {user.email}")
+        (f"✅ Utilisateur mis à jour : {user.email}")
 
         new_role = serializer.validated_data.get("role", user.role)
         formation_id = request.data.get("formation")
@@ -295,13 +352,15 @@ class CustomUserViewSet(viewsets.ModelViewSet):
         responses={200: OpenApiResponse(response=CustomUserSerializer)},
     )
     def me(self, request):
-        user = request.user
+        """Retourne le profil complet de l’utilisateur connecté avec tous les champs du serializer."""
+        serializer = CustomUserSerializer(request.user, context={"request": request})
         return Response(
             {
                 "success": True,
                 "message": "Profil utilisateur chargé avec succès.",
-                "data": user.to_serializable_dict(include_sensitive=True),
-            }
+                "data": serializer.data,
+            },
+            status=status.HTTP_200_OK,
         )
 
     @action(detail=False, methods=["get"], url_path="roles", permission_classes=[permissions.IsAuthenticated])

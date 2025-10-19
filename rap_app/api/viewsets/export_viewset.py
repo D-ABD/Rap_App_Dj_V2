@@ -4,7 +4,7 @@ from django.template.loader import render_to_string
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
-from weasyprint import HTML
+from weasy import HTML
 import csv
 
 from ...models.commentaires_appairage import CommentaireAppairage

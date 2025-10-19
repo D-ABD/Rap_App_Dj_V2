@@ -1,0 +1,445 @@
+from django.db import models
+from django.utils import timezone
+from pdfrw import PdfReader, PdfWriter, PageMerge
+from django.core.exceptions import ValidationError
+
+
+
+from rap_app.models.partenaires import Partenaire
+from rap_app.models.candidat import Candidat
+from rap_app.models.centres import Centre
+from rap_app.models.formations import Formation
+
+
+
+class CerfaContrat(models.Model):
+    """
+    Modèle fidèle au CERFA n°10103*14 (Contrat d’apprentissage).
+    Inclut tous les blocs du formulaire : employeur, apprenti, formation, contrat, signatures.
+    """
+
+    pdf_fichier = models.FileField(
+        upload_to="cerfas/",
+        blank=True,
+        null=True,
+        verbose_name="Fichier PDF généré",
+    )
+
+    # ⚙️ Nouveau champ ajouté
+    auto_generated = models.BooleanField(
+        default=False,
+        help_text="Indique si le CERFA a été créé automatiquement (via signal)."
+    )
+
+    candidat = models.ForeignKey("Candidat", on_delete=models.CASCADE, related_name="cerfa_contrats")
+    formation = models.ForeignKey("Formation", on_delete=models.SET_NULL, null=True, blank=True)
+    employeur = models.ForeignKey("Partenaire", on_delete=models.SET_NULL, null=True, blank=True)
+
+    # ───────────── EMPLOYEUR ─────────────
+    employeur_prive = models.BooleanField(default=True)
+    employeur_public = models.BooleanField(default=False)
+    employeur_nom = models.CharField(max_length=255)
+    employeur_adresse_numero = models.CharField(max_length=20, blank=True, null=True)
+    employeur_adresse_voie = models.CharField(max_length=255, blank=True, null=True)
+    employeur_adresse_complement = models.CharField(max_length=255, blank=True, null=True)
+    employeur_code_postal = models.CharField(max_length=10, blank=True, null=True)
+    employeur_commune = models.CharField(max_length=255, blank=True, null=True)
+    employeur_telephone = models.CharField(max_length=50, blank=True, null=True)
+    employeur_email = models.EmailField(blank=True, null=True)
+    employeur_siret = models.CharField(max_length=20, blank=True, null=True)
+    employeur_type = models.CharField(max_length=100, blank=True, null=True)
+    employeur_specifique = models.CharField(max_length=100, blank=True, null=True)
+    employeur_code_ape = models.CharField(max_length=10, blank=True, null=True)
+    employeur_effectif = models.PositiveIntegerField(blank=True, null=True)
+    employeur_code_idcc = models.CharField(max_length=20, blank=True, null=True)
+    employeur_regime_assurance_chomage = models.BooleanField(default=False)
+
+    # ───────────── MAÎTRES D’APPRENTISSAGE ─────────────
+    maitre1_nom = models.CharField(max_length=255, blank=True, null=True)
+    maitre1_prenom = models.CharField(max_length=255, blank=True, null=True)
+    maitre1_date_naissance = models.DateField(blank=True, null=True)
+    maitre1_email = models.EmailField(blank=True, null=True)
+    maitre1_emploi = models.CharField(max_length=255, blank=True, null=True)
+    maitre1_diplome = models.CharField(max_length=255, blank=True, null=True)
+    maitre1_niveau_diplome = models.CharField(max_length=255, blank=True, null=True)
+
+    maitre2_nom = models.CharField(max_length=255, blank=True, null=True)
+    maitre2_prenom = models.CharField(max_length=255, blank=True, null=True)
+    maitre2_date_naissance = models.DateField(blank=True, null=True)
+    maitre2_email = models.EmailField(blank=True, null=True)
+    maitre2_emploi = models.CharField(max_length=255, blank=True, null=True)
+    maitre2_diplome = models.CharField(max_length=255, blank=True, null=True)
+    maitre2_niveau_diplome = models.CharField(max_length=255, blank=True, null=True)
+    maitre_eligible = models.BooleanField(default=True)
+
+    # ───────────── APPRENTI ─────────────
+    apprenti_nom_naissance = models.CharField(max_length=255)
+    apprenti_nom_usage = models.CharField(max_length=255, blank=True, null=True)
+    apprenti_prenom = models.CharField(max_length=255)
+    apprenti_nir = models.CharField(max_length=15, blank=True, null=True)
+    apprenti_numero = models.CharField(max_length=20, blank=True, null=True)
+    apprenti_voie = models.CharField(max_length=255, blank=True, null=True)
+    apprenti_complement = models.CharField(max_length=255, blank=True, null=True)
+    apprenti_code_postal = models.CharField(max_length=10, blank=True, null=True)
+    apprenti_commune = models.CharField(max_length=255, blank=True, null=True)
+    apprenti_telephone = models.CharField(max_length=50, blank=True, null=True)
+    apprenti_email = models.EmailField(blank=True, null=True)
+
+    representant_nom = models.CharField(max_length=255, blank=True, null=True)
+    representant_lien = models.CharField(max_length=100, blank=True, null=True, help_text="Lien de parenté (père, mère, tuteur...)")
+    representant_adresse_numero = models.CharField(max_length=20, blank=True, null=True)
+    representant_adresse_voie = models.CharField(max_length=255, blank=True, null=True)
+    representant_adresse_complement = models.CharField(max_length=255, blank=True, null=True)
+    representant_code_postal = models.CharField(max_length=10, blank=True, null=True)
+    representant_commune = models.CharField(max_length=255, blank=True, null=True)
+    representant_email = models.EmailField(blank=True, null=True)
+
+    apprenti_date_naissance = models.DateField(blank=True, null=True)
+    apprenti_sexe = models.CharField(
+        max_length=1,
+        choices=[("M", "Masculin"), ("F", "Féminin")],
+        blank=True, null=True,
+    )
+    apprenti_departement_naissance = models.CharField(max_length=50, blank=True, null=True)
+    apprenti_commune_naissance = models.CharField(max_length=255, blank=True, null=True)
+    apprenti_nationalite = models.CharField(max_length=100, blank=True, null=True)
+    apprenti_regime_social = models.CharField(max_length=100, blank=True, null=True)
+    apprenti_sportif_haut_niveau = models.BooleanField(default=False)
+    apprenti_rqth = models.BooleanField(default=False)
+    apprenti_droits_rqth = models.BooleanField(default=False)
+    apprenti_equivalence_jeunes = models.BooleanField(default=False)
+    apprenti_extension_boe = models.BooleanField(default=False)
+    apprenti_situation_avant = models.CharField(max_length=255, blank=True, null=True)
+    apprenti_dernier_diplome_prepare = models.CharField(max_length=255, blank=True, null=True)
+    apprenti_derniere_annee_suivie = models.CharField(max_length=100, blank=True, null=True)
+    apprenti_intitule_dernier_diplome = models.CharField(max_length=255, blank=True, null=True)
+    apprenti_plus_haut_diplome = models.CharField(max_length=255, blank=True, null=True)
+    apprenti_projet_entreprise = models.BooleanField(default=False)
+
+    # ───────────── FORMATION ─────────────
+    cfa_entreprise = models.BooleanField(default=False)
+    cfa_denomination = models.CharField(max_length=255, blank=True, null=True)
+    cfa_uai = models.CharField(max_length=50, blank=True, null=True)
+    cfa_siret = models.CharField(max_length=20, blank=True, null=True)
+    cfa_numero = models.CharField(max_length=20, blank=True, null=True)
+    cfa_voie = models.CharField(max_length=255, blank=True, null=True)
+    cfa_complement = models.CharField(max_length=255, blank=True, null=True)
+    cfa_code_postal = models.CharField(max_length=10, blank=True, null=True)
+    cfa_commune = models.CharField(max_length=255, blank=True, null=True)
+    cfa_lieu_principal = models.BooleanField(default=True)
+
+    diplome_vise = models.CharField(max_length=255, blank=True, null=True)
+    diplome_intitule = models.CharField(max_length=255, blank=True, null=True)
+    code_diplome = models.CharField(max_length=50, blank=True, null=True)
+    code_rncp = models.CharField(max_length=50, blank=True, null=True)
+    formation_debut = models.DateField(blank=True, null=True)
+    formation_fin = models.DateField(blank=True, null=True)
+    formation_duree_heures = models.PositiveIntegerField(blank=True, null=True)
+    formation_distance_heures = models.PositiveIntegerField(blank=True, null=True)
+    formation_lieu_denomination = models.CharField(max_length=255, blank=True, null=True)
+    formation_lieu_uai = models.CharField(max_length=50, blank=True, null=True)
+    formation_lieu_siret = models.CharField(max_length=20, blank=True, null=True)
+    formation_lieu_numero = models.CharField(max_length=20, blank=True, null=True)
+    formation_lieu_voie = models.CharField(max_length=255, blank=True, null=True)
+    formation_lieu_complement = models.CharField(max_length=255, blank=True, null=True)
+    formation_lieu_code_postal = models.CharField(max_length=10, blank=True, null=True)
+    formation_lieu_commune = models.CharField(max_length=255, blank=True, null=True)
+
+    # ───────────── CONTRAT ─────────────
+    type_contrat = models.CharField(max_length=255, blank=True, null=True)
+    type_derogation = models.CharField(max_length=255, blank=True, null=True)
+    motif_derogation = models.CharField(max_length=255, blank=True, null=True)
+    numero_contrat_precedent = models.CharField(max_length=100, blank=True, null=True)
+    date_conclusion = models.DateField(blank=True, null=True)
+    date_debut_execution = models.DateField(blank=True, null=True)
+    date_debut_formation = models.DateField(blank=True, null=True)
+    date_fin_contrat = models.DateField(blank=True, null=True)
+    date_effet_avenant = models.DateField(blank=True, null=True)
+    duree_hebdo_heures = models.PositiveIntegerField(blank=True, null=True)
+    duree_hebdo_minutes = models.PositiveIntegerField(blank=True, null=True)
+    duree_totale_contrat_mois = models.PositiveIntegerField(blank=True, null=True)
+    travail_dangereux = models.BooleanField(default=False)
+    age_apprenti = models.PositiveSmallIntegerField(blank=True, null=True)
+
+    # Rémunération
+    ref_salaire = models.CharField(max_length=10, blank=True, null=True)
+    salaire_brut_mensuel = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
+    caisse_retraite = models.CharField(max_length=255, blank=True, null=True)
+    avantage_nourriture = models.DecimalField(max_digits=7, decimal_places=2, blank=True, null=True)
+    avantage_logement = models.DecimalField(max_digits=7, decimal_places=2, blank=True, null=True)
+    avantage_autre = models.CharField(max_length=255, blank=True, null=True)
+    avantages_en_nature_total = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
+
+    # ───────────── ATTESTATION EMPLOYEUR ─────────────
+    attestation_pieces_justificatives = models.BooleanField(default=False)
+
+    # ───────────── SIGNATURES ─────────────
+    lieu_signature = models.CharField(max_length=255, blank=True, null=True)
+    date_signature_apprenti = models.DateField(blank=True, null=True)
+    date_signature_employeur = models.DateField(blank=True, null=True)
+    signature_apprenti = models.BooleanField(default=False)
+    signature_employeur = models.BooleanField(default=False)
+    signature_representant_legal = models.BooleanField(default=False)
+
+    # ───────────── MÉTADONNÉES ─────────────  
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "CERFA Contrat d’apprentissage"
+        verbose_name_plural = "CERFA Contrats d’apprentissage"
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"CERFA Contrat {self.id} - {self.apprenti_nom_naissance} ({self.date_conclusion})"
+
+    # ───────────── MÉTHODES DE POPULATION ─────────────
+    def populate_from_candidat(self, candidat: "Candidat"):
+        """Préremplit les champs apprenti et représentant légal à partir d’un Candidat."""
+        if not candidat:
+            return 
+
+        # --- Bloc apprenti ---
+        self.apprenti_nom_naissance = getattr(candidat, "nom_naissance", None) or getattr(candidat, "nom", None)
+        self.apprenti_nom_usage = getattr(candidat, "nom", None)
+        self.apprenti_prenom = getattr(candidat, "prenom", None)
+        self.apprenti_date_naissance = getattr(candidat, "date_naissance", None)
+        self.apprenti_sexe = getattr(candidat, "sexe", None)
+        self.apprenti_email = getattr(candidat, "email", None)
+        self.apprenti_telephone = getattr(candidat, "telephone", None)
+
+        # 🏠 Adresse (corrigée selon le modèle Candidat)
+        self.apprenti_numero = getattr(candidat, "street_number", None)
+        self.apprenti_voie = getattr(candidat, "street_name", None)
+        self.apprenti_complement = getattr(candidat, "street_complement", None)
+        self.apprenti_code_postal = getattr(candidat, "code_postal", None)
+        self.apprenti_commune = getattr(candidat, "ville", None)
+
+        # 🎂 Naissance et infos personnelles
+        self.apprenti_departement_naissance = getattr(candidat, "departement_naissance", None)
+        self.apprenti_commune_naissance = getattr(candidat, "commune_naissance", None)
+        self.apprenti_nationalite = getattr(candidat, "nationalite", None)
+        self.apprenti_regime_social = getattr(candidat, "regime_social", None)
+        self.apprenti_rqth = getattr(candidat, "rqth", False)
+        self.apprenti_sportif_haut_niveau = getattr(candidat, "sportif_haut_niveau", False)
+        self.apprenti_equivalence_jeunes = getattr(candidat, "equivalence_jeunes", False)
+        self.apprenti_extension_boe = getattr(candidat, "extension_boe", False)
+        self.apprenti_situation_avant = (
+            getattr(candidat, "situation_avant_contrat", None)
+            or getattr(candidat, "situation_actuelle", None)
+        )
+        self.apprenti_dernier_diplome_prepare = getattr(candidat, "dernier_diplome_prepare", None)
+        self.apprenti_derniere_annee_suivie = getattr(candidat, "derniere_classe", None)
+        self.apprenti_intitule_dernier_diplome = getattr(candidat, "intitule_diplome_prepare", None)
+        self.apprenti_plus_haut_diplome = getattr(candidat, "diplome_plus_eleve_obtenu", None)
+        self.apprenti_projet_entreprise = getattr(candidat, "projet_creation_entreprise", False)
+
+        # 👨‍👩‍👧 Bloc représentant légal (si mineur)
+        self.representant_nom = getattr(candidat, "representant_nom_naissance", None)
+        self.representant_lien = getattr(candidat, "representant_lien", None)
+        self.representant_adresse_voie = getattr(candidat, "representant_street_name", None)
+        self.representant_code_postal = getattr(candidat, "representant_zip_code", None)
+        self.representant_commune = getattr(candidat, "representant_city", None)
+        self.representant_email = getattr(candidat, "representant_email", None)
+
+ 
+    def populate_from_partenaire(self, partenaire: "Partenaire"):
+        """Préremplit les champs employeur et maîtres d’apprentissage à partir d’un Partenaire."""
+        if not partenaire:
+            return 
+
+        # --- Bloc employeur ---
+        self.employeur_nom = partenaire.nom
+        self.employeur_type = partenaire.type
+        self.employeur_prive = (
+            partenaire.type_employeur == "prive"
+            or partenaire.type == "entreprise"
+        )
+        self.employeur_public = (
+            partenaire.type_employeur == "public"
+            or partenaire.type == "partenaire"
+        )
+
+        # ✅ champs d’adresse : alignés sur ton modèle réel
+        self.employeur_adresse_numero = partenaire.street_number
+        self.employeur_adresse_voie = partenaire.street_name
+        self.employeur_adresse_complement = partenaire.street_complement
+        self.employeur_code_postal = partenaire.zip_code
+        self.employeur_commune = partenaire.city
+
+        # ✅ contacts et infos générales
+        self.employeur_telephone = partenaire.telephone or partenaire.contact_telephone
+        self.employeur_email = partenaire.email or partenaire.contact_email
+        self.employeur_siret = partenaire.siret
+        self.employeur_code_ape = partenaire.code_ape
+        self.employeur_effectif = partenaire.effectif_total
+        self.employeur_code_idcc = partenaire.idcc
+        self.employeur_regime_assurance_chomage = partenaire.assurance_chomage_speciale
+
+        # ✅ champ spécifique éventuel (facultatif)
+        self.employeur_specifique = partenaire.employeur_specifique
+
+        # --- Bloc maîtres d’apprentissage ---
+        self.maitre1_nom = partenaire.maitre1_nom_naissance
+        self.maitre1_prenom = partenaire.maitre1_prenom
+        self.maitre1_date_naissance = partenaire.maitre1_date_naissance
+        self.maitre1_email = partenaire.maitre1_courriel
+        self.maitre1_emploi = partenaire.maitre1_emploi_occupe
+        self.maitre1_diplome = partenaire.maitre1_diplome_titre
+        self.maitre1_niveau_diplome = partenaire.maitre1_niveau_diplome
+
+        self.maitre2_nom = partenaire.maitre2_nom_naissance
+        self.maitre2_prenom = partenaire.maitre2_prenom
+        self.maitre2_date_naissance = partenaire.maitre2_date_naissance
+        self.maitre2_email = partenaire.maitre2_courriel
+        self.maitre2_emploi = partenaire.maitre2_emploi_occupe
+        self.maitre2_diplome = partenaire.maitre2_diplome_titre
+        self.maitre2_niveau_diplome = partenaire.maitre2_niveau_diplome
+
+
+    def populate_from_formation(self, formation: "Formation"):
+        """Préremplit les champs liés à la formation et au CFA."""
+        if not formation:
+            return
+
+        self.diplome_vise = getattr(formation.type_offre, "nom", None) or formation.nom
+        self.diplome_intitule = formation.nom
+        self.code_diplome = formation.code_diplome
+        self.code_rncp = formation.code_rncp
+        self.formation_debut = formation.start_date
+        self.formation_fin = formation.end_date
+        self.formation_duree_heures = formation.total_heures
+        self.formation_distance_heures = formation.heures_distanciel
+
+        self.date_debut_formation = formation.start_date
+        self.date_fin_contrat = formation.end_date
+
+        centre = getattr(formation, "centre", None)
+        if centre:
+            self.populate_from_centre(centre)
+
+
+    def populate_from_centre(self, centre: "Centre"):
+        """Préremplit les champs liés au lieu de formation et au CFA responsable."""
+        if not centre:
+            return
+
+        # --- Lieu de formation ---
+        self.formation_lieu_denomination = centre.nom
+        self.formation_lieu_uai = centre.numero_uai_centre
+        self.formation_lieu_siret = centre.siret_centre
+        self.formation_lieu_numero = centre.numero_voie
+        self.formation_lieu_voie = centre.nom_voie
+        self.formation_lieu_complement = centre.complement_adresse
+        self.formation_lieu_code_postal = centre.code_postal
+        self.formation_lieu_commune = centre.commune
+
+        # --- CFA responsable ---
+        self.cfa_denomination = centre.cfa_responsable_denomination
+        self.cfa_uai = centre.cfa_responsable_uai
+        self.cfa_siret = centre.cfa_responsable_siret
+        self.cfa_numero = centre.cfa_responsable_numero
+        self.cfa_voie = centre.cfa_responsable_voie
+        self.cfa_complement = centre.cfa_responsable_complement
+        self.cfa_code_postal = centre.cfa_responsable_code_postal
+        self.cfa_commune = centre.cfa_responsable_commune
+        self.cfa_entreprise = centre.cfa_entreprise
+        self.cfa_lieu_principal = centre.cfa_responsable_est_lieu_principal
+
+ 
+    def populate_auto(self):
+        """
+        Remplit le CERFA depuis candidat, employeur et formation.
+        Ne bloque pas si l’un des blocs est manquant.
+        """
+        missing = []
+
+        # --- Bloc candidat / apprenti ---
+        if self.candidat:
+            try:
+                self.populate_from_candidat(self.candidat)
+            except Exception as e:
+                (f"⚠️ Erreur populate_from_candidat : {e}")
+        else:
+            missing.append("Candidat manquant")
+
+        # --- Bloc employeur ---
+        if self.employeur:
+            try:
+                self.populate_from_partenaire(self.employeur)
+            except Exception as e:
+                (f"⚠️ Erreur populate_from_partenaire : {e}")
+        else:
+            missing.append("Partenaire employeur manquant")
+
+        # --- Bloc formation ---
+        if self.formation:
+            try:
+                self.populate_from_formation(self.formation)
+            except Exception as e:
+                (f"⚠️ Erreur populate_from_formation : {e}")
+        else:
+            missing.append("Formation manquante")
+
+        if missing:
+            (f"ℹ️ Champs non remplis : {', '.join(missing)}")
+
+        return self
+
+
+
+    def generate_pdf(self):
+        from ..utils.pdf_cerfa_utils import generer_pdf_cerfa
+        return generer_pdf_cerfa(self)     
+
+
+class CerfaRemuneration(models.Model):
+    """
+    Période de rémunération associée à un CerfaContrat.
+    Exemple : 1ʳᵉ année du 01/09/2025 au 31/08/2026 : 55 % du SMIC.
+    """
+
+    contrat = models.ForeignKey(
+        "CerfaContrat",
+        related_name="remunerations",
+        on_delete=models.CASCADE,
+    )
+
+    annee = models.PositiveSmallIntegerField(
+        choices=[
+            (1, "1ère année"),
+            (2, "2e année"),
+            (3, "3e année"),
+            (4, "4e année"),
+        ]
+    )
+
+    # période
+    date_debut = models.DateField(blank=True, null=True)
+    date_fin = models.DateField(blank=True, null=True)
+
+    # taux de rémunération
+    pourcentage = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
+
+    # référence (SMIC ou SMC)
+    reference = models.CharField(
+        max_length=10,
+        choices=[("SMIC", "SMIC"), ("SMC", "SMC")],
+        default="SMIC",
+    )
+
+    # champs dérivés optionnels
+    montant_mensuel_estime = models.DecimalField(
+        max_digits=8, decimal_places=2, blank=True, null=True, help_text="Optionnel : pré-calcul du salaire"
+    )
+
+    class Meta:
+        verbose_name = "Rémunération CERFA"
+        verbose_name_plural = "Rémunérations CERFA"
+        ordering = ["contrat", "annee", "date_debut"]
+
+    def __str__(self):
+        return f"{self.annee}ᵉ année ({self.pourcentage or '?'}% du {self.reference})"  
+    
+
+ 

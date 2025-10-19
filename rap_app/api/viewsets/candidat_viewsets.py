@@ -1,4 +1,14 @@
 from rest_framework import viewsets, filters
+from io import BytesIO
+from openpyxl import Workbook
+from openpyxl.utils import get_column_letter
+from openpyxl.drawing.image import Image as XLImage
+from openpyxl.styles import PatternFill, Font, Alignment
+from pathlib import Path
+from django.conf import settings
+from django.utils import timezone as dj_timezone
+from openpyxl.styles import PatternFill, Font, Alignment, Border, Side
+
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
@@ -8,7 +18,8 @@ from django.http import HttpResponse
 from django.db import transaction
 from django.db.models import Q, Count, OuterRef, Subquery, IntegerField, Value, Prefetch
 from django.template.loader import render_to_string
-from weasyprint import HTML
+from weasyprint import HTML, CSS
+
 import csv
 import logging
 from django.db.models.functions import Coalesce
@@ -33,11 +44,10 @@ from ...models.formations import Formation
 
 # ✅ imports serializers
 from ..serializers.candidat_serializers import (
+    CandidatLiteSerializer,
     CandidatSerializer,
     CandidatListSerializer,
     CandidatCreateUpdateSerializer,
-    HistoriquePlacementSerializer,
-    HistoriquePlacementMetaSerializer,
     CandidatQueryParamsSerializer,  # pour valider/normaliser les query params
 )
 
@@ -288,6 +298,8 @@ class CandidatViewSet(viewsets.ModelViewSet):
 
     def get_serializer_class(self):
         if self.action == "list":
+            if self.request.query_params.get("lite") == "1":
+                return CandidatLiteSerializer
             return CandidatListSerializer
         elif self.action in ["create", "update", "partial_update"]:
             return CandidatCreateUpdateSerializer
@@ -390,56 +402,6 @@ class CandidatViewSet(viewsets.ModelViewSet):
         logger.debug("ℹ️ /candidats/meta keys=%s", list(data.keys()))
         return Response(data)
 
-    @action(detail=False, methods=["get"], url_path="export-csv")
-    def export_csv(self, request):
-        qs = self.filter_queryset(self.get_queryset())
-        logger.debug("📤 export CSV candidats params=%s rows=%d", self._qp_dict(request), qs.count())
-
-        response = HttpResponse(content_type="text/csv")
-        response["Content-Disposition"] = 'attachment; filename="candidats.csv"'
-        writer = csv.writer(response)
-
-        writer.writerow(
-            [
-                "Nom",
-                "Prénom",
-                "Email",
-                "Téléphone",
-                "Formation",
-                "Statut CV",
-                "Statut",
-                "OSIA",
-                "Nb appairages",
-                "Nb prospections",
-            ]
-        )
-        for c in qs:
-            writer.writerow(
-                [
-                    c.nom,
-                    c.prenom,
-                    c.email,
-                    c.telephone,
-                    c.formation.nom if c.formation else "",
-                    getattr(c, "get_cv_statut_display", lambda: None)() or (c.cv_statut or ""),
-                    c.get_statut_display() if hasattr(c, "get_statut_display") else (c.statut or ""),
-                    c.numero_osia or "",
-                    getattr(c, "nb_appairages_calc", 0),
-                    getattr(c, "nb_prospections_calc", 0),
-                ]
-            )
-        return response
-
-    @action(detail=False, methods=["get"], url_path="export-pdf")
-    def export_pdf(self, request):
-        qs = self.filter_queryset(self.get_queryset())
-        logger.debug("📄 export PDF candidats params=%s rows=%d", self._qp_dict(request), qs.count())
-        html_string = render_to_string("exports/candidats_pdf.html", {"candidats": qs})
-        html = HTML(string=html_string)
-        pdf = html.write_pdf()
-        response = HttpResponse(pdf, content_type="application/pdf")
-        response["Content-Disposition"] = 'attachment; filename="candidats.pdf"'
-        return response
     
     # ---------- Actions Exports----------
 
@@ -452,150 +414,185 @@ class CandidatViewSet(viewsets.ModelViewSet):
         ws = wb.active
         ws.title = "Candidats"
 
-        # --- 1) Colonnes à exporter (tous les champs utiles) ---
+        # ==========================================================
+        # 🖼️ Logo Rap_App (si dispo)
+        # ==========================================================
+        try:
+            logo_path = Path(settings.BASE_DIR) / "rap_app/static/images/logo.png"
+            if logo_path.exists():
+                img = XLImage(str(logo_path))
+                img.height = 60
+                img.width = 120
+                ws.add_image(img, "A1")
+        except Exception:
+            pass
+
+        # ==========================================================
+        # 🧾 Titre principal
+        # ==========================================================
+        ws.merge_cells("B1:AF1")
+        ws["B1"] = "Export complet des candidats — Rap_App"
+        ws["B1"].font = Font(name="Calibri", bold=True, size=15, color="004C99")
+        ws["B1"].alignment = Alignment(horizontal="center", vertical="center")
+
+        ws.merge_cells("B2:AF2")
+        ws["B2"] = f"Export réalisé le {dj_timezone.now().strftime('%d/%m/%Y à %H:%M')}"
+        ws["B2"].font = Font(name="Calibri", italic=True, size=10, color="666666")
+        ws["B2"].alignment = Alignment(horizontal="center", vertical="center")
+
+        ws.append([])
+        ws.append([])
+
+        # Ligne de séparation décorative
+        sep_row = ws.max_row + 1
+        ws.append(["" for _ in range(10)])
+        for cell in ws[sep_row]:
+            cell.fill = PatternFill("solid", fgColor="BDD7EE")
+        ws.row_dimensions[sep_row].height = 5
+
+        ws.append([])
+
+        # ==========================================================
+        # 📋 En-têtes
+        # ==========================================================
         headers = [
-            "ID",
-            "Nom",
-            "Prénom",
-            "Email",
-            "Téléphone",
-            "Adresse",
-            "Code postal",
-            "Ville",
-            "Date inscription",
-            "Statut",
-            "Statut CV",
-            "Disponibilité",
-            "Type contrat",
-            "OSIA",
-            "Résultat placement",
-            "Contrat signé",
-            "Formation",
-            "Num offre formation",
-            "Centre formation",
-            "Type formation",
-            "Entreprise placement",
-            "Entreprise validée",
-            "Responsable placement",
-            "Vu par",
-            "Nb appairages",
-            "Nb prospections",
+            "ID", "Sexe", "Nom de naissance", "Nom d’usage", "Prénom", "Date de naissance",
+            "Département de naissance", "Commune de naissance", "Pays de naissance", "Nationalité",
+            "NIR", "Âge", "Email", "Téléphone", "Numéro de voie", "Nom de la rue",
+            "Complément d’adresse", "Code postal", "Ville", "Statut", "CV", "Type de contrat",
+            "Disponibilité", "Entretien réalisé", "Test d’entrée OK", "RQTH", "Permis B",
+            "Dernier diplôme préparé", "Diplôme/titre obtenu", "Dernière classe fréquentée",
+            "Intitulé diplôme préparé", "Situation avant contrat", "Régime social",
+            "Sportif de haut niveau", "Équivalence jeunes", "Extension BOE", "Situation actuelle",
+            "Lien représentant", "Nom naissance représentant", "Prénom représentant",
+            "Email représentant", "Adresse représentant", "CP représentant", "Ville représentant",
+            "Formation", "Num offre", "Centre formation", "Type formation", "Origine sourcing",
+            "Date inscription", "Résultat placement", "Contrat signé", "Date placement",
+            "Entreprise placement", "Entreprise validée", "Responsable placement", "Vu par (staff)",
+            "Nb appairages", "Nb prospections", "Inscrit GESPERS", "Courrier rentrée envoyé",
+            "Date rentrée", "Admissible", "OSIA", "Communication ★", "Expérience ★", "CSP ★",
+            "Projet création entreprise", "Notes",
         ]
         ws.append(headers)
 
-        # --- 2) Données ligne par ligne ---
-        for c in qs:
+        header_row = ws.max_row
+        header_fill = PatternFill("solid", fgColor="DCE6F1")
+        border = Border(
+            left=Side(style="thin", color="CCCCCC"),
+            right=Side(style="thin", color="CCCCCC"),
+            top=Side(style="thin", color="CCCCCC"),
+            bottom=Side(style="thin", color="CCCCCC"),
+        )
+
+        for cell in ws[header_row]:
+            cell.font = Font(name="Calibri", bold=True, color="002060")
+            cell.alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            cell.fill = header_fill
+            cell.border = border
+        ws.row_dimensions[header_row].height = 28
+
+        # ==========================================================
+        # 🧮 Données
+        # ==========================================================
+        even_fill = PatternFill("solid", fgColor="F8FBFF")
+        odd_fill = PatternFill("solid", fgColor="FFFFFF")
+
+        for i, c in enumerate(qs, start=1):
             ws.append([
-                c.id,
-                c.nom,
-                c.prenom,
-                c.email,
-                c.telephone,
-                getattr(c, "adresse", ""),
-                getattr(c, "code_postal", ""),
-                getattr(c, "ville", ""),
-                c.date_inscription.strftime("%d/%m/%Y") if c.date_inscription else "",
+                c.id, c.sexe or "", c.nom_naissance or "", c.nom or "", c.prenom or "",
+                c.date_naissance.strftime("%d/%m/%Y") if c.date_naissance else "",
+                c.departement_naissance or "", c.commune_naissance or "", c.pays_naissance or "",
+                c.nationalite or "", c.nir or "", c.age or "", c.email or "", c.telephone or "",
+                c.street_number or "", c.street_name or "", c.street_complement or "",
+                c.code_postal or "", c.ville or "",
                 c.get_statut_display() if hasattr(c, "get_statut_display") else c.statut,
                 c.get_cv_statut_display() if hasattr(c, "get_cv_statut_display") else c.cv_statut,
-                getattr(c, "get_disponibilite_display", lambda: None)() or getattr(c, "disponibilite", ""),
-                getattr(c, "get_type_contrat_display", lambda: None)() or getattr(c, "type_contrat", ""),
-                c.numero_osia or "",
+                c.get_type_contrat_display() if hasattr(c, "get_type_contrat_display") else c.type_contrat,
+                c.get_disponibilite_display() if hasattr(c, "get_disponibilite_display") else c.disponibilite,
+                "Oui" if c.entretien_done else "Non", "Oui" if c.test_is_ok else "Non",
+                "Oui" if c.rqth else "Non", "Oui" if c.permis_b else "Non",
+                c.dernier_diplome_prepare or "", c.diplome_plus_eleve_obtenu or "",
+                c.derniere_classe or "", c.intitule_diplome_prepare or "",
+                c.situation_avant_contrat or "", c.regime_social or "",
+                "Oui" if c.sportif_haut_niveau else "Non",
+                "Oui" if c.equivalence_jeunes else "Non",
+                "Oui" if c.extension_boe else "Non", c.situation_actuelle or "",
+                c.representant_lien or "", c.representant_nom_naissance or "",
+                c.representant_prenom or "", c.representant_email or "",
+                c.representant_street_name or "", c.representant_zip_code or "",
+                c.representant_city or "",
+                getattr(c.formation, "nom", "") if c.formation else "",
+                getattr(c.formation, "num_offre", "") if c.formation else "",
+                getattr(getattr(c.formation, "centre", None), "nom", "") if c.formation else "",
+                getattr(getattr(c.formation, "type_offre", None), "nom", "") if c.formation else "",
+                c.origine_sourcing or "",
+                c.date_inscription.strftime("%d/%m/%Y") if c.date_inscription else "",
                 c.get_resultat_placement_display() if hasattr(c, "get_resultat_placement_display") else c.resultat_placement,
                 c.get_contrat_signe_display() if hasattr(c, "get_contrat_signe_display") else c.contrat_signe,
-                c.formation.nom if c.formation else "",
-                c.formation.num_offre if c.formation else "",
-                c.formation.centre.nom if getattr(c.formation, "centre", None) else "",
-                c.formation.type_offre.nom if getattr(c.formation, "type_offre", None) else "",
+                c.date_placement.strftime("%d/%m/%Y") if c.date_placement else "",
                 getattr(c.entreprise_placement, "nom", ""),
                 getattr(c.entreprise_validee, "nom", ""),
                 getattr(c.responsable_placement, "username", ""),
                 getattr(c.vu_par, "username", ""),
                 getattr(c, "nb_appairages_calc", 0),
                 getattr(c, "nb_prospections_calc", 0),
+                "Oui" if c.inscrit_gespers else "Non",
+                "Oui" if c.courrier_rentree else "Non",
+                c.date_rentree.strftime("%d/%m/%Y") if c.date_rentree else "",
+                "Oui" if c.admissible else "Non", c.numero_osia or "",
+                c.communication or "", c.experience or "", c.csp or "",
+                "Oui" if c.projet_creation_entreprise else "Non",
+                (c.notes or "").replace("\n", " "),
             ])
 
-        # --- 3) Ajuste la largeur des colonnes ---
-        for col in ws.columns:
-            max_length = 0
-            col_letter = get_column_letter(col[0].column)
-            for cell in col:
-                if cell.value:
-                    max_length = max(max_length, len(str(cell.value)))
-            ws.column_dimensions[col_letter].width = min(max_length + 2, 50)
+            fill = even_fill if i % 2 == 0 else odd_fill
+            for j, cell in enumerate(ws[ws.max_row], start=1):
+                cell.fill = fill
+                cell.border = border
+                cell.font = Font(name="Calibri", size=10, color="333333")
+                cell.alignment = Alignment(vertical="top", wrapText=True)
 
-        # --- 4) Envoi HTTP ---
+            ws.row_dimensions[ws.max_row].height = 22
+
+        # ==========================================================
+        # 📊 Filtres + gel d’en-tête
+        # ==========================================================
+        end_row = ws.max_row
+        last_col_letter = get_column_letter(len(headers))
+        if end_row > header_row:
+            ws.auto_filter.ref = f"A{header_row}:{last_col_letter}{end_row}"
+        ws.freeze_panes = f"A{header_row + 1}"
+
+        # ==========================================================
+        # 📏 Largeurs de colonnes automatiques
+        # ==========================================================
+        for col in ws.columns:
+            letter = get_column_letter(col[0].column)
+            max_len = max((len(str(c.value)) for c in col if c.value), default=10)
+            ws.column_dimensions[letter].width = min(max(max_len + 2, 12), 45)
+
+        # ==========================================================
+        # 📈 Pied de page / résumé
+        # ==========================================================
+        ws.append([])
+        ws.append([""])
+        ws.append([f"Nombre total de candidats exportés : {qs.count()}"])
+        ws[ws.max_row][0].font = Font(name="Calibri", bold=True, color="004C99", size=11)
+
+        ws.oddFooter.center.text = f"© Rap_App — export généré le {dj_timezone.now().strftime('%d/%m/%Y %H:%M')}"
+
+        # ==========================================================
+        # 📤 Génération du fichier
+        # ==========================================================
         buffer = BytesIO()
         wb.save(buffer)
-        buffer.seek(0)
+        binary_content = buffer.getvalue()
 
+        filename = f'candidats_{dj_timezone.now().strftime("%Y%m%d_%H%M%S")}.xlsx'
         response = HttpResponse(
-            buffer,
+            binary_content,
             content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         )
-        response["Content-Disposition"] = 'attachment; filename="candidats.xlsx"'
+        response["Content-Disposition"] = f'attachment; filename="{filename}"'
+        response["Content-Length"] = len(binary_content)
         return response
-
-
-class HistoriquePlacementViewSet(viewsets.ReadOnlyModelViewSet):
-    """ 📘 Historique des placements des candidats. """
-
-    queryset = HistoriquePlacement.objects.all().select_related("candidat", "entreprise", "responsable", "candidat__formation", "candidat__formation__centre")
-    serializer_class = HistoriquePlacementSerializer
-    permission_classes = [IsStaffOrAbove]
-    pagination_class = RapAppPagination
-
-    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filterset_fields = ["candidat", "entreprise", "responsable", "resultat"]
-
-    search_fields = [
-        "candidat__nom",
-        "candidat__prenom",
-        "candidat__ville",
-        "candidat__code_postal",
-        "entreprise__nom",
-    ]
-
-    ordering_fields = ["date_placement", "created_at"]
-
-    # ✅ scope staff par centres (via candidat.formation.centre)
-    def _is_admin_like(self, user) -> bool:
-        return getattr(user, "is_superuser", False) or (hasattr(user, "is_admin") and user.is_admin())
-
-    def get_queryset(self):
-        qs = super().get_queryset()
-        u = self.request.user
-        if is_admin_like(u):
-            return qs
-        if is_staff_or_staffread(u):
-            centre_ids = staff_centre_ids(u) or []
-            if not centre_ids:
-                return qs.none()
-            return qs.filter(candidat__formation__centre_id__in=centre_ids)
-        return qs.none()
-
-    def list(self, request, *args, **kwargs):
-        base_qs = self.get_queryset()
-        filtered_qs = self.filter_queryset(base_qs)
-        try:
-            logger.debug(
-                "📚 HP list params=%s before=%d after=%d SQL=%s",
-                {k: request.query_params.getlist(k) for k in request.query_params.keys()},
-                base_qs.count(),
-                filtered_qs.count(),
-                str(filtered_qs.query),
-            )
-        except Exception:
-            logger.debug("📚 HP list (logging limited)")
-        return super().list(request, *args, **kwargs)
-
-    @extend_schema(responses=HistoriquePlacementMetaSerializer)
-    @action(
-        detail=False, methods=["get"], url_path="meta", url_name="meta", renderer_classes=[JSONRenderer],
-    )
-    def meta(self, request):
-        logger.debug("ℹ️ /historique-placements/meta called")
-        return Response(HistoriquePlacementMetaSerializer().data)
-
-
-
-

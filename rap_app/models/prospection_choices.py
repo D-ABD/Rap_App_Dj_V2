@@ -1,7 +1,9 @@
 from django.utils.translation import gettext_lazy as _
 
 class ProspectionChoices:
-    # Statuts
+    # ────────────────────────────────
+    # Statuts (cycle de vie métier)
+    # ────────────────────────────────
     STATUT_A_FAIRE = 'a_faire'
     STATUT_EN_COURS = 'en_cours'
     STATUT_A_RELANCER = 'a_relancer'
@@ -11,16 +13,18 @@ class ProspectionChoices:
     STATUT_NON_RENSEIGNE = 'non_renseigne'
 
     PROSPECTION_STATUS_CHOICES = [
-        (STATUT_A_FAIRE, _('À faire')),
-        (STATUT_EN_COURS, _('En cours')),
-        (STATUT_A_RELANCER, _('À relancer')),
-        (STATUT_ACCEPTEE, _('Acceptée')),
-        (STATUT_REFUSEE, _('Refusée')),
-        (STATUT_ANNULEE, _('Annulée')),
-        (STATUT_NON_RENSEIGNE, _('Non renseigné')),
+        (STATUT_A_FAIRE,      _('À faire')),
+        (STATUT_EN_COURS,     _('En cours')),
+        (STATUT_A_RELANCER,   _('À relancer')),
+        (STATUT_ACCEPTEE,     _('Acceptée')),
+        (STATUT_REFUSEE,      _('Refusée')),
+        (STATUT_ANNULEE,      _('Annulée')),
+        (STATUT_NON_RENSEIGNE,_('Non renseigné')),
     ]
 
+    # ────────────────────────────────
     # Objectifs
+    # ────────────────────────────────
     OBJECTIF_PRISE_CONTACT = 'prise_contact'
     OBJECTIF_RENDEZ_VOUS = 'rendez_vous'
     OBJECTIF_PRESENTATION = 'presentation_offre'
@@ -37,7 +41,9 @@ class ProspectionChoices:
         (OBJECTIF_AUTRE, _('Autre')),
     ]
 
+    # ────────────────────────────────
     # Motifs
+    # ────────────────────────────────
     MOTIF_POEI = 'POEI'
     MOTIF_APPRENTISSAGE = 'apprentissage'
     MOTIF_VAE = 'VAE'
@@ -52,7 +58,9 @@ class ProspectionChoices:
         (MOTIF_AUTRE, _('Autre')),
     ]
 
-    # Moyen contact
+    # ────────────────────────────────
+    # Moyens de contact
+    # ────────────────────────────────
     MOYEN_EMAIL = 'email'
     MOYEN_TELEPHONE = 'telephone'
     MOYEN_VISITE = 'visite'
@@ -65,7 +73,9 @@ class ProspectionChoices:
         (MOYEN_RESEAUX, _('Réseaux sociaux')),
     ]
 
-    # Type de prospection
+    # ────────────────────────────────
+    # Types de prospection
+    # ────────────────────────────────
     TYPE_NOUVEAU_PROSPECT = 'nouveau_prospect'
     TYPE_PREMIER_CONTACT = 'premier_contact'
     TYPE_RELANCE = 'relance'
@@ -86,7 +96,9 @@ class ProspectionChoices:
         (TYPE_AUTRE, _("Autre")),
     ]
 
-
+    # ────────────────────────────────
+    # Helpers
+    # ────────────────────────────────
     @classmethod
     def get_statut_labels(cls):
         return dict(cls.PROSPECTION_STATUS_CHOICES)
@@ -94,7 +106,6 @@ class ProspectionChoices:
     @classmethod
     def get_objectifs_labels(cls):
         return dict(cls.PROSPECTION_OBJECTIF_CHOICES)
-
 
     @staticmethod
     def get_statut_choices():

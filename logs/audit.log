@@ -2307,3 +2307,214 @@ AttributeError: 'HistoriqueProspection' object has no attribute 'prochain_contac
 2025-09-30 01:30:27,256 | WARNING | prospection | Historique sans changement de statut pour prospection #5
 2025-09-30 01:30:27,257 | WARNING | prospection | Historique sans changement de statut pour prospection #5
 2025-09-30 01:30:27,259 | INFO | prospections_signals | [Signal] Historique ajouté pour prospection #5 – Changement de statut : À faire → À faire
+2025-09-30 19:05:49,938 | INFO | custom_user | 🔄 Utilisateur mis à jour : testgirl@test.com
+2025-09-30 19:06:14,399 | INFO | custom_user | 🔄 Utilisateur mis à jour : testgirl@test.com
+2025-09-30 19:26:13,148 | INFO | custom_user | 🔄 Utilisateur mis à jour : testgirl@test.com
+2025-09-30 19:31:40,005 | INFO | custom_user | ✅ Utilisateur créé : user@test.com avec rôle Staff lecture seule
+2025-09-30 19:32:46,326 | INFO | custom_user | 🔄 Utilisateur mis à jour : user@test.com
+2025-09-30 21:14:44,273 | INFO | formations | [Formation] Modifiée : ADVF (#5)
+2025-09-30 21:14:44,360 | INFO | formations_signals | [Signal] Formation modifiée : ADVF (ID=5) par usertest
+2025-09-30 21:15:53,343 | INFO | formations | [Formation] Modifiée : ADVF1 (#5)
+2025-09-30 21:15:53,444 | INFO | formations_signals | [Signal] Formation modifiée : ADVF1 (ID=5) par usertest
+2025-09-30 21:15:53,540 | INFO | formations_signals | [Signal] Historique enregistré pour formation #5 par usertest – Modification du champ 'nom' : ADVF → ADVF1
+2025-09-30 21:15:53,541 | INFO | formations | [Historique] Modification de nom le 30/09/2025 à 19:15
+2025-09-30 21:16:04,583 | INFO | formations | [Formation] Modifiée : ADVF (#5)
+2025-09-30 21:16:04,621 | INFO | formations_signals | [Signal] Formation modifiée : ADVF (ID=5) par usertest
+2025-09-30 21:16:04,773 | INFO | formations_signals | [Signal] Historique enregistré pour formation #5 par usertest – Modification du champ 'nom' : ADVF1 → ADVF
+2025-09-30 21:16:04,774 | INFO | formations | [Historique] Modification de nom le 30/09/2025 à 19:16
+2025-09-30 21:17:43,938 | INFO | formations | [Formation] Modifiée : ADVF (#5)
+2025-09-30 21:17:43,996 | INFO | formations_signals | [Signal] Formation modifiée : ADVF (ID=5) par usertest
+2025-09-30 21:17:56,464 | INFO | formations | [Formation] Modifiée : ADVF1 (#5)
+2025-09-30 21:17:56,494 | INFO | formations_signals | [Signal] Formation modifiée : ADVF1 (ID=5) par usertest
+2025-09-30 21:17:56,511 | INFO | formations | [Historique] Doublon ignoré: nom pour ADVF1 (Nanterre)
+2025-09-30 21:18:04,331 | INFO | formations | [Formation] Modifiée : ADVF (#5)
+2025-09-30 21:18:04,349 | INFO | formations_signals | [Signal] Formation modifiée : ADVF (ID=5) par usertest
+2025-09-30 21:18:04,368 | INFO | formations | [Historique] Doublon ignoré: nom pour ADVF (Nanterre)
+2025-09-30 21:20:34,215 | INFO | formations | [Formation] Modifiée : ADVF (#5)
+2025-09-30 21:20:34,247 | INFO | formations_signals | [Signal] Formation modifiée : ADVF (ID=5) par ABD
+2025-10-01 19:56:48,074 | INFO | prospections_signals | [Signal] Modification prospection #1 pour partenaire Acorus
+2025-10-01 19:56:48,106 | INFO | prospection | [Prospection #1] Changements par ABD : statut: a_faire→a_relancer; relance_prevue: None→2025-10-02
+2025-10-01 19:56:48,170 | INFO | prospections_signals | [Signal] Historique ajouté pour prospection #1 – Changement de statut : À faire → À relancer (Prochain contact : 02/10/2025)
+2025-10-01 19:56:48,177 | WARNING | prospection | Historique sans changement de statut pour prospection #1
+2025-10-01 19:56:48,177 | WARNING | prospection | Historique sans changement de statut pour prospection #1
+2025-10-01 19:56:48,187 | INFO | prospections_signals | [Signal] Historique ajouté pour prospection #1 – Changement de statut : À relancer → À relancer (Prochain contact : 02/10/2025)
+2025-10-01 23:50:21,952 | INFO | candidats_signals | ➕ Candidat créé pour User #11 (role=candidat)
+2025-10-01 23:50:21,954 | INFO | custom_user | ✅ Utilisateur créé : smain.aka.6@fake.local avec rôle Candidat
+2025-10-01 23:52:42,504 | INFO | candidats_signals | ➕ Candidat créé pour User #12 (role=candidat)
+2025-10-01 23:52:42,507 | INFO | custom_user | ✅ Utilisateur créé : smain.aka.6@fake.local avec rôle Candidat
+2025-10-02 19:46:36,103 | INFO | custom_user | ✅ Utilisateur créé : s.aka@mail.com avec rôle Test
+2025-10-02 19:46:36,213 | INFO | candidats_signals | ✅ User créé #13 puis lié à Candidat #6
+2025-10-02 19:46:36,226 | INFO | custom_user | 🔄 Utilisateur mis à jour : s.aka@mail.com
+2025-10-02 20:20:30,786 | INFO | prospections_signals | [Signal] Modification prospection #3 pour partenaire Coca Cola
+2025-10-02 23:05:20,456 | INFO | candidats_signals | ➕ Candidat créé pour User #10 (role=candidat)
+2025-10-02 23:05:20,459 | INFO | custom_user | 🔄 Utilisateur mis à jour : user@test.com
+2025-10-03 20:19:23,478 | INFO | prospections_signals | [Signal] Création prospection #11 pour partenaire partner user test
+2025-10-04 21:24:07,844 | INFO | custom_user | 🔄 Utilisateur mis à jour : adserv.fr@gmail.com
+2025-10-05 02:26:21,240 | INFO | custom_user | ✅ Utilisateur créé : koler@mail.com avec rôle Test
+2025-10-05 02:26:21,334 | INFO | candidats_signals | ✅ User créé #14 puis lié à Candidat #12
+2025-10-05 02:26:21,349 | INFO | custom_user | 🔄 Utilisateur mis à jour : koler@mail.com
+2025-10-05 02:26:21,384 | INFO | candidats_signals | 🔗 Lien Candidat #12 ↔ User #14
+2025-10-05 10:54:27,983 | INFO | formations | [Formation] Modifiée : EEB(Electricien du Bâtiment) (#3)
+2025-10-05 10:54:28,054 | INFO | formations_signals | [Signal] Formation modifiée : EEB(Electricien du Bâtiment) (ID=3) par ABD
+2025-10-05 10:54:28,181 | INFO | formations_signals | [Signal] Historique enregistré pour formation #3 par ABD – Modification du champ 'nom' : EEB → EEB(Electricien du Bâtiment)
+2025-10-05 10:54:28,182 | INFO | formations | [Historique] Modification de nom le 05/10/2025 à 08:54
+2025-10-05 10:54:28,203 | INFO | formations_signals | [Signal] Historique enregistré pour formation #3 par ABD – Modification du champ 'num_produit' : — → —
+2025-10-05 10:54:28,204 | INFO | formations | [Historique] Modification de num_produit le 05/10/2025 à 08:54
+2025-10-05 10:54:28,212 | INFO | formations_signals | [Signal] Historique enregistré pour formation #3 par ABD – Modification du champ 'cap' : — → 0
+2025-10-05 10:54:28,213 | INFO | formations | [Historique] Modification de cap le 05/10/2025 à 08:54
+2025-10-05 11:42:51,534 | INFO | custom_user | ✅ Utilisateur créé : dany.dan@mail.com avec rôle Test
+2025-10-05 11:42:51,579 | INFO | candidats_signals | ✅ User créé #15 puis lié à Candidat #13
+2025-10-05 11:42:51,594 | INFO | custom_user | 🔄 Utilisateur mis à jour : dany.dan@mail.com
+2025-10-05 11:42:51,629 | INFO | candidats_signals | 🔗 Lien Candidat #13 ↔ User #15
+2025-10-05 15:37:09,062 | INFO | centres_signals | Centre mis à jour
+2025-10-05 15:38:38,512 | INFO | centres_signals | Centre mis à jour
+2025-10-05 15:40:00,061 | INFO | centres_signals | Centre mis à jour
+2025-10-05 15:42:52,499 | INFO | centres_signals | Centre mis à jour
+2025-10-05 15:46:19,487 | INFO | centres_signals | Centre mis à jour
+2025-10-05 15:46:45,889 | INFO | centres_signals | Centre mis à jour
+2025-10-05 15:47:36,731 | INFO | centres_signals | Centre mis à jour
+2025-10-05 15:49:36,104 | INFO | centres | [Centre] Modif #1: nom: 'Meudon' → 'Centre AFPA de Meudon'
+2025-10-05 15:49:36,159 | INFO | centres_signals | Centre mis à jour
+2025-10-05 15:49:52,074 | INFO | centres | [Centre] Modif #1: code_postal: '92260' → '92360'
+2025-10-05 15:49:52,086 | INFO | centres_signals | Centre mis à jour
+2025-10-05 15:50:03,976 | INFO | centres | [Centre] Modif #4: nom: 'Magnanville' → 'Centre AFPA de Magnanville'
+2025-10-05 15:50:03,987 | INFO | centres_signals | Centre mis à jour
+2025-10-05 15:52:28,029 | INFO | centres | [Centre] Modif #2: nom: 'Nanterre' → 'Centre AFPA de Nanterre'
+2025-10-05 15:52:28,079 | INFO | centres_signals | Centre mis à jour
+2025-10-05 16:02:24,322 | INFO | centres_signals | Centre mis à jour
+2025-10-05 16:02:33,052 | INFO | centres_signals | Centre mis à jour
+2025-10-05 16:02:38,676 | INFO | centres_signals | Centre mis à jour
+2025-10-05 16:02:47,155 | INFO | centres_signals | Centre mis à jour
+2025-10-05 16:02:54,392 | INFO | centres_signals | Centre mis à jour
+2025-10-06 19:51:27,198 | INFO | prospections_signals | [Signal] Modification prospection #1 pour partenaire Acorus
+2025-10-06 19:51:27,234 | INFO | prospection | [Prospection #1] Changements par ABD : statut: a_relancer→acceptee; relance_prevue: 2025-10-02→2025-10-30
+2025-10-06 19:51:27,360 | INFO | prospections_signals | [Signal] Historique ajouté pour prospection #1 – Changement de statut : À relancer → Acceptée (Prochain contact : 30/10/2025)
+2025-10-06 19:51:27,486 | WARNING | prospection | Historique sans changement de statut pour prospection #1
+2025-10-06 19:51:27,487 | WARNING | prospection | Historique sans changement de statut pour prospection #1
+2025-10-06 19:51:27,490 | INFO | prospections_signals | [Signal] Historique ajouté pour prospection #1 – Changement de statut : Acceptée → Acceptée (Prochain contact : 30/10/2025)
+2025-10-06 19:56:22,555 | INFO | prospections_signals | [Signal] Modification prospection #1 pour partenaire Acorus
+2025-10-07 20:27:58,416 | INFO | formations | [Formation] Modifiée : ADVF (#5)
+2025-10-07 20:27:58,661 | INFO | formations_signals | [Signal] Formation modifiée : ADVF (ID=5) par ABD
+2025-10-07 22:20:27,518 | INFO | formations | [Formation] Modifiée : EEB(Electricien du Bâtiment) (#3)
+2025-10-07 22:20:27,546 | INFO | formations_signals | [Signal] Formation modifiée : EEB(Electricien du Bâtiment) (ID=3) par ABD
+2025-10-07 22:20:27,657 | INFO | formations_signals | [Signal] Historique enregistré pour formation #3 par ABD – Modification du champ 'dernier_commentaire' : test commentaire plan d'action EEB → qqqqq
+2025-10-07 22:20:27,660 | INFO | formations | [Historique] Modification de dernier_commentaire le 07/10/2025 à 20:20
+2025-10-07 23:02:24,419 | INFO | formations | [Formation] Modifiée : EEB(Electricien du Bâtiment) (#3)
+2025-10-07 23:02:24,512 | INFO | formations_signals | [Signal] Formation modifiée : EEB(Electricien du Bâtiment) (ID=3) par ABD
+2025-10-07 23:02:24,670 | INFO | formations_signals | [Signal] Historique enregistré pour formation #3 par ABD – Modification du champ 'statut' : 2 → 1
+2025-10-07 23:02:24,672 | INFO | formations | [Historique] Modification de statut le 07/10/2025 à 21:02
+2025-10-07 23:02:24,686 | INFO | formations_signals | [Signal] Historique enregistré pour formation #3 par ABD – Modification du champ 'inscrits_crif' : 5 → 9
+2025-10-07 23:02:24,687 | INFO | formations | [Historique] Modification de inscrits_crif le 07/10/2025 à 21:02
+2025-10-08 00:30:14,326 | INFO | formations | [Formation] Modifiée : ADVF (#5)
+2025-10-08 00:30:14,500 | INFO | formations_signals | [Signal] Formation modifiée : ADVF (ID=5) par ABD
+2025-10-11 11:58:13,560 | INFO | formations | [Formation] Modifiée : AD (Assistante de direction) (#4)
+2025-10-11 11:58:13,655 | INFO | formations_signals | [Signal] Formation modifiée : AD (Assistante de direction) (ID=4) par ABD
+2025-10-11 11:58:13,677 | WARNING | formations | Formation introuvable (ID=4), historique ignoré pour champ statut
+2025-10-11 11:58:13,679 | WARNING | formations | Formation introuvable (ID=4), historique ignoré pour champ num_kairos
+2025-10-11 11:58:13,681 | WARNING | formations | Formation introuvable (ID=4), historique ignoré pour champ num_produit
+2025-10-11 13:03:53,220 | INFO | prospections_signals | [Signal] Modification prospection #7 pour partenaire Coca Cola
+2025-10-11 13:03:53,236 | INFO | prospection | [Prospection #7] Changements par ABD : statut: acceptee→archivee
+2025-10-11 15:09:20,983 | INFO | prospections_signals | [Signal] Modification prospection #10 pour partenaire Apple
+2025-10-11 15:09:20,986 | INFO | prospection | [Prospection #10] Changements par ABD : statut: a_faire→archivee
+2025-10-11 15:09:21,047 | INFO | prospections_signals | [Signal] Historique ajouté pour prospection #10 – Changement de statut : À faire → Archivée
+2025-10-11 15:09:21,102 | INFO | prospections_signals | [Signal] Historique ajouté pour prospection #10 – Changement de statut : À faire → Archivée
+2025-10-11 15:09:21,145 | INFO | prospection | [Prospection #10] Archivée par None (Prospection archivée (résultat : acceptée))
+2025-10-11 15:10:03,031 | INFO | prospections_signals | [Signal] Modification prospection #7 pour partenaire Coca Cola
+2025-10-11 15:10:03,031 | INFO | prospection | [Prospection #7] Changements par ABD : statut: archivee→en_cours
+2025-10-11 15:10:03,042 | INFO | prospections_signals | [Signal] Historique ajouté pour prospection #7 – Changement de statut : Archivée → En cours
+2025-10-11 15:20:32,508 | INFO | prospections_signals | [Signal] Modification prospection #1 pour partenaire Acorus
+2025-10-11 15:20:32,513 | INFO | prospection | [Prospection #1] Changements par ABD : statut: acceptee→archivee
+2025-10-11 15:20:32,590 | INFO | prospections_signals | [Signal] Historique ajouté pour prospection #1 – Changement de statut : Acceptée → Archivée (Prochain contact : 30/10/2025)
+2025-10-11 15:20:32,644 | INFO | prospections_signals | [Signal] Historique ajouté pour prospection #1 – Changement de statut : Acceptée → Archivée (Prochain contact : 30/10/2025)
+2025-10-11 15:20:32,647 | INFO | prospection | [Prospection #1] Archivée par ABD (Prospection archivée (ancien statut : acceptee))
+2025-10-11 15:31:23,344 | INFO | prospections_signals | [Signal] Modification prospection #1 pour partenaire Acorus
+2025-10-11 15:31:23,346 | INFO | prospection | [Prospection #1] Changements par ABD : statut: archivee→a_relancer
+2025-10-11 15:31:23,357 | INFO | prospections_signals | [Signal] Historique ajouté pour prospection #1 – Changement de statut : Archivée → À relancer (Prochain contact : 30/10/2025)
+2025-10-11 15:38:37,320 | INFO | prospections_signals | [Signal] Modification prospection #10 pour partenaire Apple
+2025-10-11 15:38:37,323 | INFO | prospection | [Prospection #10] Changements par ABD : statut: archivee→en_cours
+2025-10-11 15:38:37,335 | INFO | prospections_signals | [Signal] Historique ajouté pour prospection #10 – Changement de statut : Archivée → En cours
+2025-10-11 16:00:57,106 | INFO | prospections_signals | [Signal] Modification prospection #1 pour partenaire Acorus
+2025-10-11 16:00:57,124 | WARNING | prospection | Historique sans changement de statut pour prospection #1
+2025-10-11 16:00:57,124 | WARNING | prospection | Historique sans changement de statut pour prospection #1
+2025-10-11 16:00:57,275 | INFO | prospections_signals | [Signal] Historique ajouté pour prospection #1 – Changement de statut : À relancer → À relancer (Prochain contact : 30/10/2025)
+2025-10-11 16:18:16,518 | INFO | prospection | Prospection #1 déjà archivée.
+2025-10-11 16:19:06,306 | INFO | prospections_signals | [Signal] Modification prospection #3 pour partenaire Coca Cola
+2025-10-11 16:19:06,344 | WARNING | prospection | Historique sans changement de statut pour prospection #3
+2025-10-11 16:19:06,345 | WARNING | prospection | Historique sans changement de statut pour prospection #3
+2025-10-11 16:19:06,600 | INFO | prospections_signals | [Signal] Historique ajouté pour prospection #3 – Changement de statut : À faire → À faire
+2025-10-11 16:19:06,664 | INFO | prospection | Prospection #3 déjà archivée.
+2025-10-11 16:28:03,989 | INFO | prospections_signals | [Signal] Modification prospection #1 pour partenaire Acorus
+2025-10-11 16:28:03,995 | WARNING | prospection | Historique sans changement de statut pour prospection #1
+2025-10-11 16:28:03,998 | WARNING | prospection | Historique sans changement de statut pour prospection #1
+2025-10-11 16:28:04,062 | INFO | prospections_signals | [Signal] Historique ajouté pour prospection #1 – Changement de statut : À relancer → À relancer (Prochain contact : 30/10/2025)
+2025-10-11 22:12:41,522 | INFO | formations_signals | [Signal] Formation modifiée : ADVF (ID=5) par ABD
+2025-10-11 22:13:20,185 | INFO | formations_signals | [Signal] Formation modifiée : ADVF (ID=5) par ABD
+2025-10-12 09:39:32,807 | INFO | formations_signals | [Signal] Formation modifiée : AD (Assistante de direction) (ID=4) par ABD
+2025-10-12 09:39:32,875 | INFO | formations_signals | [Signal] Historique enregistré pour formation #None par ABD – Suppression du champ 'activite' : active → archivee
+2025-10-12 09:39:32,876 | WARNING | formations_signals | [Signal] Suppression enregistrée pour formation #None
+2025-10-12 10:39:39,972 | INFO | formations_signals | [Signal] Formation modifiée : AD (Assistante de direction) (ID=4) par ABD
+2025-10-12 10:39:40,036 | INFO | formations_signals | [Signal] Historique enregistré pour formation #4 par ABD – Ajout du champ 'activite' : archivee → active
+2025-10-12 10:44:21,397 | INFO | formations_signals | [Signal] Formation modifiée : AD (Assistante de direction) (ID=4) par ABD
+2025-10-12 10:44:21,450 | INFO | formations_signals | [Signal] Historique enregistré pour formation #None par ABD – Suppression du champ 'activite' : active → archivee
+2025-10-12 10:44:21,450 | WARNING | formations_signals | [Signal] Suppression enregistrée pour formation #None
+2025-10-12 10:45:02,851 | INFO | formations_signals | [Signal] Formation modifiée : AD (Assistante de direction) (ID=4) par ABD
+2025-10-12 10:45:02,904 | INFO | formations_signals | [Signal] Historique enregistré pour formation #4 par ABD – Ajout du champ 'activite' : archivee → active
+2025-10-12 11:46:46,566 | INFO | prospection_comments | Commentaire #9 archivé
+2025-10-12 14:58:10,380 | INFO | commentaires_appairage | CommentaireAppairage #8 archivé
+2025-10-12 18:28:44,613 | INFO | commentaires | Commentaire #13 archivé (formation #3)
+2025-10-12 18:29:14,609 | INFO | commentaires | Commentaire #12 archivé (formation #3)
+2025-10-12 18:47:51,210 | INFO | commentaires | Commentaire #11 archivé (formation #5)
+2025-10-12 18:48:02,097 | INFO | commentaires | Commentaire #10 archivé (formation #4)
+2025-10-12 19:05:52,167 | INFO | commentaires | ✅ Commentaire #9 archivé (formation #4)
+2025-10-13 00:03:57,695 | INFO | commentaires | ♻️ Commentaire #13 désarchivé (formation #3)
+2025-10-13 00:48:40,936 | INFO | prospection_comments | Commentaire #8 archivé
+2025-10-15 20:02:13,131 | INFO | formations_signals | [Signal] Formation modifiée : ADVF (ID=5) par ABD
+2025-10-15 20:02:13,201 | INFO | formations_signals | [Signal] Historique enregistré pour formation #None par ABD – Suppression du champ 'activite' : active → archivee
+2025-10-15 20:02:13,201 | WARNING | formations_signals | [Signal] Suppression enregistrée pour formation #None
+2025-10-16 19:43:47,824 | INFO | custom_user | ✅ Utilisateur créé : jean.dupont@example.com avec rôle Test
+2025-10-16 19:43:47,871 | INFO | candidats_signals | ✅ User créé #16 puis lié à Candidat #14
+2025-10-16 19:43:47,884 | INFO | custom_user | 🔄 Utilisateur mis à jour : jean.dupont@example.com
+2025-10-18 11:09:12,550 | INFO | cerfa_auto_create_signals | ✅ CERFA auto-créé pour le candidat Durand (ID 15)
+2025-10-18 21:05:56,886 | INFO | prospections_signals | [Signal] Modification prospection #11 pour partenaire Partner User Test
+2025-10-18 21:05:56,908 | WARNING | prospection | Historique sans changement de statut pour prospection #11
+2025-10-18 21:05:56,910 | WARNING | prospection | Historique sans changement de statut pour prospection #11
+2025-10-18 21:05:56,973 | INFO | prospections_signals | [Signal] Historique ajouté pour prospection #11 – Changement de statut : À relancer → À relancer (Prochain contact : 10/10/2025)
+2025-10-18 21:06:00,337 | INFO | prospections_signals | [Signal] Modification prospection #11 pour partenaire Partner User Test
+2025-10-18 21:06:00,341 | WARNING | prospection | Historique sans changement de statut pour prospection #11
+2025-10-18 21:06:00,341 | WARNING | prospection | Historique sans changement de statut pour prospection #11
+2025-10-18 21:06:00,346 | INFO | prospections_signals | [Signal] Historique ajouté pour prospection #11 – Changement de statut : À relancer → À relancer (Prochain contact : 10/10/2025)
+2025-10-18 22:50:10,928 | INFO | prospections_signals | [Signal] Modification prospection #11 pour partenaire Partner User Test
+2025-10-18 22:50:10,953 | INFO | prospection | [Prospection #11] Changements par usertest : relance_prevue: 2025-10-10→2025-10-23
+2025-10-18 22:50:10,967 | WARNING | prospection | Historique sans changement de statut pour prospection #11
+2025-10-18 22:50:10,970 | WARNING | prospection | Historique sans changement de statut pour prospection #11
+2025-10-18 22:50:11,026 | INFO | prospections_signals | [Signal] Historique ajouté pour prospection #11 – Changement de statut : À relancer → À relancer (Prochain contact : 23/10/2025)
+2025-10-18 22:56:37,861 | INFO | prospections_signals | [Signal] Modification prospection #1 pour partenaire Acorus
+2025-10-19 09:46:28,386 | INFO | custom_user | 🔄 Utilisateur mis à jour : adserv.fr@gmail.com
+2025-10-19 15:30:06,704 | INFO | prospections_signals | [Signal] Création prospection #12 pour partenaire Zsdfg
+2025-10-19 15:40:06,082 | INFO | custom_user | 🔄 Utilisateur mis à jour : testgirl@test.com
+2025-10-19 15:40:55,074 | INFO | prospections_signals | [Signal] Modification prospection #12 pour partenaire Zsdfg
+2025-10-19 15:40:55,096 | WARNING | prospection | Historique sans changement de statut pour prospection #12
+2025-10-19 15:40:55,097 | WARNING | prospection | Historique sans changement de statut pour prospection #12
+2025-10-19 15:40:55,173 | INFO | prospections_signals | [Signal] Historique ajouté pour prospection #12 – Changement de statut : À faire → À faire
+2025-10-19 15:40:57,838 | INFO | prospections_signals | [Signal] Modification prospection #12 pour partenaire Zsdfg
+2025-10-19 15:40:57,842 | WARNING | prospection | Historique sans changement de statut pour prospection #12
+2025-10-19 15:40:57,851 | WARNING | prospection | Historique sans changement de statut pour prospection #12
+2025-10-19 15:40:57,858 | INFO | prospections_signals | [Signal] Historique ajouté pour prospection #12 – Changement de statut : À faire → À faire
+2025-10-19 15:41:17,778 | INFO | prospections_signals | [Signal] Modification prospection #12 pour partenaire Zsdfg
+2025-10-19 15:48:17,253 | INFO | prospections_signals | [Signal] Modification prospection #12 pour partenaire Zsdfg
+2025-10-19 15:48:17,256 | WARNING | prospection | Historique sans changement de statut pour prospection #12
+2025-10-19 15:48:17,257 | WARNING | prospection | Historique sans changement de statut pour prospection #12
+2025-10-19 15:48:17,260 | INFO | prospections_signals | [Signal] Historique ajouté pour prospection #12 – Changement de statut : À faire → À faire
+2025-10-19 15:48:18,528 | INFO | prospections_signals | [Signal] Modification prospection #12 pour partenaire Zsdfg
+2025-10-19 15:48:18,532 | WARNING | prospection | Historique sans changement de statut pour prospection #12
+2025-10-19 15:48:18,533 | WARNING | prospection | Historique sans changement de statut pour prospection #12
+2025-10-19 15:48:18,542 | INFO | prospections_signals | [Signal] Historique ajouté pour prospection #12 – Changement de statut : À faire → À faire
+2025-10-19 15:48:22,321 | INFO | prospections_signals | [Signal] Modification prospection #12 pour partenaire Zsdfg
+2025-10-19 15:58:14,628 | INFO | prospections_signals | [Signal] Création prospection #13 pour partenaire Partner User Test
+2025-10-19 16:31:59,322 | INFO | cerfa_auto_create_signals | ✅ CERFA simplifié créé pour Bjeda (ID 19)
+2025-10-19 16:31:59,862 | INFO | cerfa_auto_create_signals | 🧾 PDF généré automatiquement pour Bjeda (CERFA 19)
+2025-10-19 16:31:59,872 | INFO | candidats_signals | ➕ Candidat créé pour User #17 (role=stagiaire)
+2025-10-19 16:31:59,892 | INFO | custom_user | ✅ Utilisateur créé : salim@test.com avec rôle Stagiaire
+2025-10-19 16:31:59,904 | INFO | custom_user | 🔄 Utilisateur mis à jour : salim@test.com
+2025-10-19 16:32:51,210 | INFO | custom_user | 🔄 Utilisateur mis à jour : salim@test.com
+2025-10-19 19:28:29,659 | INFO | prospections_signals | [Signal] Modification prospection #13 pour partenaire Partner User Test

@@ -24,8 +24,6 @@ class CentreManager(models.Manager):
         Returns:
             QuerySet: Les centres actifs uniquement
         """
-        # Si vous ajoutez un champ statut:
-        # return self.filter(statut='actif')
         return self.all()
     
     def with_prepa_counts(self):
@@ -51,7 +49,7 @@ class CentreManager(models.Manager):
     
     def with_prepa_for_year(self, year=None):
         from .prepacomp import PrepaCompGlobal
-        year = year or now().year   # <-- utiliser 'year', pas 'annee'
+        year = year or now().year
         return self.prefetch_related(
             models.Prefetch(
                 'prepacompglobal_set',
@@ -72,11 +70,7 @@ class CentreManager(models.Manager):
         """
         if not query:
             return self.all()
-            
-        return self.filter(
-            Q(nom__icontains=query) | 
-            Q(code_postal__startswith=query)
-        )
+        return self.filter(Q(nom__icontains=query) | Q(code_postal__startswith=query))
 
 
 class Centre(BaseModel):
@@ -84,43 +78,31 @@ class Centre(BaseModel):
     Modèle représentant un centre de formation.
     
     Ce modèle stocke les informations de base d'un centre de formation,
-    notamment son nom unique et sa localisation (code postal).
-    
-    Attributs:
-        nom (str): Nom unique du centre (max 255 caractères)
-        code_postal (str, optional): Code postal à 5 chiffres du centre
-        
-    Propriétés:
-        full_address: Adresse formatée sous forme de texte
-        nb_prepa_comp_global: Nombre d'objectifs annuels associés (mise en cache)
-        
-    Relations:
-        prepa_global: Relations OneToMany avec PrepaCompGlobal
-        
-    Méthodes:
-        clean: Validation spécifique pour le code postal
-        to_serializable_dict: Représentation JSON du centre
-        invalidate_caches: Invalide les caches de propriétés
-        to_csv_row: Convertit l'instance en ligne CSV
+    y compris les détails du CFA responsable et du lieu principal.
     """
-    # Constantes pour éviter les valeurs magiques
     NOM_MAX_LENGTH = 255
     CODE_POSTAL_LENGTH = 5
-    
-    # Choix pour un éventuel statut (à ajouter si pertinent)
+
     STATUS_CHOICES = [
         ('actif', 'Actif'),
         ('inactif', 'Inactif'),
         ('temporaire', 'Temporaire'),
     ]
 
+    # --- Informations principales ---
+    cfa_entreprise = models.BooleanField(default=False, help_text="CFA d’entreprise")
+
     nom = models.CharField(
         max_length=NOM_MAX_LENGTH,
         unique=True,
         verbose_name="Nom du centre",
         help_text="Nom complet du centre de formation (doit être unique)",
-        db_index=True,  # Optimisation: ajout explicite d'index pour le nom
+        db_index=True,
     )
+
+    numero_voie = models.CharField(max_length=10, blank=True, null=True, verbose_name="Numéro de voie")
+    nom_voie = models.CharField(max_length=255, blank=True, null=True, verbose_name="Nom de la voie")
+    complement_adresse = models.CharField(max_length=255, blank=True, null=True, verbose_name="Complément adresse")
 
     code_postal = models.CharField(
         max_length=CODE_POSTAL_LENGTH,
@@ -129,18 +111,41 @@ class Centre(BaseModel):
         verbose_name="Code postal",
         help_text="Code postal à 5 chiffres du centre",
         validators=[
-            RegexValidator(
-                regex=r'^\d{5}$',
-                message="Le code postal doit contenir exactement 5 chiffres"
-            )
+            RegexValidator(regex=r'^\d{5}$', message="Le code postal doit contenir exactement 5 chiffres")
         ]
     )
+    commune = models.CharField(max_length=255, blank=True, null=True)
+
+
+    numero_uai_centre = models.CharField(max_length=20, blank=True, null=True)
+    siret_centre = models.CharField(max_length=14, blank=True, null=True)
     
+    # --- Informations CFA Responsable ---
+    cfa_responsable_est_lieu_principal = models.BooleanField(
+        default=False,
+        help_text="Si le CFA responsable est le lieu de formation principal",
+    )
+
+    cfa_responsable_denomination = models.CharField(
+        max_length=255, blank=True, null=True, verbose_name="Dénomination du CFA responsable"
+    )
+    cfa_responsable_uai = models.CharField(
+        max_length=20, blank=True, null=True, verbose_name="N° UAI du CFA"
+    )
+    cfa_responsable_siret = models.CharField(
+        max_length=14, blank=True, null=True, verbose_name="N° SIRET du CFA"
+    )
+
+    cfa_responsable_numero = models.CharField(max_length=10, blank=True, null=True)
+    cfa_responsable_voie = models.CharField(max_length=255, blank=True, null=True)
+    cfa_responsable_complement = models.CharField(max_length=255, blank=True, null=True)
+    cfa_responsable_code_postal = models.CharField(max_length=10, blank=True, null=True)
+    cfa_responsable_commune = models.CharField(max_length=255, blank=True, null=True)
 
     # Managers
-    objects = models.Manager()  # Manager par défaut
-    custom = CentreManager()    # Manager personnalisé
-    
+    objects = models.Manager()
+    custom = CentreManager()
+
     class Meta:
         verbose_name = "Centre"
         verbose_name_plural = "Centres"
@@ -148,17 +153,11 @@ class Centre(BaseModel):
         indexes = [
             models.Index(fields=['nom'], name='centre_nom_idx'),
             models.Index(fields=['code_postal'], name='centre_cp_idx'),
-            # Ajouter d'autres index composites si nécessaire:
         ]
-        # Contraintes optionnelles
         constraints = [
-            # Exemple de contrainte check
-            models.CheckConstraint(
-                check=~Q(nom=''), 
-                name='centre_nom_not_empty'
-            ),
+            models.CheckConstraint(check=~Q(nom=''), name='centre_nom_not_empty'),
         ]
-    
+
     class APIInfo:
         """Informations pour la documentation API."""
         description = "Centres de formation"
@@ -168,11 +167,9 @@ class Centre(BaseModel):
         ordering_fields = ['nom', 'created_at']
 
     def __str__(self):
-        """Représentation textuelle du centre."""
         return self.nom
 
     def __repr__(self):
-        """Représentation pour le débogage."""
         return f"<Centre {self.pk}: {self.nom}>"
 
     def full_address(self) -> str:
@@ -181,54 +178,26 @@ class Centre(BaseModel):
         if self.code_postal:
             address += f" ({self.code_postal})"
         return address
-    from django.utils.functional import cached_property
 
     @cached_property
     def nb_prepa_comp_global(self):
         """
         Nombre d'objectifs annuels associés à ce centre.
         Utilisation de cached_property pour optimiser les performances.
-        
-        Returns:
-            int: Nombre d'objectifs PrepaCompGlobal associés
         """
         from .prepacomp import PrepaCompGlobal
         return PrepaCompGlobal.objects.filter(centre=self).count()
 
-    
-    # Suppression de la propriété is_active qui masquait potentiellement
-    # un champ is_active hérité de BaseModel
-    
-    # Si nécessaire, ajouter une propriété avec un nom différent:
-    # @property
-    # def is_actif_par_statut(self):
-    #     """
-    #     Détermine si le centre est actif selon son statut.
-    #     Returns:
-    #         bool: True si le centre a un statut actif, False sinon
-    #     """
-    #     return self.statut == 'actif' if hasattr(self, 'statut') else True
-
     def invalidate_caches(self):
-        """
-        Invalide toutes les propriétés mises en cache avec @cached_property.
-        """
+        """Invalide les caches calculés."""
         for prop in ['nb_prepa_comp_global']:
             self.__dict__.pop(prop, None)
-
 
     def to_serializable_dict(self, include_related=False) -> dict:
         """
         Renvoie un dictionnaire JSON-serializable de l'objet.
-        
-        Args:
-            include_related (bool): Si True, inclut les objets liés
-            
-        Returns:
-            dict: Représentation sérialisable du centre
         """
         base_dict = super().to_serializable_dict(exclude=['created_by', 'updated_by'])
-        
         centre_dict = {
             "id": self.pk,
             "nom": self.nom,
@@ -237,36 +206,21 @@ class Centre(BaseModel):
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,
         }
-        
-        # Fusionner avec le dictionnaire de base
         result = {**base_dict, **centre_dict}
-        
-        # Ajouter les objets liés si demandé
         if include_related:
             from .prepacomp import PrepaCompGlobal
-            current_year = now().year  
-            prepa_global = PrepaCompGlobal.objects.filter(
-                centre=self, 
-                annee=current_year
-            ).first()
-            
+            current_year = now().year
+            prepa_global = PrepaCompGlobal.objects.filter(centre=self, annee=current_year).first()
             if prepa_global:
                 result["prepa_global"] = {
                     "id": prepa_global.pk,
                     "annee": prepa_global.annee,
-                    # Ajouter d'autres champs pertinents
                 }
-        
         return result
 
     def save(self, *args, **kwargs):
         """
         Sauvegarde le centre avec journalisation améliorée.
-        Préserve la compatibilité avec le code existant.
-        
-        Args:
-            *args: Arguments positionnels pour save()
-            **kwargs: Arguments nommés pour save(), y compris user
         """
         user = kwargs.pop("user", None)
         is_new = self.pk is None
@@ -286,46 +240,24 @@ class Centre(BaseModel):
             except Centre.DoesNotExist:
                 logger.warning(f"[Centre] Ancienne instance introuvable pour {self.pk}")
 
-        # Validation métier avant sauvegarde
         self.clean()
-        
-        # Appel de la méthode save du BaseModel avec l'utilisateur directement
         super().save(*args, user=user, **kwargs)
-
         logger.debug(f"[Centre] Sauvegarde complète de #{self.pk} (user={user})")
-        
-        # Invalidation du cache
         self.invalidate_caches()
 
     def delete(self, *args, **kwargs):
         """
         Supprime le centre avec journalisation.
-        
-        Args:
-            *args: Arguments positionnels pour delete()
-            **kwargs: Arguments nommés pour delete()
-            
-        Returns:
-            tuple: Résultat de la suppression (nombre d'objets, dict par type)
         """
         logger.warning(f"[Centre] Suppression du centre #{self.pk}: {self.nom}")
-        
-        # Invalidation du cache avant suppression
         self.invalidate_caches()
-        
-        # Suppression effective
         return super().delete(*args, **kwargs)
 
     def clean(self):
         """
         Validation métier spécifique pour le centre.
-        
-        Raises:
-            ValidationError: Si les données ne sont pas valides
         """
         super().clean()
-        
-        # Validation du code postal
         if self.code_postal:
             if not self.code_postal.isdigit():
                 raise ValidationError({"code_postal": "Le code postal doit être numérique."})
@@ -333,96 +265,40 @@ class Centre(BaseModel):
                 raise ValidationError({"code_postal": f"Le code postal doit contenir exactement {self.CODE_POSTAL_LENGTH} chiffres."})
 
     def prepa_global(self, annee=None):
-        """
-        Raccourci pour accéder à l'objectif annuel via PrepaCompGlobal.
-        
-        Args:
-            annee (int, optional): Année de référence, par défaut l'année en cours
-            
-        Returns:
-            PrepaCompGlobal: L'instance pour ce centre et cette année, ou None
-        """
+        """Raccourci pour accéder à l'objectif annuel via PrepaCompGlobal."""
         from .prepacomp import PrepaCompGlobal
         annee = annee or now().year
         return PrepaCompGlobal.objects.filter(centre=self, annee=annee).first()
-    
+
     def mark_as_inactive(self):
-        """
-        Marque le centre comme inactif (si un champ statut existe).
-        
-        Returns:
-            bool: True si l'opération a réussi, False sinon
-        """
-        # Si vous ajoutez un champ statut:
-        # self.statut = 'inactif'
-        # self.save()
-        # return True
+        """Marque le centre comme inactif (si un champ statut existe)."""
         logger.warning(f"[Centre] Tentative de désactivation du centre #{self.pk}, mais pas de champ statut")
         return False
-    
+
     def handle_related_update(self, related_object):
-        """
-        Gère la mise à jour des objets liés.
-        À appeler lorsqu'un objet lié est modifié.
-        
-        Args:
-            related_object: L'objet lié qui a été modifié
-        """
+        """Gère la mise à jour des objets liés."""
         logger.info(f"[Centre] Objet lié mis à jour pour le centre {self.nom}: {related_object}")
-        
-        # Invalidation du cache
         self.invalidate_caches()
-    
+
     @classmethod
     def get_centres_by_region(cls, region=None):
-        """
-        Méthode de classe pour récupérer les centres par région.
-        Exemple de méthode utilitaire à implémenter si vous ajoutez un champ region.
-        
-        Args:
-            region (str, optional): Région à filtrer, tous si None
-            
-        Returns:
-            QuerySet: Les centres de la région spécifiée ou tous
-        """
+        """Méthode de classe pour récupérer les centres par région."""
         queryset = cls.objects.all()
-        
-        # Si vous ajoutez un champ region:
-        # if region:
-        #     queryset = queryset.filter(region=region)
-        
         return queryset.order_by('nom')
     
     @classmethod
     def get_centres_with_stats(cls):
-        """
-        Récupère tous les centres avec des statistiques calculées.
-        Utilise des annotations pour optimiser les performances.
-        
-        Returns:
-            QuerySet: Centres avec statistiques annotées
-        """
-        # Utilisation du manager personnalisé
+        """Récupère tous les centres avec statistiques calculées."""
         return cls.custom.with_prepa_counts().order_by('nom')
-    
+
     @classmethod
     def get_csv_fields(cls):
-        """
-        Définit les champs à inclure dans un export CSV.
-        
-        Returns:
-            list: Liste des noms de champs
-        """
+        """Définit les champs à inclure dans un export CSV."""
         return ['id', 'nom', 'code_postal', 'created_at', 'updated_at']
     
     @classmethod
     def get_csv_headers(cls):
-        """
-        Définit les en-têtes pour un export CSV.
-        
-        Returns:
-            list: Liste des en-têtes de colonnes
-        """
+        """Définit les en-têtes pour un export CSV."""
         return [
             'ID', 
             'Nom du centre', 
@@ -432,12 +308,7 @@ class Centre(BaseModel):
         ]
     
     def to_csv_row(self):
-        """
-        Convertit l'instance en ligne CSV.
-        
-        Returns:
-            list: Valeurs pour une ligne CSV
-        """
+        """Convertit l'instance en ligne CSV."""
         return [
             self.pk,
             self.nom,

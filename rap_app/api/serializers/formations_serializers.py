@@ -18,7 +18,7 @@ from ..serializers.prospection_serializers import ProspectionSerializer
 
 from ..serializers.types_offre_serializers import TypeOffreSerializer
 
-from ...models.formations import Formation, HistoriqueFormation
+from ...models.formations import Formation
 from ...models.commentaires import Commentaire
 from ...models.documents import Document
 from ...models.evenements import Evenement
@@ -70,101 +70,12 @@ logger = logging.getLogger("application.api.formation")
 
 
 
-class HistoriqueFormationSerializer(serializers.ModelSerializer):
-    saturation = serializers.SerializerMethodField()
-    saturation_badge = serializers.SerializerMethodField()
-    taux_transformation = serializers.SerializerMethodField()
-    transformation_badge = serializers.SerializerMethodField()
-    created_by = serializers.SerializerMethodField()
-    updated_by = serializers.SerializerMethodField()
-    formation_nom = serializers.CharField(source="formation.nom", read_only=True)
-    centre_nom = serializers.CharField(source='formation.centre.nom', read_only=True)
-    type_offre_nom = serializers.CharField(source='formation.type_offre.nom', read_only=True)
-    type_offre_couleur = serializers.CharField(source='formation.type_offre.couleur', read_only=True)
-    statut_nom = serializers.CharField(source='formation.statut.nom', read_only=True)
-    statut_couleur = serializers.CharField(source='formation.statut.couleur', read_only=True)
-    numero_offre = serializers.CharField(source='formation.num_offre', read_only=True)
-
-    class Meta:
-        model = HistoriqueFormation
-        fields = [
-            "id",
-            "formation_id",
-            "created_by",
-            "updated_by",
-            "champ_modifie",
-            "ancienne_valeur",
-            "nouvelle_valeur",
-            "commentaire",
-            "created_at",
-            "saturation",
-            "saturation_badge",
-            "taux_transformation",
-            "transformation_badge",
-            "formation_nom",
-            "centre_nom",
-            "type_offre_nom",
-            "type_offre_couleur",
-            "statut_nom",
-            "statut_couleur",
-            "numero_offre",
-        ]
-
-    def _format_user(self, user):
-        if not user:
-            return None
-        return {
-            'id': user.id,
-            'nom': user.get_full_name() or user.username,
-            'role': getattr(user, 'role', None),
-            'role_label': getattr(user, 'get_role_display', lambda: None)(),
-        }
-
-    def get_created_by(self, obj):
-        return self._format_user(obj.created_by)
-
-    def get_updated_by(self, obj):
-        return self._format_user(obj.updated_by)
-
-    def get_saturation(self, obj):
-        return obj.details.get("saturation")
-
-    def get_saturation_badge(self, obj):
-        return obj.details.get("saturation_badge") or "default"
-
-    def get_taux_transformation(self, obj):
-        return obj.details.get("taux_transformation")
-
-    def get_transformation_badge(self, obj):
-        return obj.details.get("transformation_badge") or "default"
-
-
-class HistoriqueSimpleSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = HistoriqueFormation
-        fields = [
-            "id",
-            "champ_modifie",
-            "ancienne_valeur",
-            "nouvelle_valeur",
-            "commentaire",
-            "created_at",
-        ]
-
-class HistoriqueFormationGroupedSerializer(serializers.Serializer):
-    formation_id = serializers.IntegerField()
-    formation_nom = serializers.CharField()
-    centre_nom = serializers.CharField()
-    type_offre_nom = serializers.CharField()
-    type_offre_couleur = serializers.CharField()
-    statut_nom = serializers.CharField()
-    statut_couleur = serializers.CharField()
-    numero_offre = serializers.CharField()
-    total_modifications = serializers.IntegerField()
-    derniers_historiques = HistoriqueSimpleSerializer(many=True)
 
 class FormationListSerializer(serializers.Serializer):
     id = serializers.IntegerField()
+    est_archivee = serializers.BooleanField(read_only=True)
+    activite = serializers.CharField(read_only=True)
+
     nom = serializers.CharField()
     num_offre = serializers.CharField()
     start_date = serializers.DateField()
@@ -173,7 +84,7 @@ class FormationListSerializer(serializers.Serializer):
     saturation_badge = serializers.SerializerMethodField()
     centre = serializers.SerializerMethodField()
     statut = serializers.SerializerMethodField()
-    type_offre = serializers.SerializerMethodField()  # ✅ Correction ici
+    type_offre = serializers.SerializerMethodField()
 
     # Champs séparés
     inscrits_crif = serializers.IntegerField()
@@ -183,6 +94,13 @@ class FormationListSerializer(serializers.Serializer):
     cap = serializers.IntegerField()
     nombre_candidats = serializers.IntegerField()
     nombre_entretiens = serializers.IntegerField()
+
+    # Nouveaux champs de diplôme / titre
+    intitule_diplome = serializers.CharField(required=False, allow_blank=True, allow_null=True)
+    code_diplome = serializers.CharField(required=False, allow_blank=True, allow_null=True)
+    code_rncp = serializers.CharField(required=False, allow_blank=True, allow_null=True)
+    total_heures = serializers.IntegerField(required=False, allow_null=True)
+    heures_distanciel = serializers.IntegerField(required=False, allow_null=True)
 
     # Champs calculés
     inscrits_total = serializers.SerializerMethodField()
@@ -200,13 +118,13 @@ class FormationListSerializer(serializers.Serializer):
     def get_places_restantes(self, obj):
         inscrits = self.get_inscrits_total(obj)
         return obj.cap - inscrits if obj.cap is not None else None
-    
+
     def get_total_places(self, obj):
-        return obj.inscrits_crif + obj.inscrits_mp
+        return (obj.inscrits_crif or 0) + (obj.inscrits_mp or 0)
 
     def get_taux_transformation(self, obj):
         if obj.nombre_candidats:
-            total_inscrits = (obj.inscrits_crif or 0) + (obj.inscrits_mp or 0)
+            total_inscrits = self.get_inscrits_total(obj)
             return round((total_inscrits / obj.nombre_candidats) * 100)
         return None
 
@@ -323,6 +241,9 @@ class FormationDetailSerializer(serializers.Serializer):
     Contient des validations, les champs complets, et un wrapper `success` + `data`.
     """
     id = serializers.IntegerField(read_only=True)
+    est_archivee = serializers.BooleanField(read_only=True)
+    activite = serializers.CharField(read_only=True)
+
     nom = serializers.CharField(required=True)
     centre_id = serializers.IntegerField(required=True, write_only=True)
     type_offre_id = serializers.IntegerField(required=True, write_only=True)
@@ -360,13 +281,17 @@ class FormationDetailSerializer(serializers.Serializer):
     taux_transformation = serializers.SerializerMethodField()
     transformation_badge = serializers.SerializerMethodField()
 
+    intitule_diplome = serializers.CharField(required=False, allow_blank=True, allow_null=True)
+    code_diplome = serializers.CharField(required=False, allow_blank=True, allow_null=True)
+    code_rncp = serializers.CharField(required=False, allow_blank=True, allow_null=True)
+    total_heures = serializers.IntegerField(required=False, allow_null=True)
+    heures_distanciel = serializers.IntegerField(required=False, allow_null=True)
 
     commentaires = CommentaireSerializer(many=True, read_only=True)
     documents = DocumentSerializer(many=True, read_only=True)
     evenements = EvenementSerializer(many=True, read_only=True)
     partenaires = PartenaireSerializer(many=True, read_only=True)
     prospections = ProspectionSerializer(many=True, read_only=True)
-    historique = HistoriqueFormationSerializer(many=True, read_only=True)
 
     def get_inscrits_total(self, obj):
         return (obj.inscrits_crif or 0) + (obj.inscrits_mp or 0)
@@ -502,6 +427,8 @@ class FormationCreateSerializer(serializers.ModelSerializer):
         fields = [
             "id", "nom", "num_offre", "start_date", "end_date",
             "centre_id", "type_offre_id", "statut_id",
+            "intitule_diplome", "code_diplome", "code_rncp",
+            "total_heures", "heures_distanciel",
             "prevus_crif", "prevus_mp", "inscrits_crif", "inscrits_mp",
             "cap", "nombre_candidats", "nombre_entretiens",
             "convocation_envoie",

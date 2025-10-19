@@ -1,90 +1,195 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
+  <title>Commentaires d’appairage — Rap_App</title>
   <style>
-    body {
-      font-family: 'DejaVu Sans', sans-serif;
-      font-size: 12px;
-      margin: 2cm;
-      color: #333;
+    @page {
+      size: A4;
+      margin: 2cm 2cm 2.5cm 2cm;
+      @bottom-center {
+        content: "Rap_App — export généré le {{ now|date:'d/m/Y à H:i' }}";
+        font-size: 9px;
+        color: #666;
+      }
     }
 
+    body {
+      font-family: "DejaVu Sans", "Helvetica", sans-serif;
+      font-size: 11px;
+      color: #333;
+      line-height: 1.45;
+    }
+
+    /* =============== HEADER =============== */
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 2px solid #0077cc;
+      padding-bottom: 8px;
+      margin-bottom: 22px;
+    }
+
+    .logo {
+      height: 48px;
+    }
+
+    .app-title {
+      font-size: 20px;
+      font-weight: bold;
+      color: #0077cc;
+      text-align: right;
+    }
+
+    /* =============== TITRE GLOBAL =============== */
     h1 {
       text-align: center;
-      margin-bottom: 20px;
+      font-size: 19px;
+      color: #222;
+      margin: 0 0 4px 0;
     }
 
+    .export-date {
+      text-align: center;
+      font-size: 11px;
+      color: #666;
+      margin-bottom: 22px;
+    }
+
+    /* =============== COMMENTAIRE CARD =============== */
     .commentaire {
       margin-bottom: 25px;
-      padding: 10px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
+      padding: 14px 16px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      background: #fcfcfc;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
       page-break-inside: avoid;
     }
 
-    .meta {
-      font-size: 11px;
-      margin-bottom: 8px;
-      color: #555;
+    .commentaire:nth-child(even) {
+      background: #f9fbff;
     }
 
     .section {
-      margin-top: 6px;
+      margin-top: 5px;
     }
 
     .label {
       font-weight: bold;
+      color: #005fa3;
     }
 
     .contenu {
-      margin-top: 8px;
+      margin-top: 10px;
       font-style: italic;
       white-space: pre-wrap;
+      padding: 8px 10px;
+      background: #fff;
+      border-left: 3px solid #0077cc;
+      border-radius: 4px;
+      box-shadow: inset 0 0 2px rgba(0,0,0,0.05);
     }
+
+    .meta {
+      font-size: 10.5px;
+      color: #555;
+      margin-top: 4px;
+    }
+
+    /* =============== LAYOUT ADAPTATIF =============== */
+    @media screen {
+      body {
+        background: #f4f6f9;
+        padding: 30px;
+      }
+
+      .commentaire {
+        background: #fff;
+      }
+
+      header {
+        border-color: #004c99;
+      }
+    }
+
+    /* =============== AUCUN COMMENTAIRE =============== */
+    .empty {
+      text-align: center;
+      color: #777;
+      margin-top: 60px;
+      font-style: italic;
+      font-size: 12px;
+    }
+
   </style>
 </head>
 <body>
-  <h1>Commentaires d’appairage exportés</h1>
+
+  <!-- HEADER -->
+  <header>
+    <img src="{{ logo_url }}" alt="Logo Rap_App" class="logo">
+    <div class="app-title">Rap_App</div>
+  </header>
+
+  <!-- TITRE GLOBAL -->
+  <h1>Commentaires d’appairage</h1>
+  <div class="export-date">
+    📅 Export réalisé le <strong>{{ now|date:"d/m/Y à H:i" }}</strong>
+  </div>
 
   {% for c in commentaires %}
-    <div class="commentaire">
-      <!-- Infos Appairage -->
-      <div class="section">
-        <span class="label">🆔 Appairage :</span> {{ c.appairage.id }}<br>
-        <span class="label">📌 Statut :</span> {{ c.appairage.statut|default:"—" }}
-      </div>
+  <div class="commentaire">
+    <!-- Appairage -->
+    <div class="section">
+      <span class="label">🧩 Appairage :</span>
+      #{{ c.appairage.id|default:"—" }}
+      — <strong>{{ c.appairage.get_statut_display|default:c.appairage.statut|default:"—" }}</strong>
+    </div>
 
-      <!-- Candidat -->
-      <div class="section">
-        <span class="label">👤 Candidat :</span> {{ c.appairage.candidat.nom_complet|default:"—" }}
-      </div>
+    <!-- Candidat -->
+    <div class="section">
+      <span class="label">👤 Candidat :</span>
+      {{ c.appairage.candidat.nom_complet|default:"—" }}
+    </div>
 
-      <!-- Partenaire -->
-      <div class="section">
-        <span class="label">🏢 Entreprise :</span> {{ c.appairage.partenaire.nom|default:"—" }}
-      </div>
+    <!-- Partenaire -->
+    <div class="section">
+      <span class="label">🏢 Partenaire :</span>
+      {{ c.appairage.partenaire.nom|default:"—" }}
+    </div>
 
-      <!-- Formation -->
-      <div class="section">
-        <span class="label">🎓 Formation :</span> {{ c.appairage.formation.nom|default:"—" }}<br>
-        <span class="label">📄 Offre :</span> {{ c.appairage.formation.num_offre|default:"—" }}<br>
-        <span class="label">🔖 Type :</span> {{ c.appairage.formation.type_offre.nom|default:"—" }}<br>
-        <span class="label">📅 Début :</span> {{ c.appairage.formation.start_date|date:"d/m/Y"|default:"—" }}<br>
-        <span class="label">📅 Fin :</span> {{ c.appairage.formation.end_date|date:"d/m/Y"|default:"—" }}
-      </div>
-
-      <!-- Commentaire -->
-      <div class="section">
-        <span class="label">✍️ Auteur :</span> {{ c.created_by.username|default:"—" }}<br>
-        <span class="label">📅 Date :</span> {{ c.created_at|date:"d/m/Y H:i" }}
-      </div>
-      <div class="contenu">
-        {{ c.body }}
+    <!-- Formation -->
+    <div class="section">
+      <span class="label">🎓 Formation :</span>
+      {{ c.appairage.formation.nom|default:"—" }}
+      {% if c.appairage.formation.num_offre %}
+        (offre {{ c.appairage.formation.num_offre }})
+      {% endif %}
+      <div class="meta">
+        Type : {{ c.appairage.formation.type_offre.nom|default:"—" }} /
+        Début : {{ c.appairage.formation.start_date|date:"d/m/Y"|default:"—" }} /
+        Fin : {{ c.appairage.formation.end_date|date:"d/m/Y"|default:"—" }}
       </div>
     </div>
+
+    <!-- Auteur / Date / Activité -->
+    <div class="section">
+      <span class="label">✍️ Auteur :</span> {{ c.created_by|default:"—" }}<br>
+      <span class="label">📅 Créé le :</span> {{ c.created_at|date:"d/m/Y H:i"|default:"—" }}<br>
+      <span class="label">🛠️ Activité :</span> {{ c.activite|default:"—" }}
+    </div>
+
+    <!-- Contenu -->
+    <div class="contenu">
+      {{ c.body|default:"(aucun contenu)"|linebreaksbr }}
+    </div>
+  </div>
   {% empty %}
-    <p>Aucun commentaire à afficher.</p>
+    <p class="empty">Aucun commentaire d’appairage à afficher.</p>
   {% endfor %}
+
 </body>
 </html>

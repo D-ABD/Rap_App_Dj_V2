@@ -6,17 +6,23 @@ from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import BasePermission, SAFE_METHODS
 from django_filters.rest_framework import DjangoFilterBackend, FilterSet, filters as dj_filters
 from django.db.models import Count, Q
-from openpyxl import Workbook
-from openpyxl.utils import get_column_letter
-from io import BytesIO
 from django.http import HttpResponse
 from django.utils import timezone as dj_timezone
+from django.conf import settings
+from pathlib import Path
+from io import BytesIO
 import datetime
+
+from openpyxl import Workbook
+from openpyxl.utils import get_column_letter
+from openpyxl.styles import PatternFill, Font, Alignment
+from openpyxl.drawing.image import Image as XLImage
 
 from ...api.permissions import IsOwnerOrStaffOrAbove, UserVisibilityScopeMixin, is_staff_or_staffread
 from ...models.partenaires import Partenaire
-from ..serializers.partenaires_serializers import PartenaireChoicesResponseSerializer, PartenaireSerializer
 from ...models.logs import LogUtilisateur
+from ..serializers.partenaires_serializers import PartenaireChoicesResponseSerializer, PartenaireSerializer
+
 
 
 # -------------------- permission locale --------------------
@@ -184,26 +190,49 @@ class PartenaireViewSet(UserVisibilityScopeMixin, viewsets.ModelViewSet):
             return list(user.centres.values_list("id", flat=True))
         return []  # non-staff
 
-    def _scoped_for_staff(self, qs, user):
+    def _scoped_for_user(self, qs, user):
         """
         Staff :
         - partenaires liés à AU MOINS une formation d'un de ses centres (via appairages/prospections)
         - OU partenaires dont le default_centre ∈ ses centres
         - OU partenaires qu'il a créés
+        ⚠️ Exclut les partenaires sans centre si non créés par lui.
         """
         centre_ids = self._staff_centre_ids(user)
-        if centre_ids is None:
-            return qs  # admin/superadmin
 
+        # Cas admin/superadmin : accès global
+        if centre_ids is None:
+            return qs
+
+        # Cas staff sans centre rattaché → uniquement ses créations
         if not centre_ids:
             return qs.filter(created_by=user)
 
-        return qs.filter(
-            Q(appairages__formation__centre_id__in=centre_ids) |
-            Q(prospections__formation__centre_id__in=centre_ids) |
-            Q(default_centre_id__in=centre_ids) |
-            Q(created_by=user)
+        # Scoping principal
+        scoped = qs.filter(
+            Q(appairages__formation__centre_id__in=centre_ids)
+            | Q(prospections__formation__centre_id__in=centre_ids)
+            | Q(default_centre_id__in=centre_ids)
+            | Q(created_by=user)
         ).distinct()
+
+        # 🧩 Debug optionnel (protégé même si DEBUG n’existe pas)
+        if getattr(settings, "DEBUG", False):
+            orphaned = scoped.filter(default_centre__isnull=True)
+            (
+                f"[DEBUG] User={user} voit {scoped.count()} partenaires, "
+                f"dont {orphaned.count()} sans centre."
+            )
+
+        # 🔒 Exclut explicitement les partenaires sans centre,
+        # sauf s’ils ont été créés par le staff lui-même
+        return scoped.exclude(
+            Q(default_centre_id__isnull=True)
+            & ~Q(created_by=user)
+            & ~Q(appairages__formation__centre_id__in=centre_ids)
+            & ~Q(prospections__formation__centre_id__in=centre_ids)
+        ).distinct()
+
 
     def _user_can_access_partenaire(self, partenaire, user) -> bool:
         """Vérifie qu'un staff est dans le périmètre du partenaire."""
@@ -221,6 +250,8 @@ class PartenaireViewSet(UserVisibilityScopeMixin, viewsets.ModelViewSet):
             or (partenaire.default_centre_id in centre_ids)
         )
         return linked or (partenaire.created_by_id == user.id)
+
+
 
     # -------------------- queryset --------------------
 
@@ -252,7 +283,7 @@ class PartenaireViewSet(UserVisibilityScopeMixin, viewsets.ModelViewSet):
         if self._is_admin_like(user):
             return qs
         if is_staff_or_staffread(user):
-            return self._scoped_for_staff(qs, user)
+            return self._scoped_for_user(qs, user)
 
         # ✅ Candidat·e : créés par lui/elle + attribués via prospection (owner=user)
         return qs.filter(Q(created_by=user) | Q(prospections__owner=user)).distinct()
@@ -317,46 +348,89 @@ class PartenaireViewSet(UserVisibilityScopeMixin, viewsets.ModelViewSet):
     # -------------------- CRUD --------------------
 
     def perform_create(self, serializer):
-        instance = serializer.save(created_by=self.request.user)
+        user = self.request.user
+        default_centre = None
+
+        # 🔎 Cas 1 — Superadmin / Admin : centre optionnel
+        if self._is_admin_like(user):
+            default_centre = serializer.validated_data.get("default_centre")
+
+        # 🔎 Cas 2 — Staff / Staff_read : doit avoir un centre autorisé
+        elif is_staff_or_staffread(user):
+            centres = list(user.centres.all())
+            if not centres:
+                raise PermissionDenied("❌ Vous n’êtes rattaché à aucun centre.")
+
+            # Si un centre est envoyé → vérifie qu’il fait partie des siens
+            default_centre = serializer.validated_data.get("default_centre") or centres[0]
+            if default_centre and default_centre not in centres:
+                raise PermissionDenied("❌ Ce centre n’est pas dans votre périmètre autorisé.")
+
+        # 🔎 Cas 3 — Candidat / Stagiaire : centre = celui de sa formation
+        else:
+            default_centre = (
+                serializer.validated_data.get("default_centre")
+                or getattr(user, "centre", None)
+            )
+            if not default_centre:
+                raise PermissionDenied("❌ Impossible de créer un partenaire sans centre associé.")
+
+        # ✅ Vérification finale de sécurité
+        if not default_centre:
+            raise PermissionDenied("❌ Le centre associé est obligatoire pour créer un partenaire.")
+
+        # ✅ Création de l’objet
+        instance = serializer.save(created_by=user, default_centre=default_centre)
+
         LogUtilisateur.log_action(
             instance=instance,
             action=LogUtilisateur.ACTION_CREATE,
-            user=self.request.user,
-            details="Création d'un partenaire"
+            user=user,
+            details="Création d'un partenaire",
         )
-
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        instance = serializer.save(created_by=request.user)
-        LogUtilisateur.log_action(
-            instance=instance, action=LogUtilisateur.ACTION_CREATE,
-            user=request.user, details="Création d'un partenaire"
-        )
-        return Response(self.get_serializer(instance).data, status=status.HTTP_201_CREATED)
 
     def update(self, request, *args, **kwargs):
         partial = kwargs.pop("partial", False)
-        instance = self.get_object()  # respecte le scope via get_queryset()
+        instance = self.get_object()
         user = request.user
 
-        # Non-staff non-admin : ne peut modifier que ses partenaires
+        # 🔒 Vérifications d’accès
         if not is_staff_or_staffread(user) and not getattr(user, "is_superuser", False):
             if instance.created_by_id != user.id:
                 raise PermissionDenied("Vous ne pouvez modifier que vos propres partenaires.")
 
-        # Staff : doit être dans son périmètre (liens centres) ou owner
         if is_staff_or_staffread(user) and not self._is_admin_like(user):
             if not self._user_can_access_partenaire(instance, user):
                 raise PermissionDenied("Partenaire hors de votre périmètre (centres).")
 
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
         serializer.is_valid(raise_exception=True)
-        instance = serializer.save()
+
+        # ⚙️ Logique ajoutée : remplir le centre manquant automatiquement
+        default_centre = instance.default_centre  # valeur actuelle
+        if not default_centre:
+            if self._is_admin_like(user):
+                # Admin : ne rien forcer
+                default_centre = serializer.validated_data.get("default_centre")
+            elif is_staff_or_staffread(user):
+                centres = list(user.centres.all())
+                if not centres:
+                    raise PermissionDenied("Vous n’êtes rattaché à aucun centre.")
+                default_centre = serializer.validated_data.get("default_centre") or centres[0]
+            else:
+                default_centre = serializer.validated_data.get("default_centre") or getattr(user, "centre", None)
+                if not default_centre:
+                    raise PermissionDenied("Impossible de modifier un partenaire sans centre associé.")
+
+        instance = serializer.save(default_centre=default_centre)
+
         LogUtilisateur.log_action(
-            instance=instance, action=LogUtilisateur.ACTION_UPDATE,
-            user=request.user, details="Modification d'un partenaire"
+            instance=instance,
+            action=LogUtilisateur.ACTION_UPDATE,
+            user=request.user,
+            details="Modification d'un partenaire",
         )
+
         return Response(self.get_serializer(instance).data, status=status.HTTP_200_OK)
 
     def destroy(self, request, *args, **kwargs):
@@ -411,28 +485,91 @@ class PartenaireViewSet(UserVisibilityScopeMixin, viewsets.ModelViewSet):
 
 # -------------------- Export Excel --------------------
 
+    @extend_schema(summary="Exporter les partenaires au format XLSX")
     @action(detail=False, methods=["get"], url_path="export-xlsx")
     def export_xlsx(self, request):
+        """
+        Exporte la liste des partenaires (avec logo, titre, date d’export et mise en forme).
+        """
         qs = self.filter_queryset(
             self.get_queryset().select_related("default_centre", "created_by")
         )
 
+        # ==========================================================
+        # 📘 Création du classeur
+        # ==========================================================
         wb = Workbook()
         ws = wb.active
         ws.title = "Partenaires"
 
+        # ==========================================================
+        # 🖼️ Logo Rap_App (affiche en dev et prod)
+        # ==========================================================
+        try:
+            logo_path = Path(settings.BASE_DIR) / "rap_app/static/images/logo.png"
+            if logo_path.exists():
+                img = XLImage(str(logo_path))
+                img.height = 60
+                img.width = 60
+                ws.add_image(img, "A1")
+        except Exception:
+            pass
+
+        # ==========================================================
+        # 🧾 Titre + date d’export
+        # ==========================================================
+        ws.merge_cells("B1:AJ1")
+        ws["B1"] = "Export des partenaires — Rap_App"
+        ws["B1"].font = Font(bold=True, size=14, color="0077CC")
+        ws["B1"].alignment = Alignment(horizontal="center", vertical="center")
+
+        ws.merge_cells("B2:AJ2")
+        ws["B2"] = f"Export réalisé le {dj_timezone.now().strftime('%d/%m/%Y à %H:%M')}"
+        ws["B2"].font = Font(italic=True, size=10, color="555555")
+        ws["B2"].alignment = Alignment(horizontal="center", vertical="center")
+
+        ws.append([])  # ligne vide
+
+        # ==========================================================
+        # 📋 En-têtes
+        # ==========================================================
         headers = [
+            # Identité
             "ID", "Nom", "Type", "Secteur d’activité",
-            "Adresse", "CP", "Ville", "Pays",
+            # Adresse
+            "Numéro de rue", "Adresse", "Complément", "Code postal", "Ville", "Pays",
+            # Coordonnées
+            "Téléphone général", "Email général",
+            # Contact principal
             "Contact nom", "Contact poste", "Contact email", "Contact téléphone",
-            "Site web", "Réseau social",
-            "Type action", "Description action", "Description générale",
-            "Slug", "Centre par défaut",
-            "Créé par", "Date création",
+            # Employeur
+            "SIRET", "Type employeur", "Employeur spécifique", "Code APE",
+            "Effectif total", "IDCC", "Assurance chômage spéciale",
+            # Maître 1
+            "Maître 1 - Nom de naissance", "Maître 1 - Prénom", "Maître 1 - Date de naissance",
+            "Maître 1 - Courriel", "Maître 1 - Emploi occupé",
+            "Maître 1 - Diplôme/titre le plus élevé", "Maître 1 - Niveau diplôme/titre",
+            # Maître 2
+            "Maître 2 - Nom de naissance", "Maître 2 - Prénom", "Maître 2 - Date de naissance",
+            "Maître 2 - Courriel", "Maître 2 - Emploi occupé",
+            "Maître 2 - Diplôme/titre le plus élevé", "Maître 2 - Niveau diplôme/titre",
+            # Web & Actions
+            "Site web", "Réseau social", "Type d’action", "Description action", "Description générale",
+            # Métadonnées
+            "Slug", "Centre par défaut", "Créé par", "Date création",
+            # Statistiques
             "Nb prospections", "Nb formations", "Nb appairages",
         ]
         ws.append(headers)
 
+        for cell in ws[ws.max_row]:
+            cell.font = Font(bold=True)
+            cell.alignment = Alignment(horizontal="center", vertical="center")
+            cell.fill = PatternFill("solid", fgColor="E9F2FF")
+
+        # ==========================================================
+        # 🧮 Données
+        # ==========================================================
         def _fmt(val):
             if val is None:
                 return ""
@@ -444,43 +581,73 @@ class PartenaireViewSet(UserVisibilityScopeMixin, viewsets.ModelViewSet):
 
         for p in qs:
             ws.append([
-                p.id,
-                p.nom,
-                p.get_type_display(),
-                p.secteur_activite or "",
-                p.street_name or "",
-                p.zip_code or "",
-                p.city or "",
-                p.country or "",
-                p.contact_nom or "",
-                p.contact_poste or "",
-                p.contact_email or "",
-                p.contact_telephone or "",
+                # Identité
+                p.id, p.nom, p.get_type_display(), p.secteur_activite or "",
+                # Adresse
+                p.street_number or "", p.street_name or "", p.street_complement or "",
+                p.zip_code or "", p.city or "", p.country or "",
+                # Coordonnées générales
+                p.telephone or "", p.email or "",
+                # Contact
+                p.contact_nom or "", p.contact_poste or "", p.contact_email or "", p.contact_telephone or "",
+                # Employeur
+                p.siret or "",
+                p.get_type_employeur_display() if p.type_employeur else "",
+                p.employeur_specifique or "",
+                p.code_ape or "",
+                p.effectif_total or "",
+                p.idcc or "",
+                "Oui" if p.assurance_chomage_speciale else "Non",
+                # Maître 1
+                p.maitre1_nom_naissance or "",
+                p.maitre1_prenom or "",
+                _fmt(p.maitre1_date_naissance),
+                p.maitre1_courriel or "",
+                p.maitre1_emploi_occupe or "",
+                p.maitre1_diplome_titre or "",
+                p.maitre1_niveau_diplome or "",
+                # Maître 2
+                p.maitre2_nom_naissance or "",
+                p.maitre2_prenom or "",
+                _fmt(p.maitre2_date_naissance),
+                p.maitre2_courriel or "",
+                p.maitre2_emploi_occupe or "",
+                p.maitre2_diplome_titre or "",
+                p.maitre2_niveau_diplome or "",
+                # Web & Actions
                 p.website or "",
                 p.social_network_url or "",
                 p.get_actions_display() if p.actions else "",
                 p.action_description or "",
                 p.description or "",
+                # Métadonnées
                 p.slug or "",
                 getattr(p.default_centre, "nom", ""),
                 getattr(p.created_by, "username", ""),
                 _fmt(p.created_at),
-                p.nb_prospections,
-                p.nb_formations,
-                p.nb_appairages,
+                # Stats
+                p.nb_prospections, p.nb_formations, p.nb_appairages,
             ])
 
-        # Ajuster largeur colonnes
+        # ==========================================================
+        # 📏 Largeurs colonnes + wrap sur texte long
+        # ==========================================================
         for col in ws.columns:
-            max_length = 0
             col_letter = get_column_letter(col[0].column)
-            for cell in col:
-                if cell.value:
-                    max_length = max(max_length, len(str(cell.value)))
-            ws.column_dimensions[col_letter].width = min(max_length + 2, 50)
+            if col_letter in ["AV", "AW", "AX", "AY"]:  # Descriptions longues
+                ws.column_dimensions[col_letter].width = 80
+                for cell in col:
+                    cell.alignment = Alignment(wrapText=True, vertical="top")
+            else:
+                max_len = max((len(str(cell.value)) for cell in col if cell.value), default=0)
+                ws.column_dimensions[col_letter].width = min(max_len + 2, 35)
 
+        # ==========================================================
+        # 📤 Sauvegarde et réponse HTTP
+        # ==========================================================
         buffer = BytesIO()
         wb.save(buffer)
+        buffer.seek(0)
         binary_content = buffer.getvalue()
 
         filename = f'partenaires_{dj_timezone.now().strftime("%Y%m%d_%H%M%S")}.xlsx'

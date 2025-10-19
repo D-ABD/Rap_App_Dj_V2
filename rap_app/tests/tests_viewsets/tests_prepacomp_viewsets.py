@@ -88,7 +88,7 @@ class SemaineViewSetTest(BaseAuthenticatedTestCase):
             "date_debut_semaine": "2025-05-12",
             "date_fin_semaine": "2025-05-18"
         }, format="json")
-        print(">>>> PATCH erreur : ", response.status_code, response.data)
+        (">>>> PATCH erreur : ", response.status_code, response.data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["data"]["objectifs"]["hebdomadaire"], 12)
 

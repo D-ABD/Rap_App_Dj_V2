@@ -94,7 +94,6 @@ class IsStaffOrAbove(BasePermission):
         if not user or not user.is_authenticated:
             return False
 
-        # Bloque explicitement candidats/stagiaires
         if is_candidate(user):
             return False
 
@@ -104,13 +103,13 @@ class IsStaffOrAbove(BasePermission):
         if getattr(user, "is_superuser", False):
             return True
 
-        # staff/admin → accès complet
-        if is_staff_or_staffread(user) or role in {"staff", "admin", "superadmin"}:
-            return True
-
-        # staff_read → accès lecture seule
+        # staff_read → lecture seule
         if role == "staff_read":
             return request.method in SAFE_METHODS
+
+        # staff/admin/superadmin → accès complet
+        if role in {"staff", "admin", "superadmin"} or getattr(user, "is_staff", False):
+            return True
 
         return False
 
@@ -138,20 +137,25 @@ class IsOwnerOrSuperAdmin(BasePermission):
 class IsOwnerOrStaffOrAbove(BasePermission):
     """
     Autorise :
-    - staff/admin/superuser (accès complet)
-    - staff_read (lecture seule)
-    - créateur OU owner de l’objet
+    - staff/admin/superuser → accès complet
+    - staff_read → lecture seule
+    - créateur ou owner de l’objet
     - pour Partenaire : lecture possible si user est owner d’une prospection liée
     """
     message = "Accès restreint."
 
     def has_permission(self, request, view):
         user = request.user
+        role = str(getattr(user, "role", "")).lower()
+
+        # 🔒 staff_read : lecture seule globale (bloque POST, PUT, PATCH, DELETE)
+        if role == "staff_read" and request.method not in SAFE_METHODS:
+            return False
+
         return bool(user and user.is_authenticated)
 
     def has_object_permission(self, request, view, obj):
         user = request.user
-
         role = str(getattr(user, "role", "")).lower()
 
         # --- Admin / Superuser ---
@@ -162,9 +166,9 @@ class IsOwnerOrStaffOrAbove(BasePermission):
         if is_staff_like(user) and role != "staff_read":
             return True
 
-        # --- Staff_read : lecture seule ---
-        if is_staff_or_staffread(user) and request.method in SAFE_METHODS:
-            return True
+        # --- Staff_read : lecture seule uniquement ---
+        if role == "staff_read":
+            return request.method in SAFE_METHODS
 
         # --- Owner direct ---
         if getattr(obj, "owner_id", None) == user.id:
@@ -188,11 +192,11 @@ class IsOwnerOrStaffOrAbove(BasePermission):
 class UserVisibilityScopeMixin:
     """
     Mixin générique: restreint le queryset aux objets 'créés par' l'utilisateur
-    pour les non-staff. Permet aux vues de SURCHARGER la visibilité avec
-    `user_visibility_q(self, user)`.
+    pour les rôles non-staff. 
 
-    - Par défaut: Q(created_by=user)
-    - Une vue peut étendre: ex. Q(created_by=user) | Q(prospections__owner=user)
+    - Admin/superadmin → accès complet
+    - Staff/staff_read → pas de restriction `created_by`
+    - Autres → Q(created_by=user)
     """
     user_field = "created_by"
 
@@ -202,12 +206,48 @@ class UserVisibilityScopeMixin:
 
     def apply_user_scope(self, qs):
         user = self.request.user
-        if user.is_authenticated and not (
-            user.is_staff_or_admin() or getattr(user, "is_superuser", False)
-        ):
-            return qs.filter(self.user_visibility_q(user)).distinct()
-        return qs
+
+        if not user.is_authenticated:
+            return qs.none()
+
+        # 🔑 Admin/superadmin → full accès
+        if is_admin_like(user):
+            return qs
+
+        # 👩‍💼 Staff / StaffRead → pas de restriction created_by
+        if is_staff_or_staffread(user):
+            return qs
+
+        # 🚫 Autres → limité à created_by
+        return qs.filter(self.user_visibility_q(user)).distinct()
 
     def get_queryset(self):
         qs = super().get_queryset()
         return self.apply_user_scope(qs)
+
+class IsStaffReadOnly(BasePermission):
+    """
+    🔒 Permission spéciale pour les utilisateurs `staff_read` :
+    - lecture seule (GET, HEAD, OPTIONS)
+    - refus de toute écriture (POST, PUT, PATCH, DELETE)
+    """
+    message = "Accès en lecture seule uniquement pour le rôle staff_read."
+
+    def has_permission(self, request, view):
+        user = request.user
+        if not user or not user.is_authenticated:
+            return False
+
+        # Si le user est staff_read → lecture seule
+        if str(getattr(user, "role", "")).lower() == "staff_read":
+            return request.method in SAFE_METHODS
+
+        # Les autres (staff, admin, etc.) ne sont pas concernés
+        return True
+
+    def has_object_permission(self, request, view, obj):
+        # Même logique au niveau objet
+        user = request.user
+        if str(getattr(user, "role", "")).lower() == "staff_read":
+            return request.method in SAFE_METHODS
+        return True

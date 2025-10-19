@@ -5,6 +5,7 @@ from django.db import models
 from django.utils.functional import cached_property
 from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.contrib.auth.base_user import BaseUserManager
+from django.utils import timezone
 
 logger = logging.getLogger("rap_app.customuser")
 
@@ -13,6 +14,10 @@ class CustomUserManager(BaseUserManager):
     """
     Manager personnalisé pour le modèle CustomUser.
     """
+    @property
+    def has_valid_consent(self):
+        """Retourne True si le consentement RGPD est donné et daté."""
+        return bool(self.consent_rgpd and self.consent_date)
 
     def create_user(self, email, username=None, password=None, **extra_fields):
         if not email:
@@ -72,6 +77,9 @@ class CustomUser(AbstractUser):
     """
     👤 Modèle utilisateur personnalisé basé sur AbstractUser (email = identifiant).
     """
+    # ----- Consetement RGPD -----
+    consent_rgpd = models.BooleanField(default=False)
+    consent_date = models.DateTimeField(null=True, blank=True)
 
     # ----- rôles -----
     ROLE_SUPERADMIN = "superadmin"
@@ -191,6 +199,9 @@ class CustomUser(AbstractUser):
     # ----- sauvegarde -----
     def save(self, *args, **kwargs):
         is_new = self.pk is None
+         # ⏱️ Si l'utilisateur vient juste de cocher le consentement RGPD
+        if self.consent_rgpd and not self.consent_date:
+            self.consent_date = timezone.now()
 
         if self.email:
             self.email = self.email.strip().lower()
@@ -322,6 +333,23 @@ class CustomUser(AbstractUser):
     # ----- helpers centres (scope) -----
     def get_centre_ids(self):
         return list(self.centres.values_list("id", flat=True))
+    
+    @property
+    def centre(self):
+        """
+        🔹 Retourne le centre principal associé à l'utilisateur.
+        - Pour un candidat/stagiaire : centre de sa formation.
+        - Pour un staff/admin : premier centre de user.centres.
+        """
+        try:
+            if self.centres.exists():
+                return self.centres.first()
+            if hasattr(self, "candidat_associe") and self.candidat_associe.formation:
+                return self.candidat_associe.formation.centre
+        except Exception:
+            return None
+        return None
+
 
     def has_centre_access(self, centre_id: int) -> bool:
         if self.is_superuser or self.is_admin():

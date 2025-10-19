@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from drf_spectacular.utils import extend_schema_serializer, extend_schema_field
 
-from ...models.appairage import Appairage, HistoriqueAppairage, AppairageStatut
+from ...models.appairage import Appairage, AppairageActivite, AppairageStatut
 from ...models.formations import Formation
 from ...models.candidat import Candidat
 from ...models.partenaires import Partenaire
@@ -32,45 +32,15 @@ class CommentaireAppairageSerializer(serializers.ModelSerializer):
         read_only_fields = fields
 
 
-# ----------------- Historique -----------------
-@extend_schema_serializer()
-class HistoriqueAppairageSerializer(serializers.ModelSerializer):
-    statut_display = serializers.CharField(source="get_statut_display", read_only=True)
-    auteur_nom = serializers.SerializerMethodField()
-    appairage = serializers.PrimaryKeyRelatedField(read_only=True)
-
-    def get_auteur_nom(self, obj):
-        u = getattr(obj, "auteur", None)
-        if not u:
-            return None
-        full = getattr(u, "get_full_name", None)
-        if callable(full):
-            val = (full() or "").strip()
-            if val:
-                return val
-        for cand in ("username", "email"):
-            v = getattr(u, cand, None)
-            if v:
-                return v
-        return str(u)
-
-    class Meta:
-        model = HistoriqueAppairage
-        fields = [
-            "id",
-            "date",
-            "statut",
-            "statut_display",
-            "commentaire",
-            "auteur",
-            "auteur_nom",
-            "appairage",
-        ]
-        read_only_fields = ["id", "date", "statut_display", "auteur_nom", "appairage"]
-
 
 # ----------------- Base -----------------
 class AppairageBaseSerializer(serializers.ModelSerializer):
+    activite = serializers.ChoiceField(
+    choices=AppairageActivite.choices,
+    default=AppairageActivite.ACTIF,
+    )
+    activite_display = serializers.CharField(source="get_activite_display", read_only=True)
+
     candidat_nom = serializers.SerializerMethodField()
     partenaire_nom = serializers.CharField(source="partenaire.nom", read_only=True)
     partenaire_email = serializers.CharField(source="partenaire.contact_email", read_only=True)
@@ -87,9 +57,9 @@ class AppairageBaseSerializer(serializers.ModelSerializer):
     formation_places_total = serializers.SerializerMethodField()
     formation_places_disponibles = serializers.SerializerMethodField()
     formation_statut = serializers.CharField(source="formation.statut", read_only=True)
-    formation_date_debut = serializers.DateField(source="formation.date_debut", read_only=True)
-    formation_date_fin = serializers.DateField(source="formation.date_fin", read_only=True)
-    formation_numero_offre = serializers.CharField(source="formation.numero_offre", read_only=True)
+    formation_date_debut = serializers.DateField(source="formation.start_date", read_only=True)
+    formation_date_fin = serializers.DateField(source="formation.end_date", read_only=True)
+    formation_numero_offre = serializers.CharField(source="formation.num_offre", read_only=True)
     formation_centre = serializers.CharField(source="formation.centre.nom", read_only=True)
 
     statut_display = serializers.CharField(source="get_statut_display", read_only=True)
@@ -197,11 +167,18 @@ class AppairageSerializer(AppairageBaseSerializer):
     created_by_nom = serializers.SerializerMethodField()
     updated_by_nom = serializers.SerializerMethodField()
     last_commentaire = serializers.SerializerMethodField()  # 🔹 corrigé ici
-    historiques = HistoriqueAppairageSerializer(many=True, read_only=True)
     commentaires = CommentaireAppairageSerializer(many=True, read_only=True)
 
     updated_at = serializers.DateTimeField(read_only=True)
     updated_by = serializers.PrimaryKeyRelatedField(read_only=True)
+    partenaire_contact_nom = serializers.CharField(
+        source="partenaire.contact_nom", read_only=True
+    )
+
+    def validate_activite(self, value):
+        if value not in dict(AppairageActivite.choices):
+            raise serializers.ValidationError("Valeur d'activité invalide.")
+        return value
 
     def _user_label(self, u):
         if not u:
@@ -238,6 +215,7 @@ class AppairageSerializer(AppairageBaseSerializer):
             "candidat_cv_statut_display",
             "partenaire",
             "partenaire_nom",
+             "partenaire_contact_nom", 
             "partenaire_email",
             "partenaire_telephone",
             "formation",
@@ -255,6 +233,8 @@ class AppairageSerializer(AppairageBaseSerializer):
             "date_appairage",
             "statut",
             "statut_display",
+            "activite",
+            "activite_display",
             "retour_partenaire",
             "date_retour",
             "created_by",
@@ -277,10 +257,49 @@ class AppairageSerializer(AppairageBaseSerializer):
 class AppairageListSerializer(AppairageBaseSerializer):
     created_by_nom = serializers.SerializerMethodField()
     last_commentaire = serializers.SerializerMethodField()  # 🔹 corrigé
-
+    created_at = serializers.DateTimeField(read_only=True)
     updated_at = serializers.DateTimeField(read_only=True)
     updated_by = serializers.PrimaryKeyRelatedField(read_only=True)
     updated_by_nom = serializers.SerializerMethodField()
+
+    # 🔹 Ajout du nom du contact (via partenaire)
+    partenaire_contact_nom = serializers.CharField(source="partenaire.contact_nom", read_only=True)
+
+    class Meta:
+        model = Appairage
+        fields = [
+            "id",
+            "candidat_nom",
+            "candidat_cv_statut",
+            "candidat_cv_statut_display",
+            "partenaire_nom",
+            "partenaire_contact_nom",  # ✅ nouveau champ exposé
+            "partenaire_email",
+            "partenaire_telephone",
+            "formation",
+            "formation_nom",
+            "formation_bref",
+            "formation_detail",
+            "formation_type_offre",
+            "formation_date_debut",   # ✅ ici
+            "formation_date_fin",     # ✅ ici
+            "formation_numero_offre", # ✅ ici
+            "formation_places_total",
+            "formation_places_disponibles",
+            "statut",
+            "statut_display",
+            "activite",
+            "activite_display",
+            "date_appairage",
+            "created_by_nom",
+            "updated_by",
+            "updated_by_nom",
+            "updated_at",
+            "created_at",
+            "last_commentaire",
+        ]
+        read_only_fields = fields
+
 
     def _user_label(self, u):
         if not u:
@@ -305,34 +324,7 @@ class AppairageListSerializer(AppairageBaseSerializer):
     def get_last_commentaire(self, obj):  # 🔹 ajout
         last = obj.commentaires.order_by("-created_at").first()
         return last.body if last else None
-
-    class Meta:
-        model = Appairage
-        fields = [
-            "id",
-            "candidat_nom",
-            "candidat_cv_statut",
-            "candidat_cv_statut_display",
-            "partenaire_nom",
-            "partenaire_email",
-            "partenaire_telephone",
-            "formation",
-            "formation_nom",
-            "formation_bref",
-            "formation_detail",
-            "formation_type_offre",
-            "formation_places_total",
-            "formation_places_disponibles",
-            "statut",
-            "statut_display",
-            "date_appairage",
-            "created_by_nom",
-            "updated_by",
-            "updated_by_nom",
-            "updated_at",
-            "last_commentaire",
-        ]
-        read_only_fields = fields
+    
 
 
 # ----------------- Create/Update -----------------
@@ -349,11 +341,16 @@ class AppairageCreateUpdateSerializer(serializers.ModelSerializer):
 
     def validate_statut(self, value):
         user = self.context.get("request").user
-        if not user or getattr(user, "role", None) not in ["admin", "superadmin", "staff"]:
+        allowed_roles = {"admin", "superadmin", "staff"}
+        if not user or getattr(user, "role", None) not in allowed_roles:
             if self.instance is None and value != AppairageStatut.TRANSMIS:
                 raise serializers.ValidationError("Seul le statut 'Transmis' est autorisé à la création.")
             if self.instance is not None:
                 raise serializers.ValidationError("Vous n’êtes pas autorisé à modifier le statut.")
+        else:
+            # ✅ autoriser les rôles staff à archiver
+            if value not in dict(AppairageStatut.choices):
+                raise serializers.ValidationError(f"Statut '{value}' non reconnu.")
         return value
 
 

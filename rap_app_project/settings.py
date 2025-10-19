@@ -98,7 +98,9 @@ REST_FRAMEWORK = {
     ),
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
+        'rap_app.api.permissions.IsStaffReadOnly',
     ],
+
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     'DEFAULT_RENDERER_CLASSES': [
         'rest_framework.renderers.JSONRenderer',
@@ -331,3 +333,7 @@ if 'test' in sys.argv:
     LOGGING['loggers']['rap_app']['level'] = 'CRITICAL'
 else:
     DISABLE_MODEL_LOGS = False
+
+from django.conf import settings
+from django.conf.urls.static import static
+

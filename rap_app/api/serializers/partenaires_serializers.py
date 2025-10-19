@@ -40,8 +40,17 @@ class PartenaireSerializer(serializers.ModelSerializer):
 
     # Centre (lecture = objet light, écriture = *_id)
     default_centre = CentreLiteSerializer(read_only=True)
-    default_centre_id = serializers.IntegerField(required=False, allow_null=True)
-    default_centre_nom = serializers.CharField(source="default_centre.nom", read_only=True, allow_blank=True)
+    default_centre_id = serializers.PrimaryKeyRelatedField(
+        source="default_centre",            # <— lie au vrai champ du modèle
+        queryset=Centre.objects.all(),
+        required=False,
+        allow_null=True,
+        write_only=True,                    # <— pour écriture uniquement
+    )
+    default_centre_nom = serializers.CharField(
+        source="default_centre.nom", read_only=True, allow_blank=True
+    )
+
 
     # Infos formatées / flags
     full_address = serializers.SerializerMethodField()
@@ -59,36 +68,71 @@ class PartenaireSerializer(serializers.ModelSerializer):
     formations = serializers.SerializerMethodField()
     candidats = serializers.SerializerMethodField()
 
-    # Choices plus souple (le modèle autorise null/blank)
+    # Choices plus souple
     actions = serializers.ChoiceField(
         choices=Partenaire.CHOICES_TYPE_OF_ACTION,
         required=False,
-        allow_null=True,   # ⬅️ important côté front
-        allow_blank=False, # laisse False si tu envoies null (et pas "")
+        allow_null=True,
+        allow_blank=False,
     )
+
+    # ✅ Nouveau champ
+    was_reused = serializers.SerializerMethodField(read_only=True)
+
+    def get_was_reused(self, obj):
+        return getattr(obj, "_was_reused", False)
 
     class Meta:
         model = Partenaire
         fields = [
-            "id", "nom", "type", "type_display",
-            "secteur_activite",
-            "street_name", "zip_code", "city", "country",
+            # --- Identité ---
+            "id", "nom", "type", "type_display", "secteur_activite", "was_reused",
+
+            # --- Adresse ---
+            "street_number", "street_name", "street_complement",
+            "zip_code", "city", "country",
+
+            # --- Coordonnées générales ---
+            "telephone", "email",
+
+            # --- Contact principal ---
             "contact_nom", "contact_poste", "contact_telephone", "contact_email",
+
+            # --- Web ---
             "website", "social_network_url",
-            "actions", "actions_display", "action_description",
-            "description", "slug",
-            "default_centre", "default_centre_id", "default_centre_nom",  # ⬅️ ajoutés
-            "created_by",
-            "created_at", "updated_at", "is_active",
+
+            # --- Détails / actions ---
+            "actions", "actions_display", "action_description", "description",
+
+            # --- Données employeur ---
+            "siret", "type_employeur", "employeur_specifique",
+            "code_ape", "effectif_total", "idcc", "assurance_chomage_speciale",
+
+            # --- Maîtres d’apprentissage ---
+            "maitre1_nom_naissance", "maitre1_prenom", "maitre1_date_naissance",
+            "maitre1_courriel", "maitre1_emploi_occupe",
+            "maitre1_diplome_titre", "maitre1_niveau_diplome",
+
+            "maitre2_nom_naissance", "maitre2_prenom", "maitre2_date_naissance",
+            "maitre2_courriel", "maitre2_emploi_occupe",
+            "maitre2_diplome_titre", "maitre2_niveau_diplome",
+
+            # --- Métadonnées ---
+            "slug", "default_centre", "default_centre_id", "default_centre_nom",
+            "created_by", "created_at", "updated_at", "is_active",
+
+            # --- Champs calculés ---
             "full_address", "contact_info", "has_contact", "has_address", "has_web",
+
+            # --- Statistiques ---
             "prospections", "appairages", "formations", "candidats",
         ]
+
         read_only_fields = [
             "id", "slug", "created_at", "updated_at", "is_active",
             "type_display", "actions_display",
             "full_address", "contact_info", "has_contact", "has_address", "has_web",
-            "created_by",
-            "default_centre", "default_centre_nom",  # lecture seule
+            "created_by", "default_centre", "default_centre_nom", "was_reused",
         ]
 
     # ===== Helpers affichage =====
@@ -106,7 +150,7 @@ class PartenaireSerializer(serializers.ModelSerializer):
     def get_has_address(self, obj): return obj.has_address
     def get_has_web(self, obj): return obj.has_web_presence
 
-    # ===== Compteurs robustes (annotation > fallback) =====
+    # ===== Compteurs robustes =====
     def get_prospections(self, obj):
         count = getattr(obj, "prospections_count", None)
         if count is None:
@@ -147,7 +191,7 @@ class PartenaireSerializer(serializers.ModelSerializer):
                 count = 0
         return {"count": int(count)}
 
-    # ===== CRUD (laisse passer default_centre_id vers le modèle) =====
+    # ===== CRUD =====
     def create(self, validated_data):
         return Partenaire.objects.create(**validated_data)
 
@@ -156,6 +200,7 @@ class PartenaireSerializer(serializers.ModelSerializer):
             setattr(instance, attr, value)
         instance.save()
         return instance
+
 
 
 

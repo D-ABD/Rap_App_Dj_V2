@@ -18,22 +18,32 @@ from .statut import Statut, get_default_color
 
 logger = logging.getLogger("application.formation")
 
+
 # ----------------------------------------------------
 # Signaux déplacés dans un fichier signals/
 # ----------------------------------------------------
-
+class Activite(models.TextChoices):
+    ACTIVE = "active", _("Active")
+    ARCHIVEE = "archivee", _("Archivée")
 
 class FormationManager(models.Manager):
     """
-    Manager personnalisé pour le modèle Formation.
-    Fournit des méthodes utilitaires pour filtrer et trier les formations.
-    
-    Utilisé dans les serializers pour:
-    - Filtrer les formations selon leur état (active, à venir, terminée)
-    - Trier les formations selon différents critères
-    - Identifier les formations avec des places disponibles
+    Manager personnalisé pour Formation, filtrant par activité.
     """
 
+    def get_queryset(self):
+        """
+        Exclut par défaut les formations archivées.
+        """
+        return super().get_queryset().filter(activite=Activite.ACTIVE)
+
+    def archivees(self):
+        """Retourne uniquement les formations archivées."""
+        return super().get_queryset().filter(activite=Activite.ARCHIVEE)
+
+    def all_including_archived(self):
+        """Retourne toutes les formations, y compris les archivées."""
+        return super().get_queryset()
     
 
     def formations_actives(self):
@@ -274,6 +284,13 @@ class Formation(BaseModel):
         'inscrits_crif', 'inscrits_mp', 'assistante', 'cap', 'convocation_envoie',
         'entree_formation', 'nombre_candidats', 'nombre_entretiens', 'dernier_commentaire'
     ]
+    activite = models.CharField(
+        max_length=20,
+        choices=Activite.choices,
+        default=Activite.ACTIVE,
+        verbose_name=_("Activité"),
+        help_text=_("Indique si la formation est active ou archivée")
+    )
 
     # Informations générales
     nom = models.CharField(
@@ -386,6 +403,45 @@ class Formation(BaseModel):
 
 
     # Informations supplémentaires
+
+    intitule_diplome = models.CharField(
+    max_length=255,
+    null=True,
+    blank=True,
+    verbose_name=_("Diplôme ou titre visé par l’apprenti"),
+    help_text=_("Intitulé précis du diplôme ou titre préparé"),
+    )
+
+    code_diplome = models.CharField(
+    max_length=50,
+    null=True,
+    blank=True,
+    verbose_name=_("Code diplôme"),
+    help_text=_("Code du diplôme visé par la formation"),
+    )
+
+    code_rncp = models.CharField(
+        max_length=50,
+        null=True,
+        blank=True,
+        verbose_name=_("Code RNCP"),
+        help_text=_("Code RNCP du diplôme"),
+    )
+
+    total_heures = models.PositiveIntegerField(
+        null=True,
+        blank=True,
+        verbose_name=_("Durée totale (heures)"),
+        help_text=_("Nombre total d'heures de formation en présentiel + distanciel"),
+    )
+
+    heures_distanciel = models.PositiveIntegerField(
+        null=True,
+        blank=True,
+        verbose_name=_("Heures en distanciel"),
+        help_text=_("Nombre d'heures effectuées à distance"),
+    )
+
     assistante = models.CharField(
         max_length=ASSISTANTE_MAX_LENGTH, 
         null=True, 
@@ -607,56 +663,6 @@ class Formation(BaseModel):
             "start_date": self._fmt_date_iso(getattr(self, "start_date", None)),
             "end_date": self._fmt_date_iso(getattr(self, "end_date", None)),
         }
-
-
-
-
-    def _create_history_entries(self, original, user=None, update_fields=None):
-        """
-        Crée les entrées d'historique pour les champs modifiés,
-        en incluant l'état actuel de la saturation et du taux de transformation.
-        """
-
-        fields_to_check = update_fields or [
-            f.name for f in self._meta.fields
-            if f.name not in ("id", "created_at", "updated_at")
-        ]
-
-        for field in fields_to_check:
-            old_value = getattr(original, field)
-            new_value = getattr(self, field)
-
-            if old_value != new_value:
-                historique = HistoriqueFormation(
-                    formation=self,
-                    champ_modifie=field,
-                    ancienne_valeur=str(old_value) if old_value is not None else None,
-                    nouvelle_valeur=str(new_value) if new_value is not None else None,
-                    created_by=user if user and hasattr(user, "pk") else None,
-                    commentaire=f"Changement dans le champ {field}",
-                )
-
-                # 🔍 Ajout des stats d'état pour suivi dans le frontend
-                historique.details = {
-                    "saturation": self.saturation,
-                    "saturation_badge": self.get_saturation_badge() if hasattr(self, "get_saturation_badge") else None,
-                    "taux_transformation": self.taux_transformation,
-                    "transformation_badge": self.get_transformation_badge() if hasattr(self, "get_transformation_badge") else None,
-                }
-
-                historique.save(skip_duplicate_check=True)
-
-    def get_saturation_badge(self):
-        if self.saturation is None:
-            return "badge-dark"
-        if self.saturation >= 80:
-            return "badge-success"
-        elif self.saturation >= 60:
-            return "badge-info"
-        elif self.saturation >= 40:
-            return "badge-warning"
-        else:
-            return "badge-danger"
 
     def get_transformation_badge(self):
         if self.taux_transformation is None:
@@ -921,6 +927,17 @@ class Formation(BaseModel):
         elif self.is_past:
             return 'past'
         return 'unknown'
+    
+    @property
+    def est_archivee(self) -> bool:
+        """Retourne True si la formation est archivée."""
+        return self.activite == Activite.ARCHIVEE
+
+    @property
+    def est_active(self) -> bool:
+        """Retourne True si la formation est active."""
+        return self.activite == Activite.ACTIVE
+
 
     # ===== Méthodes d'ajout de contenu =====
 
@@ -1282,57 +1299,74 @@ class Formation(BaseModel):
             commentaire=f"Dupliqué depuis la formation #{self.pk}: {self.nom}",
             created_by=user,
             action=HistoriqueFormation.ActionType.AJOUT,
-            on_delete=models.SET_NULL,
             # On garde l’historique même si la formation est supprimée
 
         )
         
         return new_formation
     
-    @classmethod
-    def get_csv_fields(cls):
-        """
-        Liste des champs à inclure dans un export CSV/Excel.
-        
-        Returns:
-            list: Noms des champs
-        """
-        return [
-            'id', 'nom', 'centre', 'type_offre', 'statut', 'start_date', 'end_date',
-        'num_kairos', 'num_offre', 'num_produit', 'prevus_crif', 'prevus_mp',
-        'inscrits_crif', 'inscrits_mp', 'assistante', 'cap', 'convocation_envoie',
-        'entree_formation',
-        ]
 
-    @classmethod
-    def get_csv_headers(cls):
-        return [
-            'ID', 'Nom', 'Centre', 'Type d\'offre', 'Statut',
-            'Date de début', 'Date de fin', 'Num Kairos', 'Num Offre', 'Num Produit',
-            'Places CRIF', 'Places MP', 'Inscrits CRIF', 'Inscrits MP',
-            'Assistante', 'CAP', 'Convocation envoyée', 'Entrée en formation'
-        ]
+    def archiver(self, user=None, commentaire=None):
+        """
+        🗃️ Archive la formation (désormais via le champ `activite`).
 
-    def to_csv_row(self):
-        return [
-            self.pk,
-            self.nom,
-            self.centre.nom if self.centre else '',
-            self.type_offre.nom if self.type_offre else '',
-            self.statut.nom if self.statut else '',
-            self.start_date.strftime('%d/%m/%Y') if self.start_date else '',
-            self.end_date.strftime('%d/%m/%Y') if self.end_date else '',
-            self.num_kairos or '',
-            self.num_offre or '',
-            self.num_produit or '',
-            self.prevus_crif,
-            self.prevus_mp,
-            self.inscrits_crif,
-            self.inscrits_mp,
-            self.assistante or '',
-            self.cap or '',
-            self.convocation_envoie,
-            self.entree_formation,         ]
+        Args:
+            user (User, optional): Utilisateur effectuant l'action
+            commentaire (str, optional): Message à enregistrer dans l'historique
+        """
+        from .formations import HistoriqueFormation
+
+        ancien_etat = self.activite
+        if ancien_etat == Activite.ARCHIVEE:
+            logger.info(f"[Formation] {self.nom} déjà archivée.")
+            return self
+
+        self.activite = Activite.ARCHIVEE
+        self.save(update_fields=["activite"], user=user)
+
+        HistoriqueFormation.objects.create(
+            formation=self,
+            champ_modifie="activite",
+            ancienne_valeur=ancien_etat,
+            nouvelle_valeur=self.activite,
+            commentaire=commentaire or "Formation archivée",
+            created_by=user,
+            action=HistoriqueFormation.ActionType.SUPPRESSION,
+        )
+
+        logger.info(f"[Formation] Formation #{self.pk} archivée par {user or 'système'}.")
+        return self
+
+
+    def desarchiver(self, user=None, commentaire=None):
+        """
+        🔁 Restaure une formation archivée vers l'état actif.
+        """
+        from .formations import HistoriqueFormation
+
+        ancien_etat = self.activite
+        if ancien_etat == Activite.ACTIVE:
+            logger.info(f"[Formation] {self.nom} déjà active.")
+            return self
+
+        self.activite = Activite.ACTIVE
+        self.save(update_fields=["activite"], user=user)
+
+        HistoriqueFormation.objects.create(
+            formation=self,
+            champ_modifie="activite",
+            ancienne_valeur=ancien_etat,
+            nouvelle_valeur=self.activite,
+            commentaire=commentaire or "Formation restaurée",
+            created_by=user,
+            action=HistoriqueFormation.ActionType.AJOUT,
+        )
+
+        logger.info(f"[Formation] Formation #{self.pk} restaurée par {user or 'système'}.")
+        return self
+
+
+    
         
     @classmethod
     def get_stats_par_mois(cls, annee=None):
@@ -1409,18 +1443,9 @@ class Formation(BaseModel):
             )
         ]
 
-
-from django.db import models, transaction
-from django.utils import timezone
-from django.utils.translation import gettext_lazy as _
-import logging
-
-logger = logging.getLogger("rap_app.historiqueformation")
-
 class HistoriqueFormation(BaseModel):
     ACTION_MAX_LENGTH = 100
     CHAMP_MAX_LENGTH = 100
-    details = models.JSONField(null=True, blank=True) 
     class ActionType(models.TextChoices):
         MODIFICATION = 'modification', _('Modification')
         AJOUT = 'ajout', _('Ajout')
@@ -1540,7 +1565,6 @@ class HistoriqueFormation(BaseModel):
             "taux_transformation": self.details.get("taux_transformation"),
             "transformation_badge": self.details.get("transformation_badge"),
         }
-    from django.db import models, transaction
     @property
     def utilisateur_nom(self):
         if self.created_by:
@@ -1560,3 +1584,4 @@ class HistoriqueFormation(BaseModel):
     @classmethod
     def get_latest_changes(cls, limit=10):
         return cls.objects.select_related('formation', 'created_by').order_by('-created_at')[:limit]
+

@@ -1,10 +1,10 @@
 # ========================================================
 # GESTION DE PROJET DJANGO - CHEAT SHEET (Python3/Pip3)
 # ========================================================
-
+ 
 python3 manage.py check    
 python3 manage.py makemigrations 
-python3 manage.py migrate
+python3 manage.py migrate 
 
 python3 manage.py runserver 0.0.0.0:8000
 python3 manage.py spectacular --file schema.yaml
@@ -118,7 +118,7 @@ git push -u origin main
 # Pousser les modifications
 git status                           
 git add .                            
-git commit -m "Ajout des listes de choix aux serializers et viewset pour les exposer à la doc. / modification de centreviewset"   
+git commit -m "Ajout des models, serializers et viewsets, pour atelier_tre; Appairage et candidats. versions à vérifier"   
 git push origin main                 
 
 
@@ -389,3 +389,6 @@ prepacomp.py (liée à centre et semaine)
 
 vae_jury.py (liée à user, centre, statut, etc.)
 
+
+
+modif de istafforabove (permissions)- men place de permission_classes = [IsStaffOrAbove] dans les viewsets stats, modification des scope pour que candidat et stagiaire ne voeint que leurs propres stats

@@ -8,16 +8,23 @@ from rest_framework.exceptions import ValidationError, PermissionDenied
 from django.http import HttpResponse
 from openpyxl import Workbook
 from openpyxl.utils import get_column_letter
+from openpyxl.drawing.image import Image as XLImage
+from openpyxl.styles import PatternFill, Font, Alignment
+from pathlib import Path
+from django.conf import settings
+from io import BytesIO
+from openpyxl.styles import PatternFill, Font, Alignment, Border, Side
+import django_filters
+from django.shortcuts import get_object_or_404
 
 from ...utils.filters import AppairageFilterSet
-from ...models.appairage import Appairage, HistoriqueAppairage
+from ...models.appairage import Appairage, AppairageActivite, AppairageStatut
 from ...models.commentaires_appairage import CommentaireAppairage
 from ..serializers.appairage_serializers import (
     AppairageSerializer,
     AppairageListSerializer,
     AppairageCreateUpdateSerializer,
     AppairageMetaSerializer,
-    HistoriqueAppairageSerializer,
     CommentaireAppairageSerializer,
 )
 from ..permissions import IsStaffOrAbove, is_staff_or_staffread
@@ -57,6 +64,7 @@ class AppairageViewSet(viewsets.ModelViewSet):
         "candidat__nom",
         "candidat__prenom",
         "partenaire__nom",
+        "partenaire_contact_nom", 
         "formation__nom",
         "candidat__formation__nom",
         "formation__centre__nom",
@@ -96,7 +104,6 @@ class AppairageViewSet(viewsets.ModelViewSet):
         if not user.is_authenticated:
             return qs.none()
 
-        # ❌ on bloque totalement les candidats/stagiaires
         if hasattr(user, "is_candidat_or_stagiaire") and user.is_candidat_or_stagiaire():
             return qs.none()
 
@@ -123,6 +130,29 @@ class AppairageViewSet(viewsets.ModelViewSet):
             if getattr(formation, "centre_id", None) not in allowed:
                 raise PermissionDenied("Formation hors de votre périmètre (centre).")
 
+    # ------------------------- helpers export -------------------------
+    def _user_display(self, user):
+        if not user:
+            return ""
+        return f"{user.get_full_name()} ({user.username})" if hasattr(user, "username") else str(user)
+
+    def _partenaire_email(self, a):
+        return getattr(a.partenaire, "email", "") or getattr(a, "partenaire_email", "") or ""
+
+    def _partenaire_telephone(self, a):
+        return getattr(a.partenaire, "telephone", "") or getattr(a, "partenaire_telephone", "") or ""
+
+    def _formation_id(self, a):
+        return getattr(a.formation, "id", "") or ""
+
+    def _formation_label(self, a):
+        return getattr(a.formation, "nom", "") or ""
+
+    def _formation_type_offre(self, a):
+        return getattr(getattr(a.formation, "type_offre", None), "libelle", "") or getattr(a, "formation_type_offre", "")
+
+    def _formation_num_offre(self, a):
+        return getattr(a.formation, "num_offre", "") or getattr(a, "formation_numero_offre", "")
 
     # ------------------------------- DRF hooks ---------------------------------
     def get_serializer_class(self):
@@ -132,21 +162,9 @@ class AppairageViewSet(viewsets.ModelViewSet):
             return AppairageCreateUpdateSerializer
         return AppairageSerializer
 
-    def get_queryset(self):
-        qs = self.base_queryset
-        # 🔹 Annoter le dernier commentaire
-        last_comment_qs = (
-            CommentaireAppairage.objects.filter(appairage=OuterRef("pk"))
-            .order_by("-created_at")
-            .values("body")[:1]
-        )
-        qs = qs.annotate(last_commentaire=Subquery(last_comment_qs))
-        return self._scope_qs_to_user_centres(qs)
 
     def perform_create(self, serializer):
         user = self.request.user
-
-        # ❌ candidats/stagiaires n’ont pas le droit de créer
         if hasattr(user, "is_candidat_or_stagiaire") and user.is_candidat_or_stagiaire():
             raise PermissionDenied("Les candidats/stagiaires ne peuvent pas créer d’appairage.")
 
@@ -165,23 +183,18 @@ class AppairageViewSet(viewsets.ModelViewSet):
             self._assert_staff_can_use_formation(formation)
 
         partenaire_payload = serializer.validated_data.get("partenaire")
-
         if Appairage.objects.filter(
             candidat=candidat_payload, partenaire=partenaire_payload, formation=formation
         ).exists():
             raise ValidationError(
-                {
-                    "detail": "Un appairage existe déjà pour ce candidat, ce partenaire et cette formation."
-                }
+                {"detail": "Un appairage existe déjà pour ce candidat, ce partenaire et cette formation."}
             )
 
         instance = serializer.save(
             created_by=user, formation=formation or serializer.validated_data.get("formation")
         )
-
         if hasattr(instance, "set_user"):
             instance.set_user(user)
-
         try:
             instance.save(user=user)
         except TypeError:
@@ -190,8 +203,6 @@ class AppairageViewSet(viewsets.ModelViewSet):
     def perform_update(self, serializer):
         user = self.request.user
         instance = serializer.instance
-
-        # ❌ candidats/stagiaires ne peuvent pas modifier
         if hasattr(user, "is_candidat_or_stagiaire") and user.is_candidat_or_stagiaire():
             raise PermissionDenied("Les candidats/stagiaires ne peuvent pas modifier un appairage.")
 
@@ -215,9 +226,7 @@ class AppairageViewSet(viewsets.ModelViewSet):
     # ---------------------------- Commentaires ----------------------------
     @action(detail=True, methods=["get", "post"], url_path="commentaires")
     def commentaires(self, request, pk=None):
-        """Liste ou ajout de commentaires liés à un appairage"""
         appairage = self.get_object()
-
         if request.method == "GET":
             qs = appairage.commentaires.order_by("-created_at")
             serializer = CommentaireAppairageSerializer(qs, many=True)
@@ -229,8 +238,114 @@ class AppairageViewSet(viewsets.ModelViewSet):
                 serializer.save(created_by=request.user, appairage=appairage)
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
 
-    # ---------------------------- Actions export ----------------------------
+    def get_queryset(self):
+        qs = self.base_queryset
+
+        # 🗒️ Annoter le dernier commentaire
+        last_comment_qs = (
+            CommentaireAppairage.objects.filter(appairage=OuterRef("pk"))
+            .order_by("-created_at")
+            .values("body")[:1]
+        )
+        qs = qs.annotate(last_commentaire=Subquery(last_comment_qs))
+
+        # 🧩 Filtrage explicite par activité
+        activite = self.request.query_params.get("activite")
+        if activite in [AppairageActivite.ACTIF, AppairageActivite.ARCHIVE]:
+            # Si un type d'activité est spécifié → filtrage strict
+            qs = qs.filter(activite=activite)
+        else:
+            # ⚙️ Par défaut, on exclut les archivés sauf si `avec_archivees=true`
+            avec_archivees = self.request.query_params.get("avec_archivees")
+            if not (avec_archivees and str(avec_archivees).lower() in ["1", "true", "yes", "on"]):
+                qs = qs.exclude(activite=AppairageActivite.ARCHIVE)
+
+        # 🔒 Restriction par centre selon l’utilisateur connecté
+        return self._scope_qs_to_user_centres(qs)
+
+    # ✅ Permet d’afficher les appairages archivés en détail
+    def retrieve(self, request, *args, **kwargs):
+        # On va chercher dans base_queryset pour ne pas exclure les archivés
+        obj = get_object_or_404(self.base_queryset, pk=kwargs.get("pk"))
+        serializer = self.get_serializer(obj)
+        return Response(serializer.data)
+
+    # ----------------------------------------------------------------------
+    # 📦 Archivage
+    # ----------------------------------------------------------------------
+
+    @action(detail=True, methods=["post"], url_path="archiver")
+    def archiver(self, request, pk=None):
+        """
+        Archive un appairage : il ne sera plus visible par défaut.
+        """
+        # 🔁 utiliser base_queryset pour inclure tous les appairages
+        appairage = get_object_or_404(self.base_queryset, pk=pk)
+
+        if appairage.activite == AppairageActivite.ARCHIVE:
+            return Response({"detail": "Déjà archivé."}, status=status.HTTP_400_BAD_REQUEST)
+
+        if hasattr(appairage, "archiver"):
+            appairage.archiver(user=request.user)
+        else:
+            appairage.activite = AppairageActivite.ARCHIVE
+            appairage.save(user=request.user, update_fields=["activite"])
+
+        return Response({"status": "archived"}, status=status.HTTP_200_OK)
+
+
+    @action(detail=True, methods=["post"], url_path="desarchiver")
+    def desarchiver(self, request, pk=None):
+        """
+        Désarchive un appairage : il redevient actif.
+        """
+        # 🔁 idem : on prend base_queryset pour inclure aussi les archivés
+        appairage = get_object_or_404(self.base_queryset, pk=pk)
+
+        if appairage.activite != AppairageActivite.ARCHIVE:
+            return Response({"detail": "Cet appairage n’est pas archivé."}, status=status.HTTP_400_BAD_REQUEST)
+
+        if hasattr(appairage, "desarchiver"):
+            appairage.desarchiver(user=request.user)
+        else:
+            appairage.activite = AppairageActivite.ACTIF
+            appairage.save(user=request.user, update_fields=["activite"])
+
+        return Response({"status": "unarchived"}, status=status.HTTP_200_OK)
+
+    # ----------------------------------------------------------------------
+    # 🧮 Export
+    # ----------------------------------------------------------------------
+    def _get_export_queryset(self, request):
+        qs = self.filter_queryset(self.get_queryset())
+
+        # ⚙️ Exclure les archivés sauf si demandé
+        avec_archivees = request.data.get("avec_archivees") or request.query_params.get("avec_archivees")
+        if not (avec_archivees and str(avec_archivees).lower() in ["1", "true", "yes", "on"]):
+            qs = qs.exclude(activite=AppairageActivite.ARCHIVE)
+
+        # IDs filtrés
+        ids = request.data.get("ids") or request.query_params.get("ids")
+        if ids:
+            if isinstance(ids, str):
+                ids = [int(x) for x in ids.split(",") if x.isdigit()]
+            elif isinstance(ids, list):
+                ids = [int(x) for x in ids if str(x).isdigit()]
+            qs = qs.filter(id__in=ids)
+
+        return qs.select_related(
+            "candidat",
+            "candidat__formation",
+            "candidat__formation__centre",
+            "formation",
+            "formation__centre",
+            "partenaire",
+            "created_by",
+            "updated_by",
+        ).prefetch_related("commentaires")
+
     @action(detail=False, methods=["get", "post"], url_path="export-xlsx")
     def export_xlsx(self, request):
         qs = self._get_export_queryset(request)
@@ -238,126 +353,240 @@ class AppairageViewSet(viewsets.ModelViewSet):
         ws = wb.active
         ws.title = "Appairages"
 
+        # ==========================================================
+        # 🖼️ Logo Rap_App
+        # ==========================================================
+        try:
+            logo_path = Path(settings.BASE_DIR) / "rap_app/static/images/logo.png"
+            if logo_path.exists():
+                img = XLImage(str(logo_path))
+                img.height = 60
+                img.width = 60
+                ws.add_image(img, "A1")
+        except Exception:
+            pass
+
+        # ==========================================================
+        # 🧾 Titre et date
+        # ==========================================================
+        ws.merge_cells("B1:Z1")
+        ws["B1"] = "Export des appairages — Rap_App"
+        ws["B1"].font = Font(bold=True, size=14, color="004C99")
+        ws["B1"].alignment = Alignment(horizontal="center", vertical="center")
+
+        ws.merge_cells("B2:Z2")
+        ws["B2"] = f"Export réalisé le {dj_timezone.now().strftime('%d/%m/%Y à %H:%M')}"
+        ws["B2"].font = Font(italic=True, size=10, color="666666")
+        ws["B2"].alignment = Alignment(horizontal="center", vertical="center")
+
+        ws.append([])
+
+        # ==========================================================
+        # 📋 En-têtes
+        # ==========================================================
         headers = [
-            "id",
-            "candidat_id",
-            "candidat_nom",
-            "partenaire_id",
-            "partenaire_nom",
-            "partenaire_email",
-            "partenaire_telephone",
-            "formation_id",
-            "formation_nom",
-            "formation_type_offre",
-            "formation_num_offre",
-            "statut",
-            "statut_display",
-            "date_appairage",
-            "commentaire",
-            "retour_partenaire",
-            "date_retour",
-            "created_by",
-            "created_by_nom",
-            "updated_by",
-            "updated_by_nom",
-            "created_at",
-            "updated_at",
+            "Activité (code)", "Date appairage", "Statut (code)",
+            "Candidat",
+            "Partenaire", "Contact", "Email", "Téléphone",
+            "Formation", "Centre",
+            "Type d’offre", "N° Offre", "Statut formation",
+            "Places totales", "Places disponibles",
+            "Date début", "Date fin",
+            "Retour partenaire", "Date retour",
+            "Créé par (nom)", "Créé le",
+            "Maj par (nom)", "Maj le",
+            "Dernier commentaire", "Commentaires",
         ]
         ws.append(headers)
 
-        for a in qs:
-            ws.append([
-                a.id,
-                getattr(a.candidat, "id", "") or "",
-                getattr(a.candidat, "nom_complet", "") or "",
-                getattr(a.partenaire, "id", "") or "",
-                getattr(a.partenaire, "nom", "") or "",
-                self._partenaire_email(a),
-                self._partenaire_telephone(a),
-                self._formation_id(a),
-                self._formation_label(a),
-                self._formation_type_offre(a),
-                self._formation_num_offre(a),
-                a.statut,
-                a.get_statut_display(),
-                a.date_appairage.isoformat() if a.date_appairage else "",
-                a.last_commentaire or "",
-                a.retour_partenaire or "",
-                a.date_retour.isoformat() if a.date_retour else "",
-                getattr(a.created_by, "id", "") if a.created_by else "",
-                self._user_display(a.created_by),
-                getattr(a.updated_by, "id", "") if a.updated_by else "",
-                self._user_display(a.updated_by),
-                a.created_at.isoformat() if getattr(a, "created_at", None) else "",
-                a.updated_at.isoformat() if getattr(a, "updated_at", None) else "",
-            ])
+        header_row = ws.max_row
+        header_fill = PatternFill("solid", fgColor="1F4E78")
+        header_font = Font(bold=True, color="FFFFFF", size=11)
+        border = Border(
+            left=Side(style="thin", color="D9D9D9"),
+            right=Side(style="thin", color="D9D9D9"),
+            top=Side(style="thin", color="D9D9D9"),
+            bottom=Side(style="thin", color="D9D9D9"),
+        )
 
-        # ajustement largeur colonnes
-        for col in ws.columns:
-            max_length = 0
-            col_letter = get_column_letter(col[0].column)
-            for cell in col:
+        for cell in ws[header_row]:
+            cell.font = header_font
+            cell.alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            cell.fill = header_fill
+            cell.border = border
+        ws.row_dimensions[header_row].height = 28
+
+        # ==========================================================
+        # 🧮 Données
+        # ==========================================================
+        even_fill = PatternFill("solid", fgColor="F7FBFF")
+        odd_fill = PatternFill("solid", fgColor="FFFFFF")
+
+        def _safe(obj, path, default=""):
+            try:
+                for part in path.split("."):
+                    obj = getattr(obj, part)
+                    if obj is None:
+                        return default
+                return obj
+            except Exception:
+                return default
+
+        def _to_text(v):
+            if v is None:
+                return ""
+            if callable(v):
                 try:
-                    if cell.value:
-                        max_length = max(max_length, len(str(cell.value)))
+                    v = v()
                 except Exception:
-                    pass
-            ws.column_dimensions[col_letter].width = min(max_length + 2, 50)
+                    v = str(v)
+            if isinstance(v, (int, float, str, bool)):
+                return str(v)
+            if isinstance(v, (list, tuple, set)):
+                return "\n".join(map(_to_text, v))
+            if isinstance(v, dict):
+                return "; ".join(f"{k}: {v}" for k, v in v.items())
+            if hasattr(v, "strftime"):
+                try:
+                    return v.strftime("%d/%m/%Y %H:%M")
+                except Exception:
+                    return str(v)
+            if hasattr(v, "nom_complet"):
+                return v.nom_complet
+            if hasattr(v, "nom"):
+                return v.nom
+            return str(v)
 
-        from io import BytesIO
+        def _compute_places_disponibles(a):
+            f = getattr(a, "formation", None)
+            if not f:
+                return ""
+            inscrits_total = (getattr(f, "inscrits_crif", 0) or 0) + (getattr(f, "inscrits_mp", 0) or 0)
+            prevus_total = (getattr(f, "prevus_crif", 0) or 0) + (getattr(f, "prevus_mp", 0) or 0)
+            cap = getattr(f, "cap", None)
+            if cap is not None:
+                return max(int(cap) - int(inscrits_total), 0)
+            if prevus_total:
+                return max(int(prevus_total) - int(inscrits_total), 0)
+            return ""
+
+        for i, a in enumerate(qs, start=1):
+            commentaires_text = ""
+            try:
+                if hasattr(a, "commentaires"):
+                    coms = a.commentaires.all().order_by("-created_at")
+                    commentaires_text = "\n".join(
+                        f"- {getattr(c.created_by, 'get_full_name', lambda: str(c.created_by))()}: {getattr(c, 'body', '')}"
+                        for c in coms
+                    )
+            except Exception:
+                commentaires_text = ""
+
+            row = [
+                _to_text(_safe(a, "activite")),
+                a.date_appairage.strftime("%d/%m/%Y") if _safe(a, "date_appairage") else "",
+                _to_text(_safe(a, "statut")),
+                _to_text(_safe(a, "candidat.nom_complet")) or _to_text(_safe(a, "candidat")),
+                _to_text(_safe(a, "partenaire.nom")),
+                _to_text(_safe(a, "partenaire.contact_nom")),
+                _to_text(_safe(a, "partenaire.contact_email")),
+                _to_text(_safe(a, "partenaire.contact_telephone")),
+                _to_text(_safe(a, "formation.nom")),
+                _to_text(_safe(a, "formation.centre.nom")),
+                _to_text(_safe(a, "formation.type_offre.nom")),
+                _to_text(_safe(a, "formation.num_offre")),
+                _to_text(_safe(a, "formation.statut")),
+                _to_text(_safe(a, "formation.cap")),
+                _to_text(_compute_places_disponibles(a)),
+                _to_text(_safe(a, "formation.start_date")),
+                _to_text(_safe(a, "formation.end_date")),
+                _to_text(getattr(a, "retour_partenaire", "")),
+                a.date_retour.strftime("%d/%m/%Y") if _safe(a, "date_retour") else "",
+                _to_text(_safe(a, "created_by.get_full_name")),
+                a.created_at.strftime("%d/%m/%Y %H:%M") if _safe(a, "created_at") else "",
+                _to_text(_safe(a, "updated_by.get_full_name")),
+                a.updated_at.strftime("%d/%m/%Y %H:%M") if _safe(a, "updated_at") else "",
+                _to_text(getattr(a, "last_commentaire", "")),
+                commentaires_text,
+            ]
+            ws.append(row)
+
+            fill = even_fill if i % 2 == 0 else odd_fill
+            for j, cell in enumerate(ws[ws.max_row], start=1):
+                cell.fill = fill
+                cell.border = border
+                cell.alignment = Alignment(vertical="top", wrapText=True)
+                val = str(cell.value).strip().lower() if cell.value else ""
+
+                # 🎨 Couleur dynamique selon les colonnes
+                if j == 3:  # Statut
+                    if "actif" in val:
+                        cell.font = Font(color="008000", bold=True)
+                    elif "inactif" in val or "refus" in val:
+                        cell.font = Font(color="C00000", bold=True)
+                    elif "archive" in val:
+                        cell.font = Font(color="7F7F7F", italic=True)
+                    else:
+                        cell.font = Font(color="1F4E78")
+                elif j == 14:  # Places totales → bleu fixe
+                    cell.font = Font(color="1F4E78", bold=True)
+                elif j == 15:  # Places disponibles → dynamique
+                    try:
+                        num = int(float(val.replace(",", ".").strip()))
+                    except Exception:
+                        num = None
+                    if num is None:
+                        cell.font = Font(color="000000")
+                    elif num == 0:
+                        cell.font = Font(color="006100", bold=True)  # 🟩 complet
+                    elif num <= 4:
+                        cell.font = Font(color="E46C0A", bold=True)  # 🟧 presque plein
+                    elif num <= 9:
+                        cell.font = Font(color="1F4E78", bold=True)  # 🟦 disponible
+                    else:
+                        cell.font = Font(color="C00000", bold=True)  # 🟥 très disponible
+                elif j in [18, 19]:
+                    cell.font = Font(color="548235")
+                elif j in [20, 22]:
+                    cell.font = Font(color="7030A0")
+                else:
+                    cell.font = Font(color="000000")
+            ws.row_dimensions[ws.max_row].height = 26
+
+        # ==========================================================
+        # 📊 Filtres + gel de l’en-tête
+        # ==========================================================
+        end_row = ws.max_row
+        last_col_letter = get_column_letter(len(headers))
+        ws.auto_filter.ref = f"A{header_row}:{last_col_letter}{end_row}"
+        ws.freeze_panes = f"A{header_row + 1}"
+
+        # ==========================================================
+        # 📏 Largeurs auto-ajustées
+        # ==========================================================
+        for col_cells in ws.columns:
+            length = max(len(str(c.value)) if c.value else 0 for c in col_cells)
+            column_letter = get_column_letter(col_cells[0].column)
+            adjusted_width = min(length + 3, 50)
+            ws.column_dimensions[column_letter].width = adjusted_width
+
+        # Pied de page
+        ws.oddFooter.center.text = f"© Rap_App — export du {dj_timezone.now().strftime('%d/%m/%Y %H:%M')}"
+
+        # ==========================================================
+        # 📤 Génération du fichier
+        # ==========================================================
         buffer = BytesIO()
         wb.save(buffer)
-        buffer.seek(0)
+        binary = buffer.getvalue()
+        buffer.close()
 
+        filename = f'appairages_{dj_timezone.now().strftime("%Y%m%d_%H%M%S")}.xlsx'
         response = HttpResponse(
-            buffer,
+            binary,
             content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         )
-        filename = f'appairages_{dj_timezone.now().strftime("%Y%m%d_%H%M%S")}.xlsx'
         response["Content-Disposition"] = f'attachment; filename="{filename}"'
+        response["Content-Length"] = len(binary)
         return response
-
-
-# ==========================================================================
-# HISTORIQUE APPARIAGE VIEWSET
-# ==========================================================================
-class HistoriqueAppairageViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = HistoriqueAppairage.objects.all().select_related(
-        "appairage", "auteur", "appairage__formation", "appairage__candidat__formation"
-    )
-    serializer_class = HistoriqueAppairageSerializer
-    permission_classes = [IsStaffOrAbove]
-    pagination_class = RapAppPagination
-    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filterset_fields = ["appairage", "statut", "auteur"]
-    search_fields = [
-        "appairage__candidat__nom",
-        "appairage__partenaire__nom",
-        "auteur__first_name",
-        "auteur__last_name",
-    ]
-    ordering_fields = ["date"]
-
-    def get_queryset(self):
-        qs = super().get_queryset()
-        u = self.request.user
-        if not u.is_authenticated:
-            return qs.none()
-
-        # ❌ candidats/stagiaires n’ont pas accès
-        if hasattr(u, "is_candidat_or_stagiaire") and u.is_candidat_or_stagiaire():
-            return qs.none()
-
-        if getattr(u, "is_superuser", False) or (hasattr(u, "is_admin") and u.is_admin()):
-            return qs
-
-        if is_staff_or_staffread(u):
-            centre_ids = list(u.centres.values_list("id", flat=True))
-            if not centre_ids:
-                return qs.none()
-            return qs.filter(
-                Q(appairage__formation__centre_id__in=centre_ids)
-                | Q(appairage__candidat__formation__centre_id__in=centre_ids)
-            ).distinct()
-
-        return qs.none()
+        

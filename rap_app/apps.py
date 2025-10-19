@@ -21,5 +21,6 @@ class RapAppConfig(AppConfig):
         import rap_app.signals.statut_signals
         import rap_app.signals.appairage_signals
         import rap_app.signals.candidats_signals
+        import rap_app.signals.cerfa_auto_create_signals
         
 

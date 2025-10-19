@@ -32,6 +32,9 @@ from ...models.commentaires_appairage import CommentaireAppairage
                 "formation_centre": "Centre A",
                 "formation_type_offre": "Collective",
                 "statut_snapshot": "transmis",
+                "statut_commentaire": "actif",
+                "statut_commentaire_display": "Actif",
+                "est_archive": False,
                 "appairage_statut_display": "Transmis",
                 "created_at": "2025-09-13T11:20:00Z",
                 "updated_at": "2025-09-13T11:20:00Z",
@@ -45,6 +48,7 @@ class CommentaireAppairageSerializer(serializers.ModelSerializer):
     🎯 Serializer lecture seule pour les commentaires d’appairage :
     - infos de base (id, body, auteur, dates)
     - infos enrichies sur l’appairage (candidat, partenaire, formation, statut…)
+    - champs d’archivage (statut_commentaire, est_archive)
     """
 
     auteur_nom = serializers.SerializerMethodField()
@@ -61,6 +65,12 @@ class CommentaireAppairageSerializer(serializers.ModelSerializer):
 
     appairage_label = serializers.SerializerMethodField()
     appairage_statut_display = serializers.CharField(source="appairage.get_statut_display", read_only=True)
+
+    # ✅ Champs d’archivage
+    est_archive = serializers.SerializerMethodField(read_only=True)
+    statut_commentaire_display = serializers.CharField(
+        source="get_statut_commentaire_display", read_only=True
+    )
 
     # ─────────── Helpers ───────────
     def get_auteur_nom(self, obj):
@@ -83,6 +93,9 @@ class CommentaireAppairageSerializer(serializers.ModelSerializer):
             return f"Formation {form.nom}"
         return f"Appairage {obj.appairage_id}"
 
+    def get_est_archive(self, obj: CommentaireAppairage) -> bool:
+        return obj.est_archive
+
     class Meta:
         model = CommentaireAppairage
         fields = [
@@ -102,6 +115,9 @@ class CommentaireAppairageSerializer(serializers.ModelSerializer):
             "formation_centre",
             "formation_type_offre",
             "statut_snapshot",
+            "statut_commentaire",
+            "statut_commentaire_display",
+            "est_archive",
             "appairage_statut_display",
         ]
         read_only_fields = fields
@@ -110,9 +126,10 @@ class CommentaireAppairageSerializer(serializers.ModelSerializer):
 class CommentaireAppairageWriteSerializer(serializers.ModelSerializer):
     """
     ✍️ Serializer écriture (création / mise à jour)
+    - permet uniquement la création ou la modification du contenu
+    - le champ 'statut_commentaire' est réservé au staff
     """
 
     class Meta:
         model = CommentaireAppairage
-        fields = ["appairage", "body"]
- 
+        fields = ["appairage", "body", "statut_commentaire"]

@@ -12,6 +12,21 @@ from .formations import Formation
 logger = logging.getLogger("application.appairages")
 
 
+# ───────────────────────────────────────────────
+# MANAGER PERSONNALISÉ
+# ───────────────────────────────────────────────
+
+class AppairageManager(models.Manager):
+    """Manager personnalisé pour gérer les filtres logiques d’appairage."""
+    def actifs(self):
+        return self.filter(activite=AppairageActivite.ACTIF)
+
+    def archives(self):
+        return self.filter(activite=AppairageActivite.ARCHIVE)
+# ───────────────────────────────────────────────
+# ENUM DES STATUTS
+# ───────────────────────────────────────────────
+
 class AppairageStatut(models.TextChoices):
     TRANSMIS = "transmis", _("Transmis au partenaire")
     EN_ATTENTE = "en_attente", _("En attente de réponse")
@@ -19,17 +34,26 @@ class AppairageStatut(models.TextChoices):
     REFUSE = "refuse", _("Refusé")
     ANNULE = "annule", _("Annulé")
     A_FAIRE = "a_faire", _("À faire")
-    CONTRAT_A_SIGNER = "contrat a signer", _("Contrat à signer")
-    CONTRAT_EN_ATTENTE = "contrat en attente", _("Contrat en attente")
-    APPAIRAGE_OK = "appairage ok", _("Appairage OK")
+    CONTRAT_A_SIGNER = "contrat_a_signer", _("Contrat à signer")
+    CONTRAT_EN_ATTENTE = "contrat_en_attente", _("Contrat en attente")
+    APPAIRAGE_OK = "appairage_ok", _("Appairage OK")
 
+class AppairageActivite(models.TextChoices): 
+    ACTIF = "actif", _("Actif")
+    ARCHIVE = "archive", _("Archivé")
+
+# ───────────────────────────────────────────────
+# MODÈLE PRINCIPAL
+# ───────────────────────────────────────────────
 
 class Appairage(BaseModel):
     """
     Mise en relation entre un candidat et un partenaire dans le cadre d'une formation.
-    Le 'snapshot' (affichage rapide) sur Candidat est toujours recalculé
-    à partir du DERNIER appairage du candidat (date_appairage desc, pk desc).
+    Le snapshot sur le candidat est recalculé à partir du dernier appairage (date desc, pk desc).
     """
+
+    objects = AppairageManager()  # ✅ activation du manager custom
+
     candidat = models.ForeignKey(Candidat, on_delete=models.CASCADE, related_name="appairages")
     partenaire = models.ForeignKey(Partenaire, on_delete=models.CASCADE, related_name="appairages")
     formation = models.ForeignKey(
@@ -40,11 +64,20 @@ class Appairage(BaseModel):
     date_appairage = models.DateTimeField(default=timezone.now, verbose_name=_("Date de mise en relation"))
 
     statut = models.CharField(
-        max_length=20,
+        max_length=30,  # 🔧 augmenté à 30 pour anticiper les valeurs futures
         choices=AppairageStatut.choices,
         default=AppairageStatut.TRANSMIS,
         verbose_name=_("Statut de l'appairage"),
     )
+
+    activite = models.CharField(
+        max_length=10,
+        choices=AppairageActivite.choices,
+        default=AppairageActivite.ACTIF,
+        verbose_name=_("Activité"),
+        db_index=True,
+    )
+
 
     retour_partenaire = models.TextField(blank=True, null=True, verbose_name=_("Retour du partenaire"))
     date_retour = models.DateTimeField(blank=True, null=True, verbose_name=_("Date du retour du partenaire"))
@@ -61,11 +94,17 @@ class Appairage(BaseModel):
             models.Index(fields=["partenaire"]),
             models.Index(fields=["formation"]),
             models.Index(fields=["statut"]),
+            models.Index(fields=["activite"]),  
             models.Index(fields=["date_appairage"]),
         ]
 
+
     def __str__(self):
         return f"{self.candidat} → {self.partenaire} ({self.get_statut_display()})"
+
+    # ───────────────────────────────────────────────
+    # MÉTHODES UTILITAIRES
+    # ───────────────────────────────────────────────
 
     def get_formation_identite_complete(self):
         return self.formation.get_formation_identite_complete() if self.formation else None
@@ -74,12 +113,45 @@ class Appairage(BaseModel):
         return self.formation.get_formation_identite_bref() if self.formation else None
 
     def set_user(self, user):
-        """Permet d’enregistrer l’utilisateur actif pour l’historique et la synchro."""
+        """Stocke l’utilisateur actif pour l’historique et les synchronisations."""
         self._user = user
 
-    # ──────────────────────────────────────────────────────────────────────
-    # Règles de snapshot
-    # ──────────────────────────────────────────────────────────────────────
+    # ───────────────────────────────────────────────
+    # ARCHIVAGE
+    # ───────────────────────────────────────────────
+
+    def archiver(self, user=None):
+        """Marque cet appairage comme archivé."""
+        if self.activite != AppairageActivite.ARCHIVE:
+            self.activite = AppairageActivite.ARCHIVE
+            self.save(user=user, update_fields=["activite"])
+            logger.info("📦 Appairage #%s archivé (%s → %s)", self.pk, self.candidat, self.partenaire)
+
+    def desarchiver(self, user=None):
+        """Rend cet appairage à nouveau actif."""
+        if self.activite != AppairageActivite.ACTIF:
+            self.activite = AppairageActivite.ACTIF
+            self.save(user=user, update_fields=["activite"])
+            logger.info("♻️ Appairage #%s désarchivé (%s → %s)", self.pk, self.candidat, self.partenaire)
+
+    @classmethod
+    def archiver_pour_formation(cls, formation, user=None):
+        """Archive tous les appairages liés à une formation donnée."""
+        apps = cls.objects.filter(formation=formation, activite=AppairageActivite.ACTIF)
+        for app in apps:
+            app.archiver(user=user)
+
+    @classmethod
+    def desarchiver_pour_formation(cls, formation, user=None):
+        """Désarchive tous les appairages d’une formation donnée."""
+        apps = cls.objects.filter(formation=formation, activite=AppairageActivite.ARCHIVE)
+        for app in apps:
+            app.desarchiver(user=user)
+
+    # ───────────────────────────────────────────────
+    # SYNCHRONISATION & SNAPSHOT
+    # ───────────────────────────────────────────────
+
     _STATUS_PRIORITY = {
         AppairageStatut.APPAIRAGE_OK: 100,
         AppairageStatut.ACCEPTE: 90,
@@ -92,7 +164,6 @@ class Appairage(BaseModel):
         AppairageStatut.ANNULE: 0,
     }
 
-    # Mapping statut d’appairage → résultat de placement
     _STATUS_TO_RESULTAT = {
         AppairageStatut.APPAIRAGE_OK: ResultatPlacementChoices.ADMIS,
         AppairageStatut.ACCEPTE: ResultatPlacementChoices.ADMIS,
@@ -105,12 +176,16 @@ class Appairage(BaseModel):
         AppairageStatut.ANNULE: ResultatPlacementChoices.ABANDON_ETS,
     }
 
+
+
     _ACCEPTED_STATUSES = {AppairageStatut.APPAIRAGE_OK, AppairageStatut.ACCEPTE}
     _CONTRACT_STATUSES = {
         AppairageStatut.CONTRAT_A_SIGNER,
         AppairageStatut.CONTRAT_EN_ATTENTE,
         AppairageStatut.APPAIRAGE_OK,
     }
+
+
 
     def _last_appairage_for(self, candidat: Candidat):
         """Retourne le dernier appairage du candidat (date puis pk)."""
@@ -267,7 +342,7 @@ class HistoriqueAppairage(models.Model):
     )
     date = models.DateTimeField(auto_now_add=True)
     statut = models.CharField(
-        max_length=20,
+        max_length=30,
         choices=AppairageStatut.choices,
     )
     commentaire = models.TextField(blank=True, verbose_name=_("Commentaire"))
@@ -288,3 +363,27 @@ class HistoriqueAppairage(models.Model):
 
     def __str__(self):
         return f"{self.appairage} – {self.get_statut_display()} ({self.date.strftime('%d/%m/%Y')})"
+
+    def archiver(self, user=None):
+        if self.activite != AppairageActivite.ARCHIVE:
+            self.activite = AppairageActivite.ARCHIVE
+            self.save(user=user, update_fields=["activite"])
+            HistoriqueAppairage.objects.create(
+                appairage=self,
+                statut=self.statut,
+                auteur=user,
+                commentaire="Appairage archivé",
+            )
+            logger.info("📦 Appairage #%s archivé (%s → %s)", self.pk, self.candidat, self.partenaire)
+
+    def desarchiver(self, user=None):
+        if self.activite != AppairageActivite.ACTIF:
+            self.activite = AppairageActivite.ACTIF
+            self.save(user=user, update_fields=["activite"])
+            HistoriqueAppairage.objects.create(
+                appairage=self,
+                statut=self.statut,
+                auteur=user,
+                commentaire="Appairage désarchivé",
+            )
+            logger.info("♻️ Appairage #%s désarchivé (%s → %s)", self.pk, self.candidat, self.partenaire)

@@ -2,6 +2,7 @@
 from __future__ import annotations
 from typing import Dict, Optional, List, Literal
 import logging
+from drf_spectacular.utils import extend_schema, OpenApiParameter
 
 from django.db.models import Count, Q, QuerySet, Value
 from django.db.models.functions import Substr, Coalesce
@@ -12,7 +13,7 @@ from rest_framework.viewsets import GenericViewSet
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from ....models.appairage import Appairage, AppairageStatut
+from ....models.appairage import Appairage, AppairageActivite, AppairageStatut
 from ...permissions import IsStaffOrAbove, is_staff_or_staffread
 
 logger = logging.getLogger(__name__)
@@ -121,7 +122,17 @@ class AppairageStatsViewSet(GenericViewSet):
     # ────────────────────────────────────────────────────────────
     def get_queryset(self) -> QuerySet:
         qs = Appairage.objects.select_related("formation", "formation__centre", "partenaire", "candidat")
-        return self._scope_appairages_for_user(qs)
+        qs = self._scope_appairages_for_user(qs)
+
+        # 🔹 Gestion des archivés
+        inclure_archivees = str(self.request.query_params.get("avec_archivees", "false")).lower() in [
+            "1", "true", "yes", "on"
+        ]
+        if not inclure_archivees:
+            qs = qs.filter(activite=AppairageActivite.ACTIF)
+
+        return qs
+
 
     def _apply_common_filters(self, qs: QuerySet) -> QuerySet:
         p = self.request.query_params
@@ -179,6 +190,16 @@ class AppairageStatsViewSet(GenericViewSet):
     # ────────────────────────────────────────────────────────────
     # LIST (overview) — KPIs globaux + taux de transformation
     # ────────────────────────────────────────────────────────────
+    @extend_schema(
+    parameters=[
+        OpenApiParameter(
+            name="avec_archivees",
+            type=bool,
+            required=False,
+            description="Inclure les appairages archivés (true/false)"
+        ),
+    ],
+)
     def list(self, request, *args, **kwargs):
         qs = self._apply_common_filters(self.get_queryset())
 
@@ -221,6 +242,16 @@ class AppairageStatsViewSet(GenericViewSet):
     # ────────────────────────────────────────────────────────────
     # Grouped — KPIs par groupe + taux_transformation
     # ────────────────────────────────────────────────────────────
+    @extend_schema(
+    parameters=[
+        OpenApiParameter(
+            name="avec_archivees",
+            type=bool,
+            required=False,
+            description="Inclure les appairages archivés (true/false)"
+        ),
+    ],
+)
     @action(detail=False, methods=["GET"], url_path="grouped")
     def grouped(self, request):
         by: GroupKey = (request.query_params.get("by") or "centre").lower()  # défaut utile
@@ -302,6 +333,16 @@ class AppairageStatsViewSet(GenericViewSet):
     # ────────────────────────────────────────────────────────────
     # Tops — partenaires / formations
     # ────────────────────────────────────────────────────────────
+    @extend_schema(
+    parameters=[
+        OpenApiParameter(
+            name="avec_archivees",
+            type=bool,
+            required=False,
+            description="Inclure les appairages archivés (true/false)"
+        ),
+    ],
+)
     @action(detail=False, methods=["GET"], url_path="tops")
     def tops(self, request):
         qs = self._apply_common_filters(self.get_queryset())

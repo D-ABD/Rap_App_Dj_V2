@@ -22,6 +22,8 @@ from .candidat import Candidat
 from .appairage import Appairage, HistoriqueAppairage
 from .atelier_tre import AtelierTRE
 from .commentaires_appairage import CommentaireAppairage
+from .cerfa_contrats import CerfaContrat
+
 __all__ = ['CustomUser']  # Important pour l'importation
 
 default_app_config = "rap_app.apps.RapAppConfig"
@@ -48,4 +50,5 @@ from . import (
     appairage,
     atelier_tre,
     commentaires_appairage,
+    cerfa_contrats,
 )

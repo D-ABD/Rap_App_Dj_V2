@@ -40,8 +40,7 @@ class CommentaireStatsViewSet(viewsets.ViewSet):
     def latest(self, request):
         """
         GET /api/commentaire-stats/latest/?limit=5&full=false
-        Respecte le scope staff (centres + départements) et les filtres communs:
-        date_from, date_to, centre, departement, formation, auteur, search, saturation_min, saturation_max.
+        Retourne les commentaires récents (créés ou modifiés).
         """
         qs = self._apply_filters(self._base_qs(request), request)
 
@@ -54,13 +53,13 @@ class CommentaireStatsViewSet(viewsets.ViewSet):
 
         include_full = str(request.query_params.get("full", "false")).lower() in {"1", "true", "yes", "on"}
 
-        # Sélection des N derniers
-        rows = (
-            qs.order_by("-created_at")
-              .all()[:limit]
-        )
+        # ✅ Trie par `updated_at` (pour montrer les récents modifiés aussi)
+        rows = qs.order_by("-updated_at").all()[:limit]
 
-        results = [obj.to_serializable_dict(include_full_content=include_full) for obj in rows]
+        results = [
+            obj.to_serializable_dict(include_full_content=include_full)
+            for obj in rows
+        ]
 
         return Response({
             "results": results,

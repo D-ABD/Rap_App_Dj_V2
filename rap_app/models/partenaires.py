@@ -168,12 +168,29 @@ class Partenaire(BaseModel):
     )
 
     # Localisation
+    street_number = models.CharField(
+        max_length=10,
+        blank=True,
+        null=True,
+        verbose_name=_("Numéro de rue"),
+        help_text=_("Numéro dans la voie (ex: 12B)")
+    )
+
+
     street_name = models.CharField(
         max_length=STREET_MAX_LENGTH,
         blank=True,
         null=True,
         verbose_name=_("Adresse"),
-        help_text=_("Adresse postale (rue, numéro)")
+        help_text=_("Nom de la rue")
+    )
+
+    street_complement = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        verbose_name=_("Complément d'adresse"),
+        help_text=_("Bâtiment, étage, entrée, etc.")
     )
 
     zip_code = models.CharField(
@@ -275,6 +292,180 @@ class Partenaire(BaseModel):
         help_text=_("Informations générales sur le partenaire")
     )
 
+  # Champs pour contrats
+    siret = models.CharField(
+        max_length=14,
+        blank=True,
+        null=True,
+        verbose_name=_("SIRET"),
+        help_text=_("Numéro SIRET (14 chiffres)"),
+        validators=[RegexValidator(r'^\d{14}$', _("Le SIRET doit comporter 14 chiffres."))]
+    )
+
+    TYPE_EMPLOYEUR_CHOICES = [
+        ('prive', _("Privé")),
+        ('public', _("Public")),
+    ]
+    type_employeur = models.CharField(
+        max_length=20,
+        blank=True,
+        null=True,
+        choices=TYPE_EMPLOYEUR_CHOICES,
+        verbose_name=_("Type d'employeur"),
+        help_text=_("Définit si l'employeur est privé ou public")
+    )
+
+    employeur_specifique = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        verbose_name=_("Employeur spécifique"),
+        help_text=_("Ex: artisan, profession libérale…")
+    )
+
+    code_ape = models.CharField(
+        max_length=10,
+        blank=True,
+        null=True,
+        verbose_name=_("Code APE"),
+        help_text=_("Code APE de l'entreprise")
+    )
+
+    effectif_total = models.PositiveIntegerField(
+        blank=True,
+        null=True,
+        verbose_name=_("Effectif total"),
+        help_text=_("Nombre total de salariés")
+    )
+
+    idcc = models.CharField(
+        max_length=10,
+        blank=True,
+        null=True,
+        verbose_name=_("IDCC"),
+        help_text=_("Code convention collective")
+    )
+
+    assurance_chomage_speciale = models.BooleanField(
+        default=False,
+        verbose_name=_("Assurance chômage spéciale"),
+        help_text=_("Cochez si l'employeur est soumis à un régime particulier (souvent public)")
+    )
+        # Coordonnées générales de l'entreprise
+    telephone = models.CharField(
+        max_length=20,
+        blank=True,
+        null=True,
+        validators=[phone_regex],
+        verbose_name=_("Téléphone général"),
+        help_text=_("Numéro de téléphone principal de l'entreprise")
+    )
+
+    email = models.EmailField(
+        blank=True,
+        null=True,
+        verbose_name=_("Email général"),
+        help_text=_("Adresse email principale de l'entreprise")
+    )
+        # ─────────────────────────────────────────────────────────────
+    # Maîtres d’apprentissage
+    # ─────────────────────────────────────────────────────────────
+    maitre1_nom_naissance = models.CharField(
+        max_length=150,
+        blank=True,
+        null=True,
+        verbose_name=_("Maître d’apprentissage n°1 - Nom de naissance")
+    )
+
+    maitre1_prenom = models.CharField(
+        max_length=150,
+        blank=True,
+        null=True,
+        verbose_name=_("Maître d’apprentissage n°1 - Prénom")
+    )
+
+    maitre1_date_naissance = models.DateField(
+        blank=True,
+        null=True,
+        verbose_name=_("Maître d’apprentissage n°1 - Date de naissance")
+    )
+
+    maitre1_courriel = models.EmailField(
+        blank=True,
+        null=True,
+        verbose_name=_("Maître d’apprentissage n°1 - Courriel")
+    )
+
+    maitre1_emploi_occupe = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        verbose_name=_("Maître d’apprentissage n°1 - Emploi occupé")
+    )
+
+    maitre1_diplome_titre = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        verbose_name=_("Maître d’apprentissage n°1 - Diplôme ou titre le plus élevé obtenu")
+    )
+
+    maitre1_niveau_diplome = models.CharField(
+        max_length=50,
+        blank=True,
+        null=True,
+        verbose_name=_("Maître d’apprentissage n°1 - Niveau de diplôme ou titre le plus élevé obtenu")
+    )
+
+    # Deuxième maître d’apprentissage (facultatif)
+    maitre2_nom_naissance = models.CharField(
+        max_length=150,
+        blank=True,
+        null=True,
+        verbose_name=_("Maître d’apprentissage n°2 - Nom de naissance")
+    )
+
+    maitre2_prenom = models.CharField(
+        max_length=150,
+        blank=True,
+        null=True,
+        verbose_name=_("Maître d’apprentissage n°2 - Prénom")
+    )
+
+    maitre2_date_naissance = models.DateField(
+        blank=True,
+        null=True,
+        verbose_name=_("Maître d’apprentissage n°2 - Date de naissance")
+    )
+
+    maitre2_courriel = models.EmailField(
+        blank=True,
+        null=True,
+        verbose_name=_("Maître d’apprentissage n°2 - Courriel")
+    )
+
+    maitre2_emploi_occupe = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        verbose_name=_("Maître d’apprentissage n°2 - Emploi occupé")
+    )
+
+    maitre2_diplome_titre = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        verbose_name=_("Maître d’apprentissage n°2 - Diplôme ou titre le plus élevé obtenu")
+    )
+
+    maitre2_niveau_diplome = models.CharField(
+        max_length=50,
+        blank=True,
+        null=True,
+        verbose_name=_("Maître d’apprentissage n°2 - Niveau de diplôme ou titre le plus élevé obtenu")
+    )
+
+
     # Slug
     slug = models.SlugField(
         max_length=SLUG_MAX_LENGTH,
@@ -337,14 +528,42 @@ class Partenaire(BaseModel):
 
     def save(self, *args, **kwargs):
         """
+        - Normalise le nom, l'email et les URLs
+        - Évite la création de doublons : réutilise un partenaire existant si le nom est déjà pris (insensible à la casse)
         - Génère un slug unique automatiquement
-        - Normalise l'email et l'URL du site
         - Journalise création/modification
         - Transmet `user` à BaseModel via `self._user`
         """
         user = kwargs.pop('user', None)
         is_new = self.pk is None
 
+        # ────────────────
+        # 1️⃣ Normalisation du nom
+        # ────────────────
+        if self.nom:
+            self.nom = self.nom.strip()
+            self.nom = " ".join(self.nom.split())  # retire espaces multiples
+            self.nom = self.nom.title()  # capitalise proprement
+
+        # ────────────────
+        # 2️⃣ Réutilisation d’un partenaire existant
+        # ────────────────
+        existing = None
+        if is_new and self.nom:
+            existing = Partenaire.objects.filter(nom__iexact=self.nom).first()
+            if existing:
+                logger.info(
+                    f"Réutilisation du partenaire existant : {existing.nom} (ID: {existing.pk})"
+                )
+                self._was_reused = True  # ✅ ici, après détection
+                # ⚙️ Copie des champs modifiables si besoin
+                self.pk = existing.pk
+                self.slug = existing.slug
+                is_new = False  # on considère une mise à jour, pas une création
+
+        # ────────────────
+        # 3️⃣ Génération du slug unique
+        # ────────────────
         if not self.slug:
             base_slug = slugify(self.nom)
             slug = base_slug
@@ -354,22 +573,33 @@ class Partenaire(BaseModel):
                 counter += 1
             self.slug = slug
 
+        # ────────────────
+        # 4️⃣ Normalisation email & URLs
+        # ────────────────
         if self.contact_email:
             self.contact_email = self.contact_email.lower().strip()
 
-        if self.website and not self.website.startswith(('http://', 'https://')):
+        if self.website and not self.website.startswith(("http://", "https://")):
             self.website = f"https://{self.website}"
 
-        if self.social_network_url and not self.social_network_url.startswith(('http://', 'https://')):
+        if self.social_network_url and not self.social_network_url.startswith(("http://", "https://")):
             self.social_network_url = f"https://{self.social_network_url}"
 
+        # ────────────────
+        # 5️⃣ User de contexte (transmis à BaseModel)
+        # ────────────────
         if user:
             self._user = user
 
+        # ────────────────
+        # 6️⃣ Validation et sauvegarde
+        # ────────────────
         self.full_clean()
         super().save(*args, **kwargs)
 
-        logger.info(f"{'Création' if is_new else 'Modification'} du partenaire : {self.nom} (ID: {self.pk})")
+        logger.info(
+            f"{'Création' if is_new else 'Mise à jour'} du partenaire : {self.nom} (ID: {self.pk})"
+        )
 
     # ─────────────────────────────────────────────────────────────
     # Formations liées (via appairages et/ou prospections)
@@ -402,11 +632,13 @@ class Partenaire(BaseModel):
 
     def get_full_address(self) -> str:
         parts = [
-            self.street_name,
+            f"{self.street_number or ''} {self.street_name or ''}".strip(),
+            self.street_complement,
             f"{self.zip_code or ''} {self.city or ''}".strip(),
             self.country
         ]
         return ", ".join(filter(None, parts)) or _("Adresse non spécifiée")
+
 
     @property
     def default_centre_nom(self) -> str:

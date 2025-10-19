@@ -3,13 +3,29 @@ import logging
 from django.http import HttpResponse
 from django.db.models import Q, Count
 from django.db.models.functions import TruncMonth
-
+from io import BytesIO
+from pathlib import Path
+import datetime
+from django.http import HttpResponse
+from django.shortcuts import get_object_or_404
+from django.utils import timezone as dj_timezone
+from django.templatetags.static import static
+from django.conf import settings
+from drf_spectacular.utils import extend_schema
+import pytz
+from rest_framework.decorators import action
+from openpyxl import Workbook
+from openpyxl.utils import get_column_letter
+from openpyxl.styles import PatternFill, Font, Alignment
+from openpyxl.drawing.image import Image as XLImage
+from openpyxl.styles import PatternFill, Font, Alignment, Border, Side
 
 from openpyxl import Workbook
 from openpyxl.utils import get_column_letter
 from io import BytesIO
 import datetime
 from django.utils import timezone as dj_timezone
+from openpyxl.worksheet.table import Table, TableStyleInfo
 
 
 from rest_framework import viewsets, status
@@ -21,6 +37,8 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters
 from rest_framework.views import APIView
 
+from ..roles import is_admin_like, is_staff_or_staffread, staff_centre_ids
+
 from ...utils.filters import HistoriqueFormationFilter
 
 from ...models.formations import Formation, HistoriqueFormation
@@ -30,46 +48,95 @@ from ...api.serializers.formations_serializers import (
     FormationCreateSerializer,
     FormationListSerializer,
     FormationDetailSerializer,
-    HistoriqueFormationSerializer
 )
 
 logger = logging.getLogger("application.api")
+
+from bs4 import BeautifulSoup
+import re
+
+def strip_html_tags_pretty(html: str) -> str:
+    """
+    Supprime les balises HTML et conserve un format lisible (sauts de ligne, indentation légère).
+    """
+    if not html:
+        return ""
+    soup = BeautifulSoup(html, "html.parser")
+
+    # Ajoute un retour à la ligne avant certains blocs
+    for tag in soup.find_all(["p", "li", "div", "br"]):
+        tag.insert_before("\n")
+
+    text = soup.get_text(separator=" ", strip=True)
+    # Nettoie les espaces et retours multiples
+    text = re.sub(r"\s*\n\s*", "\n", text)
+    text = re.sub(r"\n{3,}", "\n\n", text)
+    return text.strip()
 
 
 @extend_schema(tags=["Formations"])
 class FormationViewSet(UserVisibilityScopeMixin, viewsets.ModelViewSet):
     """
     📚 ViewSet pour gérer les formations.
-    Inclut les opérations CRUD, l'historique, les documents, les commentaires, les prospections,
-    ainsi que des actions personnalisées comme duplication et export CSV.
-
-    ⚠️ Accès réservé à staff/admin/superadmin.
-    Les comptes staff ne voient que les formations de leurs centres.
+    Accès :
+      - admin/superadmin → accès complet
+      - staff/staff_read → accès limité à leurs centres
+      - autres utilisateurs → uniquement leurs propres objets (via UserVisibilityScopeMixin)
     """
     queryset = Formation.objects.all()
     permission_classes = [IsStaffOrAbove]
     pagination_class = RapAppPagination
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = ["centre", "type_offre", "statut", "created_by", "activite"]
+    serializer_class = FormationListSerializer
 
+    search_fields = ["nom", "num_offre", "centre__nom", "type_offre__nom"]
+    ordering_fields = ["nom", "centre__nom", "date_debut", "created_at"]
     # ---------- Scope centres ----------
     def _restrict_to_user_centres(self, qs):
         u = self.request.user
-        # Accès complet pour superuser/admin
-        if getattr(u, "is_superuser", False) or (hasattr(u, "is_admin") and u.is_admin()):
+
+        # 🔑 Admins / superadmins → accès complet
+        if is_admin_like(u):
             return qs
-        # Staff : limiter aux centres affectés
-        if getattr(u, "is_staff", False):
-            centre_ids = list(u.centres.values_list("id", flat=True))
-            if not centre_ids:
+
+        # 👩‍💼 Staff ou StaffRead → limité à leurs centres
+        if is_staff_or_staffread(u):
+            centres = staff_centre_ids(u)
+            (f"👤 {u.username} ({u.role}) → centres visibles: {centres}")
+            if not centres:
                 return qs.none()
-            return qs.filter(centre_id__in=centre_ids)
-        # Non-staff : ne devrait pas passer IsStaffOrAbove, mais on verrouille
-        return qs.none()
+            return qs.filter(centre_id__in=centres)
+
+        # 🚫 Autres → `UserVisibilityScopeMixin` va gérer created_by
+        return qs
 
     def get_queryset(self):
-        base = super().get_queryset()
-        # place ici tes select_related/annotate si besoin, ex:
-        # base = base.select_related("centre", "type_offre", "statut")
-        return self._restrict_to_user_centres(base)
+        # 🔸 On part du manager "non filtré"
+        qs = Formation.objects.all_including_archived()
+        qs = self._restrict_to_user_centres(qs)
+
+        activite = self.request.query_params.get("activite")
+        if activite in ["active", "archivee"]:
+            qs = qs.filter(activite=activite)
+        else:
+            avec_archivees = self.request.query_params.get("avec_archivees")
+            if not (avec_archivees and str(avec_archivees).lower() in ["1", "true", "yes", "on"]):
+                qs = qs.exclude(activite="archivee")
+
+        return qs
+
+    def get_object(self):
+        """
+        🔓 Permet d'accéder aussi aux formations archivées.
+        """
+        # on désactive le manager filtrant pour cette récupération
+        from ...models.formations import Formation
+        pk = self.kwargs.get(self.lookup_field, None)
+        qs = Formation.objects.all_including_archived()
+        qs = self._restrict_to_user_centres(qs)
+        return qs.get(pk=pk)
+
 
     def get_serializer_class(self):
         if self.action == "list":
@@ -237,21 +304,27 @@ class FormationViewSet(UserVisibilityScopeMixin, viewsets.ModelViewSet):
         summary="Filtres disponibles (restreints aux centres autorisés du staff)",
         responses={200: OpenApiResponse(description="Filtres disponibles")}
     )
+    @extend_schema(summary="Filtres disponibles (centres, statuts, types d’offre, activités)")
     @action(detail=False, methods=["get"])
     def filtres(self, request):
-        qs = self.get_queryset()  # ✅ restreint
-        centres = qs.values_list("centre_id", "centre__nom").distinct()
-        statuts = qs.values_list("statut_id", "statut__nom").distinct()
-        type_offres = qs.values_list("type_offre_id", "type_offre__nom").distinct()
+        qs = self.get_queryset()  # ✅ respect du scope et des archivages
+        centres = qs.values_list("centre_id", "centre__nom").distinct().order_by("centre__nom")
+        statuts = qs.values_list("statut_id", "statut__nom").distinct().order_by("statut__nom")
+        type_offres = qs.values_list("type_offre_id", "type_offre__nom").distinct().order_by("type_offre__nom")
 
         return Response({
             "success": True,
             "data": {
-                "centres": [{"id": c[0], "nom": c[1]} for c in centres if c[0] is not None],
-                "statuts": [{"id": s[0], "nom": s[1]} for s in statuts if s[0] is not None],
-                "type_offres": [{"id": t[0], "nom": t[1]} for t in type_offres if t[0] is not None],
-            }
+                "centres": [{"id": c[0], "nom": c[1]} for c in centres if c[0]],
+                "statuts": [{"id": s[0], "nom": s[1]} for s in statuts if s[0]],
+                "type_offres": [{"id": t[0], "nom": t[1]} for t in type_offres if t[0]],
+                "activites": [
+                    {"code": "active", "libelle": "Active"},
+                    {"code": "archivee", "libelle": "Archivée"},
+                ],
+            },
         })
+
 
     @extend_schema(summary="Obtenir l'historique d'une formation")
     @action(detail=True, methods=["get"])
@@ -288,8 +361,13 @@ class FormationViewSet(UserVisibilityScopeMixin, viewsets.ModelViewSet):
     @extend_schema(summary="Lister les prospections liées à une formation")
     @action(detail=True, methods=["get"])
     def prospections(self, request, pk=None):
-        prosps = self.get_object().get_prospections()
-        return Response({"success": True, "data": [p.to_serializable_dict() for p in prosps]})
+        formation = self.get_object()
+        # ✅ Correction : utilise le related_name défini dans Prospection.formation
+        prosps = formation.prospections.all()
+        return Response({
+            "success": True,
+            "data": [p.to_serializable_dict() for p in prosps]
+        })
 
     @extend_schema(summary="Ajouter un commentaire à une formation")
     @action(detail=True, methods=["post"])
@@ -445,27 +523,68 @@ class FormationViewSet(UserVisibilityScopeMixin, viewsets.ModelViewSet):
         ]
         return Response({"success": True, "data": data})
 
-    @action(detail=False, methods=["get"], url_path="historique")
-    def all_historique(self, request):
-        """🔁 Retourne l’historique de toutes les formations (non restreint ici par design)."""
-        historique = HistoriqueFormation.objects.select_related("formation", "created_by").order_by("-created_at")
-        serializer = HistoriqueFormationSerializer(historique, many=True)
-        return Response({"success": True, "data": serializer.data}, status=status.HTTP_200_OK)
+    # ------------------------------------------------------------------
+    # 🔹 Archiver / Restaurer (appelle directement les méthodes du modèle)
+    # ------------------------------------------------------------------
+    @extend_schema(summary="Archiver une formation")
+    @action(detail=True, methods=["post"], url_path="archiver")
+    def archiver(self, request, pk=None):
+        formation = get_object_or_404(Formation.objects.all_including_archived(), pk=pk)
+        if formation.est_archivee:
+            return Response({"detail": "Déjà archivée."}, status=status.HTTP_400_BAD_REQUEST)
+
+        formation.archiver(user=request.user, commentaire="Archivage manuel via API")
+        return Response({"status": "archived"}, status=status.HTTP_200_OK)
 
 
+    @extend_schema(summary="Restaurer une formation archivée")
+    @action(detail=True, methods=["post"], url_path="desarchiver")
+    def desarchiver(self, request, pk=None):
+        formation = get_object_or_404(Formation.objects.all_including_archived(), pk=pk)
+        if not formation.est_archivee:
+            return Response({"detail": "Déjà active."}, status=status.HTTP_400_BAD_REQUEST)
+
+        formation.desarchiver(user=request.user, commentaire="Restauration manuelle via API")
+        return Response({"status": "unarchived"}, status=status.HTTP_200_OK)
+
+        
+    @extend_schema(summary="Lister uniquement les formations archivées")
+    @action(detail=False, methods=["get"], url_path="archivees")
+    def archivees(self, request):
+        qs = self._restrict_to_user_centres(Formation.objects.filter(activite="archivee"))
+        serializer = self.get_serializer(qs, many=True)
+        return Response({
+            "success": True,
+            "message": "Liste des formations archivées",
+            "data": serializer.data
+        })
 
 
-    @extend_schema(summary="Exporter les formations au format XLSX")
     @action(detail=False, methods=["get", "post"], url_path="export-xlsx")
     def export_xlsx(self, request):
         """
-        - GET  → export de toutes les formations (scopées + filtrées)
-        - POST → export uniquement des formations dont les IDs sont envoyés
+        Exporte les formations au format Excel (.xlsx)
+        Par défaut : exclut les formations archivées.
+        Si ?avec_archivees=true (GET) ou {"avec_archivees": true} (POST) → les inclut.
         """
-        qs = self.get_queryset().select_related("centre", "type_offre", "statut")
+        # ==========================================================
+        # 🆕 Inclusion optionnelle des formations archivées
+        # ==========================================================
+        inclure_archivees = False
+        if request.method == "GET":
+            inclure_archivees = request.query_params.get("avec_archivees", "false").lower() == "true"
+        elif request.method == "POST":
+            inclure_archivees = bool(request.data.get("avec_archivees"))
 
-        # --- Gestion POST (sélection explicite)
-        ids = None
+        if inclure_archivees:
+            qs = Formation.objects.all_including_archived().select_related("centre", "type_offre", "statut")
+            logger.info(f"[EXPORT XLSX] {request.user} a demandé l’export avec formations archivées.")
+        else:
+            qs = self.get_queryset().select_related("centre", "type_offre", "statut")
+
+        # ==========================================================
+        # 🧩 Gestion des IDs envoyés (POST)
+        # ==========================================================
         if request.method == "POST":
             ids = request.data.get("ids", [])
             if isinstance(ids, str):
@@ -477,220 +596,215 @@ class FormationViewSet(UserVisibilityScopeMixin, viewsets.ModelViewSet):
             if ids:
                 qs = qs.filter(id__in=ids)
 
-        # --- Construction du fichier Excel
+        # ==========================================================
+        # 📅 Date/heure FR (Europe/Paris)
+        # ==========================================================
+        tz_paris = pytz.timezone("Europe/Paris")
+        now_fr = dj_timezone.now().astimezone(tz_paris)
+
         wb = Workbook()
         ws = wb.active
         ws.title = "Formations"
 
+        # ==========================================================
+        # 🖼️ Logo optionnel
+        # ==========================================================
+        try:
+            logo_path = Path(settings.BASE_DIR) / "rap_app/static/images/logo.png"
+            if logo_path.exists():
+                img = XLImage(str(logo_path))
+                img.height = 60
+                img.width = 60
+                ws.add_image(img, "A1")
+        except Exception:
+            pass
+
+        # ==========================================================
+        # 🧾 Titre et date
+        # ==========================================================
+        ws.merge_cells("B1:Z1")
+        ws["B1"] = "Export des formations — Rap_App"
+        ws["B1"].font = Font(bold=True, size=14, color="004C99")
+        ws["B1"].alignment = Alignment(horizontal="center", vertical="center")
+
+        ws.merge_cells("B2:Z2")
+        ws["B2"] = f"Export réalisé le {now_fr.strftime('%d/%m/%Y à %H:%M (%Z)')}"
+        ws["B2"].font = Font(italic=True, size=10, color="666666")
+        ws["B2"].alignment = Alignment(horizontal="center", vertical="center")
+
+        ws.append([])
+
+        # ==========================================================
+        # 🧩 Indication visible si on inclut les archivées
+        # ==========================================================
+        if inclure_archivees:
+            ws.append(["⚠️ Export incluant les formations archivées"])
+            ws["A4"].font = Font(italic=True, color="FF0000")
+            ws.append([])
+
+        # ==========================================================
+        # 📋 En-têtes
+        # ==========================================================
         headers = [
-            "ID", "Nom", "Centre", "Type d’offre", "Statut",
-            "Date début", "Date fin",
-            "Numéro Kairos", "Numéro d’offre", "Numéro produit",
-            "Assistante", "Convocation envoyée",
-            "Places CRIF", "Places MP", "Places prévues (total)",
+            "ID", "Centre", "Formation", "Activité", "Type d’offre", "Statut", "Statut temporel",
+            "Numéro d’offre", "Date début", "Date fin",
+            "Assistante",
+            "Places CRIF", "Places MP", "Places prévues (total)", "Capacité max",
             "Inscrits CRIF", "Inscrits MP", "Inscrits (total)",
-            "Places dispo", "Taux saturation (%)",
-            "Nombre de candidats", "Nombre d’entretiens",
+            "Places dispo", "Places restantes CRIF", "Places restantes MP",
+            "Taux saturation (%)", "Taux transformation (%)",
+            "Nombre de candidats", "Nombre d’entretiens", "Entrées en formation",
+            "Dernier commentaire", "Numéro produit", "Numéro Kairos", "Convocation envoyée",
+            "Intitulé du diplôme / titre visé", "Code diplôme", "Code RNCP",
+            "Durée totale (heures)", "Heures à distance",
+            "Est archivée ?",  # ✅ une seule fois, après activité
         ]
         ws.append(headers)
+        header_row = ws.max_row
+        last_col_letter = get_column_letter(len(headers))
 
+        header_fill = PatternFill("solid", fgColor="B7DEE8")
+        border = Border(
+            left=Side(style="thin", color="CCCCCC"),
+            right=Side(style="thin", color="CCCCCC"),
+            top=Side(style="thin", color="CCCCCC"),
+            bottom=Side(style="thin", color="CCCCCC"),
+        )
+        for cell in ws[header_row]:
+            cell.font = Font(bold=True)
+            cell.alignment = Alignment(horizontal="center", vertical="center")
+            cell.fill = header_fill
+            cell.border = border
+        ws.row_dimensions[header_row].height = 28
+
+        # ==========================================================
+        # 🧮 Données et styles
+        # ==========================================================
         def _fmt(val):
             if val is None:
                 return ""
             if isinstance(val, (datetime.date, datetime.datetime)):
                 return val.strftime("%d/%m/%Y")
-            return str(val)
+            return val
 
-        for f in qs:
-            ws.append([
+        even_fill = PatternFill("solid", fgColor="EEF3FF")
+        odd_fill = PatternFill("solid", fgColor="FAFBFD")
+        numeric_cols = list(range(10, 21)) + [23, 24, 25, 32, 33]
+
+        for i, f in enumerate(qs, start=1):
+            # 🔹 Dernier commentaire
+            dernier_commentaire = ""
+            if hasattr(f, "get_commentaires"):
+                try:
+                    last_comment = f.get_commentaires(limit=1).first()
+                    if last_comment:
+                        contenu_html = getattr(last_comment, "contenu", "") or getattr(last_comment, "body", "")
+                        contenu_txt = strip_html_tags_pretty(contenu_html)
+                        auteur = getattr(last_comment.created_by, "username", "")
+                        date = last_comment.created_at.strftime("%d/%m/%Y %H:%M") if last_comment.created_at else ""
+                        texte_final = contenu_txt[:200].strip()
+                        if len(contenu_txt) > 200:
+                            texte_final += "…"
+                        dernier_commentaire = f"[{date}] {auteur} : {texte_final}"
+                except Exception:
+                    dernier_commentaire = ""
+
+            # 🔹 Données formation
+            raw_taux = getattr(f, "taux_saturation", 0) or 0
+            taux_pct = (raw_taux * 100) if raw_taux <= 1 else float(raw_taux)
+            taux_transfo = getattr(f, "taux_transformation", 0) or 0
+
+            est_archivee = getattr(f, "est_archivee", False)
+            activite = getattr(f, "activite", "active")
+            activite_display = "Archivée" if activite.lower() == "archivee" else "Active"
+            is_archived = activite.lower() == "archivee"
+
+            row = [
                 f.id,
+                getattr(f.centre, "nom", ""),
                 f.nom,
-                f.centre.nom if f.centre else "",
-                f.type_offre.nom if f.type_offre else "",
-                f.statut.nom if f.statut else "",
+                activite_display,
+                getattr(f.type_offre, "nom", ""),
+                getattr(f.statut, "nom", ""),
+                getattr(f, "status_temporel", ""),
+                f.num_offre or "",
                 _fmt(f.start_date),
                 _fmt(f.end_date),
-                f.num_kairos or "",
-                f.num_offre or "",
-                f.num_produit or "",
                 f.assistante or "",
+                f.prevus_crif or 0,
+                f.prevus_mp or 0,
+                (f.prevus_crif or 0) + (f.prevus_mp or 0),
+                f.cap or "",
+                f.inscrits_crif or 0,
+                f.inscrits_mp or 0,
+                (f.inscrits_crif or 0) + (f.inscrits_mp or 0),
+                getattr(f, "places_disponibles", 0) or 0,
+                getattr(f, "places_restantes_crif", 0) or 0,
+                getattr(f, "places_restantes_mp", 0) or 0,
+                taux_pct,
+                taux_transfo,
+                f.nombre_candidats or 0,
+                f.nombre_entretiens or 0,
+                getattr(f, "entree_formation", 0) or 0,
+                dernier_commentaire,
+                f.num_produit or "",
+                f.num_kairos or "",
                 "Oui" if f.convocation_envoie else "Non",
-                f.prevus_crif,
-                f.prevus_mp,
-                f.total_places,
-                f.inscrits_crif,
-                f.inscrits_mp,
-                f.total_inscrits,
-                f.places_disponibles,
-                f.taux_saturation,
-                f.nombre_candidats,
-                f.nombre_entretiens,
-            ])
+                f.intitule_diplome or "",
+                f.code_diplome or "",
+                f.code_rncp or "",
+                f.total_heures or 0,
+                f.heures_distanciel or 0,
+                "Oui" if est_archivee else "Non",
+            ]
+            ws.append(row)
 
-        # Ajustement largeur colonnes
+            # 🟫 Couleur de fond selon activité
+            if is_archived:
+                fill = PatternFill("solid", fgColor="DDDDDD")  # gris clair pour archivées
+            else:
+                fill = even_fill if i % 2 == 0 else odd_fill
+
+            # ✅ Styles appliqués à chaque cellule
+            for j, cell in enumerate(ws[ws.max_row], start=1):
+                cell.fill = fill
+                cell.border = border
+                cell.alignment = Alignment(vertical="top", wrapText=True)
+                if j in numeric_cols:
+                    cell.number_format = "#,##0"
+                    cell.font = Font(color="003366")
+                    cell.alignment = Alignment(horizontal="right", vertical="center")
+
+            ws.row_dimensions[ws.max_row].height = 30
+
+        # ==========================================================
+        # 📊 Filtres et largeur des colonnes
+        # ==========================================================
+        end_row = ws.max_row
+        if end_row > header_row:
+            ws.auto_filter.ref = f"A{header_row}:{last_col_letter}{end_row}"
+        ws.freeze_panes = f"A{header_row + 1}"
+
         for col in ws.columns:
-            max_length = max((len(str(cell.value)) for cell in col if cell.value), default=0)
-            ws.column_dimensions[get_column_letter(col[0].column)].width = min(max_length + 2, 50)
+            letter = get_column_letter(col[0].column)
+            max_len = max((len(str(c.value)) for c in col if c.value is not None), default=0)
+            ws.column_dimensions[letter].width = min(max_len + 3, 42)
 
+        ws.column_dimensions[get_column_letter(len(headers))].width = 80
+        ws.oddFooter.center.text = f"© Rap_App — export du {now_fr.strftime('%d/%m/%Y %H:%M (%Z)')}"
+
+        # ==========================================================
+        # 📤 Sauvegarde et réponse
+        # ==========================================================
         buffer = BytesIO()
         wb.save(buffer)
-        buffer.seek(0)
-        binary_content = buffer.getvalue()
+        binary = buffer.getvalue()
 
-        filename = f'formations_{dj_timezone.now().strftime("%Y%m%d_%H%M%S")}.xlsx'
+        filename = f'formations_{now_fr.strftime("%Y%m%d_%H%M%S")}.xlsx'
         response = HttpResponse(
-            binary_content,
+            binary,
             content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         )
-        response["Content-Disposition"] = f'attachment; filename="{filename}"'
-        response["Content-Length"] = len(binary_content)
+        response["Content-Disposition"] = f'attachment; filename=\"{filename}\"'
+        response["Content-Length"] = len(binary)
         return response
-
-
-
-
-
-
-@extend_schema(
-    tags=["Historique des formations"],
-    summary="Lister tous les historiques",
-    description="Retourne tous les historiques de modifications (même si la formation n'existe plus)."
-)
-class HistoriqueFormationViewSet(UserVisibilityScopeMixin, viewsets.ReadOnlyModelViewSet):
-    """
-    ViewSet en lecture seule pour l'historique des formations.
-
-    Permet de rechercher, trier, filtrer, et paginer les modifications
-    liées à une formation.
-    """
-    queryset = HistoriqueFormation.objects.select_related(
-        'formation__centre',
-        'formation__statut',
-        'formation__type_offre',
-        'created_by',
-        'modified_by'
-    ).order_by('-created_at')
-
-    serializer_class = HistoriqueFormationSerializer
-    permission_classes = [IsStaffOrAbove]
-
-    filter_backends = [DjangoFilterBackend, filters.OrderingFilter, filters.SearchFilter]
-    filterset_class = HistoriqueFormationFilter
-
-    ordering_fields = ['created_at', 'champ_modifie']
-    search_fields = ['champ_modifie', 'ancienne_valeur', 'nouvelle_valeur']
-    pagination_class = RapAppPagination  # ou pagination par défaut de DRF
-
-    # ✅ Scope par centres pour STAFF
-    def get_queryset(self):
-        qs = super().get_queryset()
-        u = self.request.user
-        if getattr(u, "is_superuser", False) or (hasattr(u, "is_admin") and u.is_admin()):
-            return qs
-        if getattr(u, "is_staff", False):
-            centre_ids = list(u.centres.values_list("id", flat=True))
-            if not centre_ids:
-                return qs.none()
-            return qs.filter(formation__centre_id__in=centre_ids)
-        return qs.none()
-
-    def list(self, request, *args, **kwargs):
-        print("✅ Query params :", request.query_params)
-        queryset = self.filter_queryset(self.get_queryset())
-        print("✅ Nombre après filtre :", queryset.count())
-        print("✅ Requête SQL :", str(queryset.query))
-
-        page = self.paginate_queryset(queryset)
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response({
-                "success": True,
-                "message": "Historique paginé",
-                "data": serializer.data
-            })
-
-        serializer = self.get_serializer(queryset, many=True)
-        return Response({
-            "success": True,
-            "message": "Historique complet",
-            "data": serializer.data,
-            "count": len(serializer.data)
-        })
-
-
-class HistoriqueFormationGroupedView(APIView):
-    """
-    Vue personnalisée qui retourne l’historique groupé par formation.
-    Chaque entrée contient les informations de la formation et ses derniers changements.
-    """
-    permission_classes = [IsStaffOrAbove]
-
-    def get(self, request, *args, **kwargs):
-        u = request.user
-        queryset = HistoriqueFormation.objects.select_related(
-            'formation__centre',
-            'formation__statut',
-            'formation__type_offre',
-            'created_by',
-            'modified_by'
-        )
-
-        # ✅ Scope par centres pour STAFF
-        if getattr(u, "is_superuser", False) or (hasattr(u, "is_admin") and u.is_admin()):
-            pass  # accès global
-        elif getattr(u, "is_staff", False):
-            centre_ids = list(u.centres.values_list("id", flat=True))
-            if not centre_ids:
-                queryset = queryset.none()
-            else:
-                queryset = queryset.filter(formation__centre_id__in=centre_ids)
-        else:
-            queryset = queryset.none()
-
-        # 🔍 Appliquer les filtres DRF à la main (car ce n’est pas un ViewSet)
-        filtre = HistoriqueFormationFilter(request.GET, queryset=queryset)
-        if not filtre.is_valid():
-            return Response({
-                "success": False,
-                "message": "Filtres invalides",
-                "errors": filtre.errors
-            }, status=400)
-
-        filtered_qs = filtre.qs
-
-        # 🧠 Groupement par formation
-        grouped_data = {}
-        for obj in filtered_qs:
-            fid = obj.formation_id
-            formation = obj.formation
-            if fid not in grouped_data:
-                grouped_data[fid] = {
-                    "formation_id": fid,
-                    "formation_nom": formation.nom,
-                    "centre_nom": formation.centre.nom if formation.centre else "",
-                    "type_offre_nom": formation.type_offre.nom if formation.type_offre else "",
-                    "type_offre_couleur": formation.type_offre.couleur if formation.type_offre else "",
-                    "statut_nom": formation.statut.nom if formation.statut else "",
-                    "statut_couleur": formation.statut.couleur if formation.statut else "",
-                    "numero_offre": formation.num_offre,
-                    "total_modifications": 0,
-                    "derniers_historiques": [],
-                }
-
-            grouped_data[fid]["total_modifications"] += 1
-            if len(grouped_data[fid]["derniers_historiques"]) < 5:
-                grouped_data[fid]["derniers_historiques"].append({
-                    "id": obj.id,
-                    "champ_modifie": obj.champ_modifie,
-                    "ancienne_valeur": obj.ancienne_valeur,
-                    "nouvelle_valeur": obj.nouvelle_valeur,
-                    "commentaire": obj.commentaire,
-                    "created_at": obj.created_at,
-                })
-
-        return Response({
-            "success": True,
-            "message": "Historique groupé par formation",
-            "data": list(grouped_data.values())
-        })
-

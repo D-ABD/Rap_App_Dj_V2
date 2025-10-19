@@ -1,12 +1,13 @@
+# rap_app/api/viewsets/centre_viewsets.py
+
 from rest_framework import viewsets, status
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from drf_spectacular.utils import extend_schema, extend_schema_view
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
-from rest_framework.views import APIView
-from rest_framework.permissions import AllowAny
 from rest_framework.decorators import action
+from rest_framework.views import APIView
 from django.db.models import Q
 
 from ..serializers.centres_serializers import CentreConstantsSerializer, CentreSerializer
@@ -14,6 +15,7 @@ from ...models.centres import Centre
 from ..permissions import ReadWriteAdminReadStaff
 from ..paginations import RapAppPagination
 from ...models.logs import LogUtilisateur
+
 
 @extend_schema_view(
     list=extend_schema(summary="Lister les centres", tags=["Centres"]),
@@ -29,24 +31,65 @@ class CentreViewSet(viewsets.ModelViewSet):
 
     ✅ CRUD complet  
     ✅ Recherche, filtrage, tri  
-    ✅ Suppression définitive par défaut (plus de logique `is_active`)
+    ✅ Journalisation des actions (création, modification, suppression)
     """
     serializer_class = CentreSerializer
     pagination_class = RapAppPagination
     permission_classes = [IsAuthenticated & ReadWriteAdminReadStaff]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
-    filterset_fields = ['nom', 'code_postal']
-    search_fields = ['nom', 'code_postal']
-    ordering_fields = ['nom', 'created_at']
+
+    # 🔍 Ajout de tous les champs filtrables utiles
+    filterset_fields = [
+        "nom",
+        "code_postal",
+        "cfa_entreprise",
+        "cfa_responsable_est_lieu_principal",
+        "cfa_responsable_denomination",
+        "cfa_responsable_commune",
+    ]
+
+    # 🔎 Recherche textuelle sur plusieurs champs pertinents
+    search_fields = [
+        "nom",
+        "code_postal",
+        "cfa_responsable_denomination",
+        "cfa_responsable_commune",
+        "siret_centre",
+        "cfa_responsable_siret",
+        "cfa_responsable_uai",
+    ]
+
+    # 🔢 Champs triables
+    ordering_fields = [
+        "nom",
+        "code_postal",
+        "created_at",
+        "updated_at",
+    ]
+    ordering = ["nom"]
 
     def get_queryset(self):
-        return Centre.objects.all().order_by("nom")
+        """
+        Renvoie la liste des centres visibles selon le rôle de l'utilisateur.
+        - Admin / Superadmin : tous les centres
+        - Staff : uniquement les centres auxquels il est rattaché
+        """
+        user = self.request.user
+        qs = Centre.objects.all().order_by("nom")
 
+        # 🔒 Restreindre la visibilité pour les rôles staff
+        if hasattr(user, "role"):
+            if user.role.startswith("staff") and not user.is_superuser:
+                # ⚠️ À adapter selon ton modèle User : ici on suppose user.centres est une M2M
+                return qs.filter(id__in=user.centres.values_list("id", flat=True))
+
+        return qs
+    
     @action(detail=False, methods=["get"], url_path="liste-simple")
     def liste_simple(self, request):
         """
-        Renvoie une liste légère: {results: [{id, label}]}
-        Paramètres acceptés: ?search=...&page_size=...
+        Renvoie une liste légère : {results: [{id, label}]}
+        Filtrée selon le rôle utilisateur.
         """
         search = request.query_params.get("search") or request.query_params.get("q") or ""
         try:
@@ -54,13 +97,14 @@ class CentreViewSet(viewsets.ModelViewSet):
         except ValueError:
             page_size = 200
 
-        qs = self.get_queryset()
+        qs = self.get_queryset()  # 👈 hérite du filtrage ci-dessus
         if search:
             qs = qs.filter(Q(nom__icontains=search) | Q(code_postal__icontains=search))
 
         qs = qs.order_by("nom")[:page_size]
         data = [{"id": c.id, "label": c.nom} for c in qs]
-        return Response({"results": data})        
+        return Response({"results": data})
+
 
     def create(self, request, *args, **kwargs):
         """
@@ -73,11 +117,14 @@ class CentreViewSet(viewsets.ModelViewSet):
 
         LogUtilisateur.log_action(centre, LogUtilisateur.ACTION_CREATE, request.user)
 
-        return Response({
-            "success": True,
-            "message": "Centre créé avec succès.",
-            "data": centre.to_serializable_dict()
-        }, status=status.HTTP_201_CREATED)
+        return Response(
+            {
+                "success": True,
+                "message": "Centre créé avec succès.",
+                "data": centre.to_serializable_dict(),
+            },
+            status=status.HTTP_201_CREATED,
+        )
 
     def update(self, request, *args, **kwargs):
         """
@@ -90,11 +137,13 @@ class CentreViewSet(viewsets.ModelViewSet):
 
         LogUtilisateur.log_action(instance, LogUtilisateur.ACTION_UPDATE, request.user)
 
-        return Response({
-            "success": True,
-            "message": "Centre mis à jour avec succès.",
-            "data": instance.to_serializable_dict()
-        })
+        return Response(
+            {
+                "success": True,
+                "message": "Centre mis à jour avec succès.",
+                "data": instance.to_serializable_dict(),
+            }
+        )
 
     def partial_update(self, request, *args, **kwargs):
         """
@@ -105,15 +154,25 @@ class CentreViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         serializer.save()
 
-        LogUtilisateur.log_action(instance, LogUtilisateur.ACTION_UPDATE, request.user, details="Mise à jour partielle")
+        LogUtilisateur.log_action(
+            instance,
+            LogUtilisateur.ACTION_UPDATE,
+            request.user,
+            details="Mise à jour partielle",
+        )
 
-        return Response({
-            "success": True,
-            "message": "Centre partiellement mis à jour.",
-            "data": instance.to_serializable_dict()
-        })
+        return Response(
+            {
+                "success": True,
+                "message": "Centre partiellement mis à jour.",
+                "data": instance.to_serializable_dict(),
+            }
+        )
 
     def destroy(self, request, *args, **kwargs):
+        """
+        Supprime un centre.
+        """
         instance = self.get_object()
         instance.delete()
 
@@ -121,20 +180,22 @@ class CentreViewSet(viewsets.ModelViewSet):
             instance=instance,
             action=LogUtilisateur.ACTION_DELETE,
             user=request.user,
-            details=f"Suppression du centre : {instance.nom}"
+            details=f"Suppression du centre : {instance.nom}",
         )
 
-        return Response({
-            "success": True,
-            "message": "Centre supprimé avec succès.",
-            "data": None
-        }, status=status.HTTP_204_NO_CONTENT)
-
+        return Response(
+            {
+                "success": True,
+                "message": "Centre supprimé avec succès.",
+                "data": None,
+            },
+            status=status.HTTP_204_NO_CONTENT,
+        )
 
 
 class CentreConstantsView(APIView):
     """
-    Retourne des constantes liées aux centres (ex. choix fixes).
+    Retourne des constantes liées aux centres (ex. longueurs max, etc.)
     """
     permission_classes = [AllowAny]
 

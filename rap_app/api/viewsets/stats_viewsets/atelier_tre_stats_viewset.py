@@ -1,4 +1,3 @@
-# rap_app/api/viewsets/stats_viewsets/atelier_tre_stats_viewset.py
 from datetime import datetime
 from typing import Any, Dict, List, Tuple, Optional
 
@@ -10,7 +9,6 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from ...permissions import IsStaffOrAbove, is_staff_or_staffread
-
 from ....models.atelier_tre import AtelierTRE, AtelierTREPresence, PresenceStatut
 
 
@@ -53,7 +51,6 @@ class AtelierTREStatsViewSet(viewsets.ViewSet):
         if is_staff_or_staffread(user) and hasattr(user, "centres"):
             return list(user.centres.values_list("id", flat=True))
         return []
-
 
     def _staff_departement_codes(self, user) -> List[str]:
         def _norm_codes(val):
@@ -141,7 +138,7 @@ class AtelierTREStatsViewSet(viewsets.ViewSet):
         return total, norm
 
     # ─────────────────────────────────────────────────────────────
-    # Overview
+    # Overview (list)
     # ─────────────────────────────────────────────────────────────
     def list(self, request, *args, **kwargs):
         qs = self._apply_filters(self.get_base_queryset(), request)
@@ -154,6 +151,16 @@ class AtelierTREStatsViewSet(viewsets.ViewSet):
         type_map = dict(qs.values_list("type_atelier").annotate(c=Count("id", distinct=True)))
         pres_total, pres_map = self._presence_counts_for_qs(qs)
 
+        # 🔢 Ajout du taux de présence global
+        denom = (
+            pres_map.get(PresenceStatut.PRESENT, 0)
+            + pres_map.get(PresenceStatut.ABSENT, 0)
+            + pres_map.get(PresenceStatut.EXCUSE, 0)
+        )
+        taux_presence = (
+            round((pres_map.get(PresenceStatut.PRESENT, 0) / denom * 100.0), 1) if denom > 0 else None
+        )
+
         data = {
             "kpis": {
                 "nb_ateliers": nb_ateliers,
@@ -162,6 +169,7 @@ class AtelierTREStatsViewSet(viewsets.ViewSet):
                 "ateliers": type_map,
                 "presences_total": pres_total,
                 "presences": pres_map,
+                "taux_presence": taux_presence,  # ✅ ajouté
             },
             "filters_echo": {k: v for k, v in request.query_params.items()},
         }
@@ -217,9 +225,22 @@ class AtelierTREStatsViewSet(viewsets.ViewSet):
                 group_key = row.get("type_atelier")
                 group_label = dict(AtelierTRE.TypeAtelier.choices).get(group_key, group_key or "—")
 
-            results.append({"group_key": group_key, "group_label": group_label, **row})
+            # 🔢 Ajout du taux de présence par groupe
+            denom = (row["present"] or 0) + (row["absent"] or 0) + (row["excuse"] or 0)
+            taux_presence = round((row["present"] / denom * 100.0), 1) if denom > 0 else None
 
-        return Response({"by": by, "results": results, "filters_echo": {k: v for k, v in request.query_params.items()}})
+            results.append({
+                "group_key": group_key,
+                "group_label": group_label,
+                **row,
+                "taux_presence": taux_presence,  # ✅ ajouté
+            })
+
+        return Response({
+            "by": by,
+            "results": results,
+            "filters_echo": {k: v for k, v in request.query_params.items()},
+        })
 
     # ─────────────────────────────────────────────────────────────
     # Tops
@@ -244,4 +265,8 @@ class AtelierTREStatsViewSet(viewsets.ViewSet):
             for r in top_centres_qs
         ]
 
-        return Response({"top_types": top_types, "top_centres": top_centres, "filters_echo": {k: v for k, v in request.query_params.items()}})
+        return Response({
+            "top_types": top_types,
+            "top_centres": top_centres,
+            "filters_echo": {k: v for k, v in request.query_params.items()},
+        })

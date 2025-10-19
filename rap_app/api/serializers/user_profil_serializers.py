@@ -21,37 +21,52 @@ from django_filters import rest_framework as filters
                 "phone": "0601020304",
                 "role": "stagiaire",
                 "bio": "Stagiaire motivée",
-                "avatar": None
+                "avatar": None,
             },
             response_only=False,
         ),
     ],
 )
 class CustomUserSerializer(serializers.ModelSerializer):
-    role_display = serializers.CharField(source='get_role_display', read_only=True)
-    full_name = serializers.CharField(source='get_full_name', read_only=True)
+    role_display = serializers.CharField(source="get_role_display", read_only=True)
+    full_name = serializers.CharField(source="get_full_name", read_only=True)
 
-    # ✅ formation en écriture (ID seulement)
+    # ✅ formation (liaison simple)
     formation = serializers.PrimaryKeyRelatedField(
         queryset=Formation.objects.all(),
         write_only=True,
         required=False,
         allow_null=True,
-        help_text="ID de la formation à associer (pour candidat/stagiaire)"
+        help_text="ID de la formation à associer (pour candidat/stagiaire)",
     )
-
-    # ✅ formation_info en lecture (détail formation liée)
     formation_info = serializers.SerializerMethodField(read_only=True)
 
-    # ✅ centres : écriture = liste d'IDs (admin/superadmin), lecture = centres_info
-    # (ListField pour éviter un import direct du modèle Centre et rester agnostique de l'app_label)
+    # ✅ centres en écriture / lecture
     centres = serializers.ListField(
         child=serializers.IntegerField(min_value=1),
         required=False,
         write_only=True,
-        help_text="IDs des centres autorisés pour l'utilisateur (admin/superadmin uniquement)"
+        help_text="IDs des centres autorisés (admin/superadmin uniquement)",
     )
     centres_info = serializers.SerializerMethodField(read_only=True)
+
+    # ✅ Ajout du champ calculé « centre »
+    centre = serializers.SerializerMethodField(read_only=True)
+
+    # ✅ flags supplémentaires
+    is_staff = serializers.BooleanField(read_only=True)
+    is_superuser = serializers.BooleanField(read_only=True)
+    is_admin = serializers.SerializerMethodField()
+    is_staff_read = serializers.SerializerMethodField()
+
+    # ------------------------------------------------------
+    # Champs calculés
+    # ------------------------------------------------------
+    def get_is_admin(self, obj):
+        return bool(getattr(obj, "is_admin", None) and callable(obj.is_admin) and obj.is_admin())
+
+    def get_is_staff_read(self, obj):
+        return obj.role == "staff_read"
 
     def get_formation_info(self, obj):
         try:
@@ -72,20 +87,47 @@ class CustomUserSerializer(serializers.ModelSerializer):
         except Exception:
             return []
 
+    def get_centre(self, obj):
+        """
+        🔹 Retourne le centre principal de l'utilisateur :
+        - Staff/admin → premier centre de user.centres
+        - Candidat/stagiaire → centre de sa formation
+        - Sinon → None
+        """
+        try:
+            # 1️⃣ Staff/admin avec centres multiples
+            if hasattr(obj, "centres") and obj.centres.exists():
+                c = obj.centres.first()
+                return {"id": c.id, "nom": c.nom}
+
+            # 2️⃣ Candidat lié à une formation
+            if hasattr(obj, "candidat_associe") and obj.candidat_associe.formation:
+                f = obj.candidat_associe.formation
+                if f.centre:
+                    return {"id": f.centre.id, "nom": f.centre.nom}
+        except Exception:
+            pass
+
+        return None
+
+    # ------------------------------------------------------
+    # Métadonnées
+    # ------------------------------------------------------
     class Meta:
         model = CustomUser
         fields = [
             "id", "email", "username", "first_name", "last_name", "phone", "bio",
             "avatar", "avatar_url", "role", "role_display",
             "is_active", "date_joined", "full_name",
-            "formation",          # champ écrivable (ID)
-            "formation_info",     # champ lecture seule (détails)
-            "centres",            # écriture (IDs)
-            "centres_info",       # lecture
+            "is_staff", "is_superuser", "is_admin", "is_staff_read",
+            "formation", "formation_info",
+            "centres", "centres_info",
+            "centre",   "consent_rgpd", "consent_date",
         ]
         read_only_fields = [
             "id", "avatar_url", "role_display", "date_joined", "full_name",
-            "formation_info", "centres_info"
+            "formation_info", "centres_info", "centre","consent_date"
+            "is_staff", "is_superuser", "is_admin", "is_staff_read",
         ]
 
         extra_kwargs = {
@@ -95,7 +137,6 @@ class CustomUserSerializer(serializers.ModelSerializer):
                     "required": _("Création échouée : l'adresse email est requise."),
                     "blank": _("Création échouée : l'adresse email ne peut pas être vide."),
                 },
-                "help_text": "Adresse email utilisée pour se connecter",
             },
             "username": {
                 "required": True,
@@ -103,38 +144,21 @@ class CustomUserSerializer(serializers.ModelSerializer):
                     "required": _("Création échouée : le nom d'utilisateur est requis."),
                     "blank": _("Création échouée : le nom d'utilisateur ne peut pas être vide."),
                 },
-                "help_text": "Nom d'utilisateur unique",
-            },
-            "role": {
-                "help_text": "Rôle attribué à cet utilisateur",
-            },
-            "avatar": {
-                "help_text": "Image de profil",
-            },
-            "bio": {
-                "help_text": "Bio ou description libre",
-            },
-            "phone": {
-                "help_text": "Numéro de téléphone mobile",
             },
         }
 
-    # -- Helpers internes pour la gestion des centres --
-
+    # ------------------------------------------------------
+    # Helpers internes (inchangés)
+    # ------------------------------------------------------
     def _is_admin_user(self, user) -> bool:
         return bool(
-            getattr(user, "is_superuser", False) or
-            (hasattr(user, "is_admin") and callable(user.is_admin) and user.is_admin())
+            getattr(user, "is_superuser", False)
+            or (hasattr(user, "is_admin") and callable(user.is_admin) and user.is_admin())
         )
 
     def _get_centre_model(self):
-        """
-        Résout dynamiquement le modèle Centre à partir du FK Formation.centre,
-        ce qui évite d'avoir à importer le modèle et de dépendre de l'app_label.
-        """
         try:
             centre_field = Formation._meta.get_field("centre")
-            # Django 3.2+ : related_model, sinon remote_field.model
             return getattr(centre_field, "related_model", None) or getattr(centre_field.remote_field, "model", None)
         except Exception:
             return None
@@ -144,7 +168,6 @@ class CustomUserSerializer(serializers.ModelSerializer):
         if not CentreModel:
             raise serializers.ValidationError({"centres": "Modèle 'Centre' introuvable via Formation.centre."})
 
-        # Validation d'existence
         centres_qs = CentreModel.objects.filter(id__in=centre_ids)
         found_ids = set(centres_qs.values_list("id", flat=True))
         missing = [cid for cid in centre_ids if cid not in found_ids]
@@ -153,16 +176,12 @@ class CustomUserSerializer(serializers.ModelSerializer):
 
         user.centres.set(centres_qs)
 
-    # -- CRUD --
-
+    # ------------------------------------------------------
+    # CRUD (inchangé)
+    # ------------------------------------------------------
     def create(self, validated_data):
-        """
-        ➕ Crée un utilisateur avec le gestionnaire `create_user`
-        """
         centres_ids = validated_data.pop("centres", None)
         user = CustomUser.objects.create_user(**validated_data)
-
-        # Attribution des centres : réservé à admin/superadmin
         if centres_ids is not None:
             request = self.context.get("request")
             if request and self._is_admin_user(request.user):
@@ -174,16 +193,10 @@ class CustomUserSerializer(serializers.ModelSerializer):
         return user
 
     def update(self, instance, validated_data):
-        """
-        ✏️ Met à jour l'utilisateur (infos personnelles)
-        """
         centres_ids = validated_data.pop("centres", None)
-
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         instance.save()
-
-        # Modification des centres : réservé à admin/superadmin
         if centres_ids is not None:
             request = self.context.get("request")
             if request and self._is_admin_user(request.user):
@@ -197,20 +210,14 @@ class CustomUserSerializer(serializers.ModelSerializer):
     def validate_role(self, value):
         request = self.context.get("request")
         current_user = request.user if request else None
-
         if not current_user:
-            return value  # Cas improbable, mais sécurité minimale
-
-        # Empêcher de définir un rôle plus élevé que le sien
+            return value
         if value == "superadmin" and current_user.role != "superadmin":
             raise serializers.ValidationError("Seul un superadmin peut attribuer ce rôle.")
         if value == "admin" and current_user.role not in ["superadmin", "admin"]:
             raise serializers.ValidationError("Seul un admin ou un superadmin peut attribuer ce rôle.")
-
-        # Fix: self.instance peut être None en création
         if self.instance and current_user.id == self.instance.id and value != current_user.role:
             raise serializers.ValidationError("Tu ne peux pas changer ton propre rôle.")
-
         return value
 
 
@@ -219,20 +226,44 @@ class RoleChoiceSerializer(serializers.Serializer):
     label = serializers.CharField(help_text="Libellé du rôle (ex: 'Administrateur')")
 
 
+from django.utils import timezone
+
 class RegistrationSerializer(serializers.ModelSerializer):
+    consent_rgpd = serializers.BooleanField(
+        required=True,
+        help_text="Consentement explicite au traitement des données personnelles (RGPD)."
+    )
+
     class Meta:
         model = CustomUser
-        fields = ['email', 'password', 'first_name', 'last_name']
-        extra_kwargs = {
-            'password': {'write_only': True},
-        }
+        fields = ["email", "password", "first_name", "last_name", "consent_rgpd"]
+        extra_kwargs = {"password": {"write_only": True}}
+
+    def validate_consent_rgpd(self, value):
+        if not value:
+            raise serializers.ValidationError(
+                "Vous devez accepter la politique de confidentialité (RGPD)."
+            )
+        return value
 
     def create(self, validated_data):
-        return CustomUser.objects.create_user(
-            is_active=False,  # 🛑 création inactif
-            role='stagiaire',  # 👤 rôle par défaut
+        # Extraire et retirer le champ RGPD
+        consent_rgpd = validated_data.pop("consent_rgpd", False)
+
+        # Créer l'utilisateur
+        user = CustomUser.objects.create_user(
+            is_active=False,  # en attente de validation admin
+            role="stagiaire",
             **validated_data
         )
+
+        # Enregistrer le consentement
+        if consent_rgpd:
+            user.consent_rgpd = True
+            user.consent_date = timezone.now()
+            user.save(update_fields=["consent_rgpd", "consent_date"])
+
+        return user
 
 
 class UserFilterSet(filters.FilterSet):

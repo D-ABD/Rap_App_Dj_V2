@@ -1,89 +1,173 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>Export des commentaires</title>
+  <title>Commentaires de formation — Rap_App</title>
   <style>
+    @page {
+      size: A4;
+      margin: 2cm 2cm 2.5cm 2cm;
+      @bottom-center {
+        content: "Rap_App — Export généré le {{ now|date:'d/m/Y à H:i' }}";
+        font-size: 9px;
+        color: #666;
+      }
+    }
+
     body {
-      font-family: 'DejaVu Sans', sans-serif;
+      font-family: "DejaVu Sans", sans-serif;
       font-size: 11px;
-      margin: 2cm;
       color: #333;
     }
 
-    h1 {
-      text-align: center;
+    /* ================= HEADER ================= */
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 2px solid #0077cc;
+      padding-bottom: 8px;
       margin-bottom: 20px;
     }
 
+    .logo {
+      height: 40px;
+    }
+
+    .app-title {
+      font-size: 20px;
+      font-weight: bold;
+      color: #0077cc;
+      text-align: right;
+    }
+
+    /* ================= TITRE GLOBAL ================= */
+    h1 {
+      text-align: center;
+      font-size: 18px;
+      margin-bottom: 4px;
+      color: #333;
+    }
+
+    .export-date {
+      text-align: center;
+      font-size: 11px;
+      color: #666;
+      margin-bottom: 18px;
+    }
+
+    /* ================= COMMENTAIRES ================= */
     .commentaire {
-      margin-bottom: 20px;
-      padding: 8px;
+      margin-bottom: 22px;
+      padding: 12px;
       border: 1px solid #ccc;
       border-radius: 6px;
+      background: #fafafa;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
       page-break-inside: avoid;
     }
 
     .section {
-      margin-top: 3px;
-      line-height: 1.2;
+      margin-top: 4px;
+      line-height: 1.35;
     }
 
     .label {
       font-weight: bold;
+      color: #0077cc;
     }
 
     .contenu {
-      margin-top: 6px;
+      margin-top: 8px;
       font-style: italic;
       white-space: pre-wrap;
+      padding: 6px 8px;
+      background: #fff;
+      border-left: 3px solid #0077cc;
+      border-radius: 3px;
+    }
+
+    /* ================= SATURATION ================= */
+    .saturation-block {
+      margin-top: 6px;
+      padding: 6px 8px;
+      background-color: #eef6ff;
+      border-left: 4px solid #0077cc;
+      border-radius: 4px;
+      font-size: 10.5px;
+    }
+
+    .saturation-block span {
+      display: block;
+      margin: 2px 0;
+    }
+
+    /* ================= AUCUN COMMENTAIRE ================= */
+    .empty {
+      text-align: center;
+      color: #777;
+      margin-top: 40px;
+      font-style: italic;
     }
   </style>
 </head>
 <body>
-  <h1>Commentaires exportés</h1>
+
+  <!-- HEADER -->
+  <header>
+    <img src="{{ logo_url }}" alt="Logo Rap_App" class="logo">
+    <div class="app-title">Rap_App</div>
+  </header>
+
+  <!-- TITRE GLOBAL -->
+  <h1>Commentaires de formation</h1>
+  <div class="export-date">
+    📅 Export réalisé le <strong>{{ now|date:"d/m/Y à H:i" }}</strong>
+  </div>
 
   {% for c in items %}
   <div class="commentaire">
+    <!-- ID + Statut -->
+    <div class="section">
+      <span class="label">🆔 Commentaire :</span> #{{ c.id }}
+      {% if c.statut %} — <strong>{{ c.statut|capfirst }}</strong>{% endif %}
+    </div>
+
     <!-- Formation -->
     <div class="section">
-      <span class="label">🎓 Formation :</span>
-      {{ c.formation.nom|default:"—" }}
+      <span class="label">🎓 Formation :</span> {{ c.formation.nom|default:"—" }}
       {% if c.formation.num_offre %}
         (offre {{ c.formation.num_offre }})
       {% endif %}
+      <div class="meta">
+        Type : {{ c.formation.type_offre_nom|default:"—" }} /
+        Centre : {{ c.formation.centre_nom|default:"—" }}
+      </div>
     </div>
 
-    <!-- Centre / Type / Statut -->
-    <div class="section">
-      <span class="label">🏢 Centre :</span> {{ c.formation.centre_nom|default:"—" }}<br>
-      <span class="label">🔖 Type :</span> {{ c.formation.type_offre_nom|default:"—" }}<br>
-      <span class="label">📌 Statut :</span> {{ c.formation.statut_nom|default:"—" }}
-    </div>
-
-    <!-- Auteur & Dates -->
+    <!-- Auteur, date, activité -->
     <div class="section">
       <span class="label">✍️ Auteur :</span> {{ c.auteur|default:"—" }}<br>
-      <span class="label">📅 Créé le :</span> {{ c.created_at|default:"—" }}
-    </div>
-
-    <!-- Infos places -->
-    <div class="section">
-      <span class="label">Places prévues :</span> {{ c.formation.places_prevues }}<br>
-      <span class="label">Inscrits :</span> {{ c.formation.inscrits }}<br>
-      <span class="label">Dispo :</span> {{ c.formation.places_disponibles }}<br>
-      <span class="label">Taux saturation :</span> {{ c.formation.taux_saturation }}%<br>
-      <span class="label">Sat. moy. commentaires :</span> {{ c.formation.saturation_commentaires }}
+      <span class="label">📅 Créé le :</span> {{ c.created_at|default:"—" }}<br>
+      <span class="label">🛠️ Activité :</span> {{ c.activite|default:"—" }}
     </div>
 
     <!-- Contenu -->
     <div class="contenu">
-      {{ c.contenu|linebreaks }}
+      {{ c.contenu|linebreaksbr }}
+    </div>
+
+    <!-- Saturation -->
+    <div class="saturation-block">
+      <span>Saturation au moment du commentaire : {{ c.saturation_formation|default:"—" }} %</span>
+      <span>Taux actuel de la formation : {{ c.taux_saturation|default:"—" }} %</span>
+      <span>Moyenne des commentaires : {{ c.formation.saturation_commentaires|default:"—" }} %</span>
     </div>
   </div>
-{% empty %}
-  <p>Aucun commentaire à afficher.</p>
-{% endfor %}
+  {% empty %}
+    <p class="empty">Aucun commentaire de formation à afficher.</p>
+  {% endfor %}
 
 </body>
 </html>
