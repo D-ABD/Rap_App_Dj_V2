@@ -1,7 +1,6 @@
 from django.urls import path
 from rest_framework.routers import DefaultRouter
 
-from .viewsets.cerfa_contrat_viewset import CerfaContratViewSet
 
 
 from .viewsets.stats_viewsets.prospection_comment_stats_viewset import ProspectionCommentStatsViewSet
@@ -117,7 +116,6 @@ router.register(r"appairage-commentaire-stats", AppairageCommentaireStatsViewSet
 router.register(r"appairage-comment-stats", AppairageCommentaireStatsViewSet, basename="appairage-comment-stats")
 
 
-router.register(r"cerfa-contrats", CerfaContratViewSet, basename="cerfa-contrat")
 
 # 🔗 Ajout des routes REST
 urlpatterns += router.urls

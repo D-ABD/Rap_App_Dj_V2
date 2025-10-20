@@ -445,3 +445,4 @@ class AppairageMetaSerializer(serializers.Serializer):
         )
         qs = Centre.objects.filter(id__in=centre_ids).order_by("nom")
         return [{"value": c.id, "label": c.nom} for c in qs]
+
