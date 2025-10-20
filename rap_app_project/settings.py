@@ -9,6 +9,12 @@ import os
 import sys
 from decouple import config
 
+
+import warnings
+if not config("DEBUG", default="False").lower() == "true":
+    warnings.filterwarnings("ignore", message=".*drf_spectacular.*")
+
+
 # ==========
 # BASE DIR
 # ==========

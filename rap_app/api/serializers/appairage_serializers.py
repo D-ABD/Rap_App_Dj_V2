@@ -22,22 +22,15 @@ class CommentaireAppairageSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CommentaireAppairage
-        fields = [
-            "id",
-            "body",
-            "auteur_nom",
-            "created_at",
-            "updated_at",
-        ]
+        fields = ["id", "body", "auteur_nom", "created_at", "updated_at"]
         read_only_fields = fields
-
 
 
 # ----------------- Base -----------------
 class AppairageBaseSerializer(serializers.ModelSerializer):
     activite = serializers.ChoiceField(
-    choices=AppairageActivite.choices,
-    default=AppairageActivite.ACTIF,
+        choices=AppairageActivite.choices,
+        default=AppairageActivite.ACTIF,
     )
     activite_display = serializers.CharField(source="get_activite_display", read_only=True)
 
@@ -166,14 +159,12 @@ class AppairageBaseSerializer(serializers.ModelSerializer):
 class AppairageSerializer(AppairageBaseSerializer):
     created_by_nom = serializers.SerializerMethodField()
     updated_by_nom = serializers.SerializerMethodField()
-    last_commentaire = serializers.SerializerMethodField()  # 🔹 corrigé ici
+    last_commentaire = serializers.SerializerMethodField()
     commentaires = CommentaireAppairageSerializer(many=True, read_only=True)
 
     updated_at = serializers.DateTimeField(read_only=True)
     updated_by = serializers.PrimaryKeyRelatedField(read_only=True)
-    partenaire_contact_nom = serializers.CharField(
-        source="partenaire.contact_nom", read_only=True
-    )
+    partenaire_contact_nom = serializers.CharField(source="partenaire.contact_nom", read_only=True)
 
     def validate_activite(self, value):
         if value not in dict(AppairageActivite.choices):
@@ -200,7 +191,7 @@ class AppairageSerializer(AppairageBaseSerializer):
     def get_updated_by_nom(self, obj):
         return self._user_label(getattr(obj, "updated_by", None))
 
-    def get_last_commentaire(self, obj):  # 🔹 ajout
+    def get_last_commentaire(self, obj):
         last = obj.commentaires.order_by("-created_at").first()
         return last.body if last else None
 
@@ -215,7 +206,7 @@ class AppairageSerializer(AppairageBaseSerializer):
             "candidat_cv_statut_display",
             "partenaire",
             "partenaire_nom",
-             "partenaire_contact_nom", 
+            "partenaire_contact_nom",
             "partenaire_email",
             "partenaire_telephone",
             "formation",
@@ -251,18 +242,15 @@ class AppairageSerializer(AppairageBaseSerializer):
         read_only_fields = fields
 
 
-
 # ----------------- Liste -----------------
 @extend_schema_serializer()
 class AppairageListSerializer(AppairageBaseSerializer):
     created_by_nom = serializers.SerializerMethodField()
-    last_commentaire = serializers.SerializerMethodField()  # 🔹 corrigé
+    updated_by_nom = serializers.SerializerMethodField()
+    last_commentaire = serializers.SerializerMethodField()
     created_at = serializers.DateTimeField(read_only=True)
     updated_at = serializers.DateTimeField(read_only=True)
     updated_by = serializers.PrimaryKeyRelatedField(read_only=True)
-    updated_by_nom = serializers.SerializerMethodField()
-
-    # 🔹 Ajout du nom du contact (via partenaire)
     partenaire_contact_nom = serializers.CharField(source="partenaire.contact_nom", read_only=True)
 
     class Meta:
@@ -273,7 +261,7 @@ class AppairageListSerializer(AppairageBaseSerializer):
             "candidat_cv_statut",
             "candidat_cv_statut_display",
             "partenaire_nom",
-            "partenaire_contact_nom",  # ✅ nouveau champ exposé
+            "partenaire_contact_nom",
             "partenaire_email",
             "partenaire_telephone",
             "formation",
@@ -281,9 +269,9 @@ class AppairageListSerializer(AppairageBaseSerializer):
             "formation_bref",
             "formation_detail",
             "formation_type_offre",
-            "formation_date_debut",   # ✅ ici
-            "formation_date_fin",     # ✅ ici
-            "formation_numero_offre", # ✅ ici
+            "formation_date_debut",
+            "formation_date_fin",
+            "formation_numero_offre",
             "formation_places_total",
             "formation_places_disponibles",
             "statut",
@@ -299,7 +287,6 @@ class AppairageListSerializer(AppairageBaseSerializer):
             "last_commentaire",
         ]
         read_only_fields = fields
-
 
     def _user_label(self, u):
         if not u:
@@ -321,10 +308,9 @@ class AppairageListSerializer(AppairageBaseSerializer):
     def get_updated_by_nom(self, obj):
         return self._user_label(getattr(obj, "updated_by", None))
 
-    def get_last_commentaire(self, obj):  # 🔹 ajout
+    def get_last_commentaire(self, obj):
         last = obj.commentaires.order_by("-created_at").first()
         return last.body if last else None
-    
 
 
 # ----------------- Create/Update -----------------
@@ -347,12 +333,9 @@ class AppairageCreateUpdateSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError("Seul le statut 'Transmis' est autorisé à la création.")
             if self.instance is not None:
                 raise serializers.ValidationError("Vous n’êtes pas autorisé à modifier le statut.")
-        else:
-            # ✅ autoriser les rôles staff à archiver
-            if value not in dict(AppairageStatut.choices):
-                raise serializers.ValidationError(f"Statut '{value}' non reconnu.")
+        elif value not in dict(AppairageStatut.choices):
+            raise serializers.ValidationError(f"Statut '{value}' non reconnu.")
         return value
-
 
     def validate_formation(self, value):
         request = self.context.get("request")
@@ -360,8 +343,7 @@ class AppairageCreateUpdateSerializer(serializers.ModelSerializer):
         if user and hasattr(user, "is_candidat_or_stagiaire") and user.is_candidat_or_stagiaire():
             if self.instance is None:
                 return getattr(getattr(user, "candidat_associe", None), "formation_id", None)
-            else:
-                return getattr(self.instance, "formation_id", None)
+            return getattr(self.instance, "formation_id", None)
         return value
 
 
@@ -376,11 +358,11 @@ class AppairageMetaSerializer(serializers.Serializer):
     centre_choices = serializers.SerializerMethodField()
     candidat_cv_statut_choices = serializers.SerializerMethodField()
 
-    @extend_schema_field(serializers.ListSerializer(child=serializers.DictField()))
+    @extend_schema_field(serializers.ListField(child=serializers.DictField()))
     def get_statut_choices(self, _):
         return [{"value": k, "label": v} for k, v in AppairageStatut.choices]
 
-    @extend_schema_field(serializers.ListSerializer(child=serializers.DictField()))
+    @extend_schema_field(serializers.ListField(child=serializers.DictField()))
     def get_candidat_cv_statut_choices(self, _):
         return [{"value": k, "label": v} for k, v in Candidat.CVStatut.choices]
 
@@ -436,7 +418,7 @@ class AppairageMetaSerializer(serializers.Serializer):
         qs = CustomUser.objects.filter(id__in=ids).order_by("last_name", "first_name")
         return self._serialize_queryset(qs, "id", "get_full_name")
 
-    @extend_schema_field(serializers.ListSerializer(child=serializers.DictField()))
+    @extend_schema_field(serializers.ListField(child=serializers.DictField()))
     def get_centre_choices(self, _):
         centre_ids = (
             Appairage.objects.exclude(formation__centre__isnull=True)
@@ -445,4 +427,3 @@ class AppairageMetaSerializer(serializers.Serializer):
         )
         qs = Centre.objects.filter(id__in=centre_ids).order_by("nom")
         return [{"value": c.id, "label": c.nom} for c in qs]
-
