@@ -36,3 +36,10 @@ backup_db.sh
 deploy.sh
 backups/
 logs/
+
+# Local files
+/staticfiles/
+backup_db.sh
+deploy.sh
+backups/
+logs/
