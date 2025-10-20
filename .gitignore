@@ -22,3 +22,10 @@ db.sqlite3
 .DS_Store
 .idea/
 .vscode/
+
+# Local files
+/staticfiles/
+backup_db.sh
+deploy.sh
+backups/
+logs/
