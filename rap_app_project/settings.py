@@ -354,3 +354,8 @@ if "test" in sys.argv:
     LOGGING["loggers"]["rap_app"]["level"] = "CRITICAL"
 else:
     DISABLE_MODEL_LOGS = False
+
+# ==========
+# FRAME OPTIONS / HEADERS
+# ==========
+X_FRAME_OPTIONS = config("X_FRAME_OPTIONS", default="DENY")
