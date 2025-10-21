@@ -128,6 +128,7 @@ class CommentaireAppairageSerializer(serializers.ModelSerializer):
             "appairage_statut_display",
         ]
         read_only_fields = fields
+        ref_name = "CommentaireAppairageNested"
 
 
 class CommentaireAppairageWriteSerializer(serializers.ModelSerializer):

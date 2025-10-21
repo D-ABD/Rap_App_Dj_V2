@@ -256,36 +256,49 @@ class PartenaireViewSet(UserVisibilityScopeMixin, viewsets.ModelViewSet):
     # -------------------- queryset --------------------
 
     def get_queryset(self):
+        """
+        Retourne le queryset des partenaires visibles pour l'utilisateur courant.
+        - En mode swagger_fake_view (génération de schéma), retourne un queryset vide.
+        - En production, applique les filtres selon le rôle utilisateur.
+        """
+        # ✅ Évite les erreurs DRF Spectacular pendant la génération de schéma
+        if getattr(self, "swagger_fake_view", False):
+            return Partenaire.objects.none()
+
         user = self.request.user
 
         qs = (
             Partenaire.objects
             .filter(is_active=True)
-            .select_related("created_by", "default_centre")   # ✅ pas de N+1 centre
+            .select_related("created_by", "default_centre")  # ✅ pas de N+1 sur centre
             .annotate(
                 prospections_count=Count("prospections", distinct=True),
                 appairages_count=Count("appairages", distinct=True),
-                # Formations (distinct) via appairages + prospections
-                formations_count=Count(
-                    "appairages__formation",
-                    filter=Q(appairages__formation__isnull=False),
-                    distinct=True,
-                ) + Count(
-                    "prospections__formation",
-                    filter=Q(prospections__formation__isnull=False),
-                    distinct=True,
+                formations_count=(
+                    Count(
+                        "appairages__formation",
+                        filter=Q(appairages__formation__isnull=False),
+                        distinct=True,
+                    )
+                    + Count(
+                        "prospections__formation",
+                        filter=Q(prospections__formation__isnull=False),
+                        distinct=True,
+                    )
                 ),
-                # Candidats distincts (via appairages)
                 candidats_count=Count("appairages__candidat", distinct=True),
             )
         )
 
+        # ✅ Admins : tout voir
         if self._is_admin_like(user):
             return qs
+
+        # ✅ Staff ou StaffRead : visibilité restreinte à leur périmètre
         if is_staff_or_staffread(user):
             return self._scoped_for_user(qs, user)
 
-        # ✅ Candidat·e : créés par lui/elle + attribués via prospection (owner=user)
+        # ✅ Candidat·e : créés par lui/elle ou associés via prospections
         return qs.filter(Q(created_by=user) | Q(prospections__owner=user)).distinct()
 
     # -------------------- endpoints utilitaires --------------------
