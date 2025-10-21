@@ -22,38 +22,6 @@ from ...models.candidat import Candidat
 from ...models.formations import Formation
 
 
-@extend_schema_view(
-    list=extend_schema(
-        summary="Liste des utilisateurs",
-        description="Récupère tous les utilisateurs actifs, avec filtrage, recherche et tri.",
-        tags=["Utilisateurs"],
-        responses={200: OpenApiResponse(response=CustomUserSerializer)},
-    ),
-    retrieve=extend_schema(
-        summary="Détail d'un utilisateur",
-        description="Récupère les informations détaillées d’un utilisateur par ID.",
-        tags=["Utilisateurs"],
-        responses={200: OpenApiResponse(response=CustomUserSerializer)},
-    ),
-    create=extend_schema(
-        summary="Créer un utilisateur",
-        description="Crée un nouvel utilisateur avec un rôle, un email et d'autres champs.",
-        tags=["Utilisateurs"],
-        responses={201: OpenApiResponse(description="Utilisateur créé avec succès.")},
-    ),
-    update=extend_schema(
-        summary="Mettre à jour un utilisateur",
-        description="Modifie les champs d’un utilisateur existant.",
-        tags=["Utilisateurs"],
-        responses={200: OpenApiResponse(description="Utilisateur mis à jour avec succès.")},
-    ),
-    destroy=extend_schema(
-        summary="Supprimer un utilisateur",
-        description="Supprime logiquement un utilisateur (is_active = False).",
-        tags=["Utilisateurs"],
-        responses={204: OpenApiResponse(description="Utilisateur supprimé avec succès.")},
-    ),
-)
 @extend_schema(
     summary="Inscription d’un utilisateur",
     description=(
@@ -68,6 +36,10 @@ from ...models.formations import Formation
     tags=["Utilisateurs"],
 )
 class RegisterView(APIView):
+    """
+    API publique pour l’inscription d’un utilisateur.
+    """
+
     permission_classes = [AllowAny]
 
     def post(self, request):
@@ -91,7 +63,6 @@ class RegisterView(APIView):
             {"success": False, "errors": serializer.errors},
             status=status.HTTP_400_BAD_REQUEST,
         )
-
 
 def _ensure_candidate_for_user(user: CustomUser, formation_id: int | None) -> Candidat:
     """

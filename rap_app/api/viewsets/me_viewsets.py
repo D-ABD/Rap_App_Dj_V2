@@ -4,12 +4,16 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework import status
 from drf_spectacular.utils import extend_schema, OpenApiResponse
 
+from ..serializers.base_serializers import EmptySerializer
+
 from ...models.custom_user import CustomUser
 from ...models.logs import LogUtilisateur
 from ..serializers.user_profil_serializers import CustomUserSerializer, RoleChoiceSerializer
 
 
 class MeAPIView(APIView):
+    serializer_class = EmptySerializer
+
     permission_classes = [IsAuthenticated]
 
     @extend_schema(
