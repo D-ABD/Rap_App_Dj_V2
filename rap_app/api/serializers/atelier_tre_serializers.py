@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from drf_spectacular.utils import extend_schema_serializer
+from drf_spectacular.utils import extend_schema_serializer, extend_schema_field
 
 from ...models.atelier_tre import AtelierTRE, AtelierTREPresence, PresenceStatut
 from ...models.candidat import Candidat
@@ -98,8 +98,12 @@ class AtelierTRESerializer(serializers.ModelSerializer):
 
     # ─────────── Méthodes utilitaires ───────────
 
+    @extend_schema_field(str)
+
     def get_type_atelier_display(self, obj) -> str:
         return obj.get_type_atelier_display()
+
+    @extend_schema_field(str)
 
     def get_nb_inscrits(self, obj) -> int:
         annotated = getattr(obj, "nb_inscrits_calc", None)
@@ -109,6 +113,8 @@ class AtelierTRESerializer(serializers.ModelSerializer):
             return obj.candidats.count()
         except Exception:
             return 0
+
+    @extend_schema_field(str)
 
     def get_presence_counts(self, obj):
         """
@@ -186,16 +192,24 @@ class AtelierTREMetaSerializer(serializers.Serializer):
     candidat_choices = serializers.SerializerMethodField()
     presence_statut_choices = serializers.SerializerMethodField()
 
+    @extend_schema_field(str)
+
     def get_type_atelier_choices(self, _):
         return [{"value": v, "label": l} for v, l in AtelierTRE.TypeAtelier.choices]
+
+    @extend_schema_field(str)
 
     def get_centre_choices(self, _):
         qs = Centre.objects.order_by("nom").values_list("id", "nom")
         return [{"value": i, "label": n} for i, n in qs]
 
+    @extend_schema_field(str)
+
     def get_candidat_choices(self, _):
         qs = Candidat.objects.order_by("nom", "prenom").values_list("id", "nom", "prenom")
         return [{"value": i, "label": f"{n} {p}".strip()} for i, n, p in qs]
+
+    @extend_schema_field(str)
 
     def get_presence_statut_choices(self, _):
         return [{"value": v, "label": l} for v, l in PresenceStatut.choices]

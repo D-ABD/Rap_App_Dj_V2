@@ -1,3 +1,6 @@
+from __future__ import annotations
+
+from ...serializers.base_serializers import EmptySerializer
 from datetime import datetime
 from typing import Any, Dict, List, Tuple, Optional
 
@@ -29,6 +32,7 @@ def _to_int_or_none(v) -> Optional[int]:
 
 
 class AtelierTREStatsViewSet(viewsets.ViewSet):
+    serializer_class = EmptySerializer
     """
     /api/ateliertre-stats/           -> overview
     /api/ateliertre-stats/grouped/   -> groupé par centre|departement|type_atelier

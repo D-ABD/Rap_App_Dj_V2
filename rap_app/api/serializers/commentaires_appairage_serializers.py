@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from drf_spectacular.utils import extend_schema_serializer, OpenApiExample
+from drf_spectacular.utils import extend_schema_serializer, extend_schema_field, OpenApiExample
 from django.utils.translation import gettext_lazy as _
 
 from ...models.commentaires_appairage import CommentaireAppairage
@@ -73,14 +73,19 @@ class CommentaireAppairageSerializer(serializers.ModelSerializer):
     )
 
     # ─────────── Helpers ───────────
+    @extend_schema_field(str)
     def get_auteur_nom(self, obj):
         u = getattr(obj, "created_by", None)
         if not u:
             return "Anonyme"
         return u.get_full_name() or getattr(u, "username", None) or getattr(u, "email", None)
 
+    @extend_schema_field(str)
+
     def get_created_by_username(self, obj):
         return getattr(getattr(obj, "created_by", None), "username", "—")
+
+    @extend_schema_field(str)
 
     def get_appairage_label(self, obj):
         cand = getattr(obj.appairage, "candidat", None)
@@ -92,6 +97,8 @@ class CommentaireAppairageSerializer(serializers.ModelSerializer):
         if form:
             return f"Formation {form.nom}"
         return f"Appairage {obj.appairage_id}"
+
+    @extend_schema_field(str)
 
     def get_est_archive(self, obj: CommentaireAppairage) -> bool:
         return obj.est_archive

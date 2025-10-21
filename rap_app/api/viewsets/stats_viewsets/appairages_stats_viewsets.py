@@ -1,5 +1,6 @@
 # rap_app/api/viewsets/stats_viewsets/appairages_stats_viewsets.py
 from __future__ import annotations
+from ...serializers.base_serializers import EmptySerializer
 from typing import Dict, Optional, List, Literal
 import logging
 from drf_spectacular.utils import extend_schema, OpenApiParameter
@@ -34,6 +35,7 @@ def _to_int_or_none(val) -> Optional[int]:
 
 
 class AppairageStatsViewSet(GenericViewSet):
+    serializer_class = EmptySerializer
     """
     Endpoints
     ---------

@@ -1,4 +1,6 @@
 # rap_app/api/viewsets/stats_viewsets/partenaires_stats_viewsets.py
+from __future__ import annotations
+from ...serializers.base_serializers import EmptySerializer
 
 from collections import OrderedDict
 from typing import Dict, List, Tuple, Optional
@@ -17,6 +19,7 @@ from ....models.prospection_choices import ProspectionChoices
 
 
 class PartenaireStatsViewSet(viewsets.ViewSet):
+    serializer_class = EmptySerializer
     """
     /api/partenaire-stats/            -> overview (GET list)
     /api/partenaire-stats/grouped/    -> grouped by 'by' (GET)

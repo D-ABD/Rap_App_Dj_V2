@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from drf_spectacular.utils import extend_schema_serializer, OpenApiExample
+from drf_spectacular.utils import extend_schema_serializer, extend_schema_field, OpenApiExample
 from django.utils.translation import gettext_lazy as _
 
 from ...models.vae import VAE, HistoriqueStatutVAE
@@ -157,6 +157,8 @@ class HistoriqueStatutVAESerializer(serializers.ModelSerializer):
 
 class VAEChoicesSerializer(serializers.Serializer):
     statuts = serializers.SerializerMethodField()
+
+    @extend_schema_field(str)
 
     def get_statuts(self, obj):
         return [{"value": k, "label": v} for k, v in VAE.STATUT_CHOICES]

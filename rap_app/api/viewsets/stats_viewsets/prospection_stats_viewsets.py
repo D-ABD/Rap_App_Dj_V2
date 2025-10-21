@@ -1,3 +1,5 @@
+from __future__ import annotations
+from rap_app.api.serializers.base_serializers import EmptySerializer
 """
 ViewSet DRF — Statistiques Prospection (scope staff centres + départements)
 ---------------------------------------------------------------------------
@@ -36,7 +38,7 @@ Notes :
         - formation__num_offre
         - formation__centre__nom
 """
-from __future__ import annotations
+
 
 from typing import Literal, Optional
 
@@ -84,6 +86,7 @@ GroupKey = Literal[
 
 
 class ProspectionStatsViewSet(RestrictToUserOwnedQueryset, GenericViewSet):
+    serializer_class = EmptySerializer
     """Vue d’agrégats/KPI sur **Prospection** (JSON only)."""
 
     permission_classes = [IsOwnerOrStaffOrAbove]

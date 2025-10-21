@@ -16,6 +16,7 @@ from io import BytesIO
 from openpyxl.styles import PatternFill, Font, Alignment, Border, Side
 import django_filters
 from django.shortcuts import get_object_or_404
+from drf_spectacular.utils import extend_schema, OpenApiResponse, OpenApiTypes
 
 from ...utils.filters import AppairageFilterSet
 from ...models.appairage import Appairage, AppairageActivite, AppairageStatut
@@ -346,6 +347,18 @@ class AppairageViewSet(viewsets.ModelViewSet):
             "updated_by",
         ).prefetch_related("commentaires")
 
+
+    @extend_schema(
+        summary="Exporter les appairages (Excel)",
+        description="Exporte les appairages filtrés au format Excel (.xlsx).",
+        responses={
+            200: OpenApiResponse(
+                description="Fichier Excel généré avec succès.",
+                response=OpenApiTypes.BINARY,
+                examples=None,
+            )
+        },
+    )
     @action(detail=False, methods=["get", "post"], url_path="export-xlsx")
     def export_xlsx(self, request):
         qs = self._get_export_queryset(request)

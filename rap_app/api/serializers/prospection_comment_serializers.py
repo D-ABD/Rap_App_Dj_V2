@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from django.utils.translation import gettext_lazy as _
 import bleach
+from drf_spectacular.utils import extend_schema_serializer, extend_schema_field
 
 from ...models.prospection_comments import ProspectionComment
 from ...models.prospection import Prospection
@@ -71,6 +72,7 @@ class ProspectionCommentSerializer(serializers.ModelSerializer):
         ]
 
     # === Méthodes calculées ===
+    @extend_schema_field(str)
     def get_est_archive(self, obj: ProspectionComment) -> bool:
         return obj.est_archive
 
@@ -82,17 +84,23 @@ class ProspectionCommentSerializer(serializers.ModelSerializer):
                     return val
         return None
 
+    @extend_schema_field(str)
+
     def get_partenaire_nom(self, obj: ProspectionComment):
         partenaire = getattr(obj.prospection, "partenaire", None)
         if not partenaire:
             return None
         return self._safe_label(partenaire, ["nom", "name", "libelle", "label", "titre", "intitule"])
 
+    @extend_schema_field(str)
+
     def get_formation_nom(self, obj: ProspectionComment):
         formation = getattr(obj.prospection, "formation", None)
         if not formation:
             return None
         return self._safe_label(formation, ["nom", "intitule", "titre", "name", "libelle", "label"])
+
+    @extend_schema_field(str)
 
     def get_prospection_text(self, obj: ProspectionComment) -> str:
         partner = self.get_partenaire_nom(obj)

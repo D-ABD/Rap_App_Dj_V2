@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from drf_spectacular.utils import extend_schema_serializer, OpenApiExample
+from drf_spectacular.utils import extend_schema_serializer, extend_schema_field, OpenApiExample
 from django.utils.translation import gettext_lazy as _
 from django.core.exceptions import ValidationError
 
@@ -52,10 +52,14 @@ class DocumentSerializer(serializers.ModelSerializer):
     formation_type_offre_libelle = serializers.SerializerMethodField()
     formation_statut = serializers.SerializerMethodField()
 
+    @extend_schema_field(str)
+
     def get_formation_type_offre_libelle(self, obj):
         if obj.formation and obj.formation.type_offre:
             return str(obj.formation.type_offre)
         return None
+
+    @extend_schema_field(str)
 
     def get_formation_statut(self, obj):
         statut = getattr(obj.formation, 'statut', None)

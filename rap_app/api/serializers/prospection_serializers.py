@@ -1,7 +1,7 @@
 from django.utils import timezone
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
-from drf_spectacular.utils import extend_schema_serializer, OpenApiExample
+from drf_spectacular.utils import extend_schema_serializer, extend_schema_field, OpenApiExample
 from django.utils.translation import gettext_lazy as _
 
 from ..serializers.prospection_comment_serializers import ProspectionCommentSerializer
@@ -77,27 +77,39 @@ class BaseProspectionSerializer(serializers.ModelSerializer):
     formation_statut_display = serializers.SerializerMethodField()
     places_disponibles = serializers.SerializerMethodField()
 
+    @extend_schema_field(str)
+
     def get_partenaire_ville(self, obj):
         p = getattr(obj, "partenaire", None)
         return getattr(p, "city", None) if p else None
+
+    @extend_schema_field(str)
 
     def get_partenaire_tel(self, obj):
         p = getattr(obj, "partenaire", None)
         return getattr(p, "contact_telephone", None) if p else None
 
+    @extend_schema_field(str)
+
     def get_partenaire_email(self, obj):
         p = getattr(obj, "partenaire", None)
         return getattr(p, "contact_email", None) if p else None
+
+    @extend_schema_field(str)
 
     def get_type_offre_display(self, obj):
         f = getattr(obj, "formation", None)
         to = getattr(f, "type_offre", None) if f else None
         return getattr(to, "nom", None) if to else None
 
+    @extend_schema_field(str)
+
     def get_formation_statut_display(self, obj):
         f = getattr(obj, "formation", None)
         st = getattr(f, "statut", None) if f else None
         return getattr(st, "nom", None) if st else None
+
+    @extend_schema_field(str)
 
     def get_places_disponibles(self, obj):
         f = getattr(obj, "formation", None)

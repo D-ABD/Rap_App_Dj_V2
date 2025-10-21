@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from rap_app.api.serializers.base_serializers import EmptySerializer
+
 from typing import Literal, Optional
 
 from django.db.models import Count, Q, Value
@@ -40,6 +42,7 @@ GroupKey = Literal[
 
 
 class AppairageCommentaireStatsViewSet(RestrictToUserOwnedQueryset, GenericViewSet):
+    serializer_class = EmptySerializer
     """KPIs & agrégats sur **Commentaires d’appairage**."""
 
     permission_classes = [IsStaffOrAbove]

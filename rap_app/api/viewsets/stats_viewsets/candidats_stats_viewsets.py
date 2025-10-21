@@ -1,7 +1,8 @@
+from __future__ import annotations
 # rap_app/api/viewsets/stats_viewsets/candidats_stats_viewsets.py
 # ViewSet DRF — Statistiques des candidats (scope centre + département + appairages)
+from ...serializers.base_serializers import EmptySerializer
 
-from __future__ import annotations
 
 import logging
 from typing import Iterable, Literal, Optional
@@ -62,6 +63,7 @@ def _poei_poec_values() -> list[str]:
 
 
 class CandidatStatsViewSet(RestrictToUserOwnedQueryset, GenericViewSet):
+    serializer_class = EmptySerializer
     """
     KPIs & agrégats sur Candidat.
     Endpoints :

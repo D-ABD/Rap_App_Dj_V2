@@ -1,5 +1,6 @@
 from rest_framework import serializers, exceptions
-from drf_spectacular.utils import extend_schema_serializer, OpenApiExample
+from drf_spectacular.utils import OpenApiExample
+from drf_spectacular.utils import extend_schema_serializer, extend_schema_field
 
 from ..serializers.commentaires_appairage_serializers import CommentaireAppairageSerializer
 
@@ -94,9 +95,13 @@ class FormationLiteSerializer(serializers.ModelSerializer):
         model = Formation
         fields = ("id", "nom", "num_offre", "centre", "type_offre", "date_debut", "date_fin")
 
+    @extend_schema_field(str)
+
     def get_centre(self, obj):
         c = getattr(obj, "centre", None)
         return {"id": c.id, "nom": c.nom} if c else None
+
+    @extend_schema_field(str)
 
     def get_type_offre(self, obj):
         to = getattr(obj, "type_offre", None)
@@ -117,9 +122,13 @@ class FormationLiteSerializer(serializers.ModelSerializer):
                     return val
         return None
 
+    @extend_schema_field(str)
+
     def get_date_debut(self, obj):
         # tolère plusieurs dénominations côté modèle/DB
         return self._first_attr(obj, ["date_debut", "date_rentree", "debut", "start_date", "startDate"])
+
+    @extend_schema_field(str)
 
     def get_date_fin(self, obj):
         return self._first_attr(obj, ["date_fin", "fin", "end_date", "endDate"])
@@ -157,13 +166,19 @@ class AppairageLiteSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = fields
 
+    @extend_schema_field(str)
+
     def get_commentaire(self, obj):
         dernier = obj.commentaires.order_by("-created_at").first()
         return dernier.body if dernier else None
 
+    @extend_schema_field(str)
+
     def get_last_commentaire(self, obj):
         dernier = obj.commentaires.order_by("-created_at").first()
         return dernier.body if dernier else None
+
+    @extend_schema_field(str)
 
     def get_created_by_nom(self, obj: "Appairage") -> str | None:
         return _user_display(getattr(obj, "created_by", None))
@@ -274,30 +289,45 @@ class CandidatSerializer(serializers.ModelSerializer):
         ]
         
     # ------- label getters -------
+    @extend_schema_field(str)
     def get_centre_nom(self, obj):
         f = getattr(obj, "formation", None)
         c = getattr(f, "centre", None) if f else None
         return getattr(c, "nom", None)
     
+    @extend_schema_field(str)
+    
     def get_ateliers_counts(self, obj):
             return _ateliers_counts_for(obj)
 
+    @extend_schema_field(str)
+
     def get_responsable_placement_nom(self, obj):
         return _user_display(getattr(obj, "responsable_placement", None))
+
+    @extend_schema_field(str)
 
     def get_entreprise_placement_nom(self, obj):
         p = getattr(obj, "entreprise_placement", None)
         return getattr(p, "nom", None) if p else None
 
+    @extend_schema_field(str)
+
     def get_entreprise_validee_nom(self, obj):
         p = getattr(obj, "entreprise_validee", None)
         return getattr(p, "nom", None) if p else None
 
+    @extend_schema_field(str)
+
     def get_vu_par_nom(self, obj):
         return _user_display(getattr(obj, "vu_par", None))
 
+    @extend_schema_field(str)
+
     def get_resultat_placement_display(self, obj):
         return obj.get_resultat_placement_display() if getattr(obj, "resultat_placement", None) else None
+
+    @extend_schema_field(str)
 
     def get_last_appairage(self, obj):
         last = (
@@ -307,6 +337,8 @@ class CandidatSerializer(serializers.ModelSerializer):
         )
         return AppairageLiteSerializer(last, context=self.context).data if last else None
     # -----------------------------
+
+    @extend_schema_field(str)
 
     def get_peut_modifier(self, instance):
         request = self.context.get("request")
@@ -519,30 +551,45 @@ class CandidatListSerializer(serializers.ModelSerializer):
         ]
 
     # ------- label getters -------
+    @extend_schema_field(str)
     def get_centre_nom(self, obj):
         f = getattr(obj, "formation", None)
         c = getattr(f, "centre", None) if f else None
         return getattr(c, "nom", None)
 
+    @extend_schema_field(str)
+
     def get_ateliers_counts(self, obj):
         return _ateliers_counts_for(obj)
 
+    @extend_schema_field(str)
+
     def get_responsable_placement_nom(self, obj):
         return _user_display(getattr(obj, "responsable_placement", None))
+
+    @extend_schema_field(str)
 
     def get_entreprise_placement_nom(self, obj):
         p = getattr(obj, "entreprise_placement", None)
         return getattr(p, "nom", None) if p else None
 
+    @extend_schema_field(str)
+
     def get_entreprise_validee_nom(self, obj):
         p = getattr(obj, "entreprise_validee", None)
         return getattr(p, "nom", None) if p else None
 
+    @extend_schema_field(str)
+
     def get_vu_par_nom(self, obj):
         return _user_display(getattr(obj, "vu_par", None))
 
+    @extend_schema_field(str)
+
     def get_resultat_placement_display(self, obj):
         return obj.get_resultat_placement_display() if getattr(obj, "resultat_placement", None) else None
+
+    @extend_schema_field(str)
 
     def get_last_appairage(self, obj):
         last = (
@@ -551,6 +598,8 @@ class CandidatListSerializer(serializers.ModelSerializer):
             .first()
         )
         return AppairageLiteSerializer(last, context=self.context).data if last else None
+
+    @extend_schema_field(str)
 
     def get_peut_modifier(self, instance):
         request = self.context.get("request")
@@ -598,30 +647,45 @@ class CandidatListSerializer(serializers.ModelSerializer):
         return data
 
     # ------- label getters -------
+    @extend_schema_field(str)
     def get_centre_nom(self, obj):
         f = getattr(obj, "formation", None)
         c = getattr(f, "centre", None) if f else None
         return getattr(c, "nom", None)
 
+    @extend_schema_field(str)
+
     def get_ateliers_counts(self, obj):
         return _ateliers_counts_for(obj)
     
+    @extend_schema_field(str)
+    
     def get_responsable_placement_nom(self, obj):
         return _user_display(getattr(obj, "responsable_placement", None))
+
+    @extend_schema_field(str)
 
     def get_entreprise_placement_nom(self, obj):
         p = getattr(obj, "entreprise_placement", None)
         return getattr(p, "nom", None) if p else None
 
+    @extend_schema_field(str)
+
     def get_entreprise_validee_nom(self, obj):
         p = getattr(obj, "entreprise_validee", None)
         return getattr(p, "nom", None) if p else None
 
+    @extend_schema_field(str)
+
     def get_vu_par_nom(self, obj):
         return _user_display(getattr(obj, "vu_par", None))
 
+    @extend_schema_field(str)
+
     def get_resultat_placement_display(self, obj):
         return obj.get_resultat_placement_display() if getattr(obj, "resultat_placement", None) else None
+
+    @extend_schema_field(str)
 
     def get_last_appairage(self, obj):
         last = (
@@ -631,6 +695,8 @@ class CandidatListSerializer(serializers.ModelSerializer):
         )
         return AppairageLiteSerializer(last, context=self.context).data if last else None
     # -----------------------------
+
+    @extend_schema_field(str)
 
     def get_peut_modifier(self, instance):
         request = self.context.get("request")

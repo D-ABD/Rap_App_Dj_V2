@@ -17,6 +17,7 @@ from rest_framework.permissions import IsAuthenticated
 from django.http import HttpResponse
 from django.template.loader import render_to_string
 from weasyprint import HTML, CSS
+from drf_spectacular.utils import extend_schema, OpenApiResponse, OpenApiTypes
 
 import csv
 import logging
@@ -397,7 +398,12 @@ class AtelierTREViewSet(viewsets.ModelViewSet):
             "Exporte la liste filtrée et autorisée des ateliers TRE au format Excel (.xlsx). "
             "Les filtres, tris et permissions sont appliqués comme pour la vue principale."
         ),
-        responses={200: {"content": {"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": {}}}},
+        responses={
+            200: OpenApiResponse(
+                description="Fichier Excel généré avec succès.",
+                response=OpenApiTypes.BINARY,
+            )
+        },
     )
     @action(detail=False, methods=["get"], url_path="export-xlsx", permission_classes=[IsStaffOrAbove])
     def export_xlsx(self, request):
