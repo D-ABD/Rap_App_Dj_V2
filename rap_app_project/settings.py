@@ -251,11 +251,7 @@ USE_TZ = True
 # WhiteNoise sert /static/ directement (mutualisé Hostinger)
 # ==========
 STATIC_URL = "/static/"
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, "rap_app/static/rap_app"),  # ton dossier principal
-    os.path.join(BASE_DIR, "rap_app/static"),           # dossier racine de secours
-]
-STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
+STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 MEDIA_URL = "/media/"
