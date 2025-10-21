@@ -109,24 +109,36 @@ class FormationListSerializer(serializers.Serializer):
     taux_transformation = serializers.SerializerMethodField()
     transformation_badge = serializers.SerializerMethodField()
 
+    @extend_schema_field(str)
+
     def get_inscrits_total(self, obj):
         return (obj.inscrits_crif or 0) + (obj.inscrits_mp or 0)
 
+    @extend_schema_field(str)
+
     def get_prevus_total(self, obj):
         return (obj.prevus_crif or 0) + (obj.prevus_mp or 0)
+
+    @extend_schema_field(str)
 
     def get_places_restantes(self, obj):
         inscrits = self.get_inscrits_total(obj)
         return obj.cap - inscrits if obj.cap is not None else None
 
+    @extend_schema_field(str)
+
     def get_total_places(self, obj):
         return (obj.inscrits_crif or 0) + (obj.inscrits_mp or 0)
+
+    @extend_schema_field(str)
 
     def get_taux_transformation(self, obj):
         if obj.nombre_candidats:
             total_inscrits = self.get_inscrits_total(obj)
             return round((total_inscrits / obj.nombre_candidats) * 100)
         return None
+
+    @extend_schema_field(str)
 
     def get_transformation_badge(self, obj):
         taux = self.get_taux_transformation(obj)
@@ -138,6 +150,8 @@ class FormationListSerializer(serializers.Serializer):
             return "badge-warning"
         return "badge-danger"
 
+    @extend_schema_field(str)
+
     def get_saturation_badge(self, obj):
         taux = obj.saturation
         if taux is None:
@@ -148,8 +162,12 @@ class FormationListSerializer(serializers.Serializer):
             return "badge-warning"
         return "badge-danger"
 
+    @extend_schema_field(str)
+
     def get_centre(self, obj):
         return {"id": obj.centre.id, "nom": obj.centre.nom} if obj.centre else None
+
+    @extend_schema_field(str)
 
     def get_statut(self, obj):
         if obj.statut:
@@ -160,6 +178,8 @@ class FormationListSerializer(serializers.Serializer):
                 "couleur": obj.statut.couleur,
             }
         return None
+
+    @extend_schema_field(str)
 
     def get_type_offre(self, obj):
         if obj.type_offre:
@@ -293,21 +313,31 @@ class FormationDetailSerializer(serializers.Serializer):
     partenaires = PartenaireSerializer(many=True, read_only=True)
     prospections = ProspectionSerializer(many=True, read_only=True)
 
+    @extend_schema_field(str)
+
     def get_inscrits_total(self, obj):
         return (obj.inscrits_crif or 0) + (obj.inscrits_mp or 0)
+
+    @extend_schema_field(str)
 
     def get_prevus_total(self, obj):
         return (obj.prevus_crif or 0) + (obj.prevus_mp or 0)
 
+    @extend_schema_field(str)
+
     def get_places_restantes(self, obj):
         inscrits = self.get_inscrits_total(obj)
         return obj.cap - inscrits if obj.cap is not None else None
+
+    @extend_schema_field(str)
 
     def get_taux_transformation(self, obj):
         if obj.nombre_candidats:
             total_inscrits = self.get_inscrits_total(obj)
             return round((total_inscrits / obj.nombre_candidats) * 100)
         return None
+
+    @extend_schema_field(str)
 
     def get_transformation_badge(self, obj):
         taux = self.get_taux_transformation(obj)
@@ -325,6 +355,8 @@ class FormationDetailSerializer(serializers.Serializer):
             return "badge-orange"
         return "badge-danger"
 
+    @extend_schema_field(str)
+
     def get_saturation_badge(self, obj):
         taux = obj.saturation
         if taux is None:
@@ -341,8 +373,12 @@ class FormationDetailSerializer(serializers.Serializer):
             return "badge-orange"
         return "badge-danger"
 
+    @extend_schema_field(str)
+
     def get_centre(self, obj):
         return {"id": obj.centre.id, "nom": obj.centre.nom} if obj.centre else None
+
+    @extend_schema_field(str)
 
     def get_statut(self, obj):
         if obj.statut:
@@ -353,6 +389,8 @@ class FormationDetailSerializer(serializers.Serializer):
                 "couleur": obj.statut.couleur,
             }
         return None
+
+    @extend_schema_field(str)
 
     def get_type_offre(self, obj):
         if obj.type_offre:

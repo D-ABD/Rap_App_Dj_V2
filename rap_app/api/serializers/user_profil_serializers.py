@@ -2,6 +2,7 @@ from rest_framework import serializers
 from drf_spectacular.utils import extend_schema_serializer, extend_schema_field, OpenApiExample
 from django.utils.translation import gettext_lazy as _
 from django.apps import apps
+from drf_spectacular.types import OpenApiTypes
 
 from ...models.formations import Formation
 from ..serializers.formations_serializers import FormationLightSerializer
@@ -62,12 +63,15 @@ class CustomUserSerializer(serializers.ModelSerializer):
     # ------------------------------------------------------
     # Champs calculés
     # ------------------------------------------------------
+    @extend_schema_field(OpenApiTypes.STR)
     def get_is_admin(self, obj):
         return bool(getattr(obj, "is_admin", None) and callable(obj.is_admin) and obj.is_admin())
 
+    @extend_schema_field(OpenApiTypes.STR)
     def get_is_staff_read(self, obj):
         return obj.role == "staff_read"
 
+    @extend_schema_field(OpenApiTypes.STR)
     def get_formation_info(self, obj):
         try:
             if hasattr(obj, "candidat_associe") and obj.candidat_associe.formation:
@@ -81,12 +85,14 @@ class CustomUserSerializer(serializers.ModelSerializer):
 
     avatar_url = serializers.SerializerMethodField(read_only=True, help_text="URL de l'avatar")
 
+    @extend_schema_field(OpenApiTypes.STR)
     def get_centres_info(self, obj):
         try:
             return [{"id": c.id, "nom": getattr(c, "nom", str(c))} for c in obj.centres.all()]
         except Exception:
             return []
 
+    @extend_schema_field(OpenApiTypes.STR)
     def get_centre(self, obj):
         """
         🔹 Retourne le centre principal de l'utilisateur :
@@ -150,12 +156,14 @@ class CustomUserSerializer(serializers.ModelSerializer):
     # ------------------------------------------------------
     # Helpers internes (inchangés)
     # ------------------------------------------------------
+    @extend_schema_field(OpenApiTypes.STR)
     def _is_admin_user(self, user) -> bool:
         return bool(
             getattr(user, "is_superuser", False)
             or (hasattr(user, "is_admin") and callable(user.is_admin) and user.is_admin())
         )
 
+    @extend_schema_field(OpenApiTypes.STR)
     def _get_centre_model(self):
         try:
             centre_field = Formation._meta.get_field("centre")
@@ -163,6 +171,7 @@ class CustomUserSerializer(serializers.ModelSerializer):
         except Exception:
             return None
 
+    @extend_schema_field(OpenApiTypes.STR)
     def _assign_centres(self, user, centre_ids: list[int]):
         CentreModel = self._get_centre_model()
         if not CentreModel:
@@ -179,6 +188,7 @@ class CustomUserSerializer(serializers.ModelSerializer):
     # ------------------------------------------------------
     # CRUD (inchangé)
     # ------------------------------------------------------
+    @extend_schema_field(OpenApiTypes.STR)
     def create(self, validated_data):
         centres_ids = validated_data.pop("centres", None)
         user = CustomUser.objects.create_user(**validated_data)
@@ -192,6 +202,7 @@ class CustomUserSerializer(serializers.ModelSerializer):
                 )
         return user
 
+    @extend_schema_field(OpenApiTypes.STR)
     def update(self, instance, validated_data):
         centres_ids = validated_data.pop("centres", None)
         for attr, value in validated_data.items():
@@ -207,6 +218,7 @@ class CustomUserSerializer(serializers.ModelSerializer):
                 )
         return instance
 
+    @extend_schema_field(OpenApiTypes.STR)
     def validate_role(self, value):
         request = self.context.get("request")
         current_user = request.user if request else None
@@ -239,6 +251,7 @@ class RegistrationSerializer(serializers.ModelSerializer):
         fields = ["email", "password", "first_name", "last_name", "consent_rgpd"]
         extra_kwargs = {"password": {"write_only": True}}
 
+    @extend_schema_field(OpenApiTypes.STR)
     def validate_consent_rgpd(self, value):
         if not value:
             raise serializers.ValidationError(
@@ -246,6 +259,7 @@ class RegistrationSerializer(serializers.ModelSerializer):
             )
         return value
 
+    @extend_schema_field(OpenApiTypes.STR)
     def create(self, validated_data):
         # Extraire et retirer le champ RGPD
         consent_rgpd = validated_data.pop("consent_rgpd", False)

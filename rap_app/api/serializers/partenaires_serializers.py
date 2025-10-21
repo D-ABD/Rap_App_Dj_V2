@@ -1,6 +1,6 @@
 # serializers.py (ou ton fichier actuel des serializers Partenaire)
 from rest_framework import serializers
-from drf_spectacular.utils import extend_schema_serializer, OpenApiExample
+from drf_spectacular.utils import extend_schema_serializer, extend_schema_field, OpenApiExample
 from django.utils.translation import gettext_lazy as _
 
 from ...models.centres import Centre
@@ -79,6 +79,8 @@ class PartenaireSerializer(serializers.ModelSerializer):
     # ✅ Nouveau champ
     was_reused = serializers.SerializerMethodField(read_only=True)
 
+    @extend_schema_field(str)
+
     def get_was_reused(self, obj):
         return getattr(obj, "_was_reused", False)
 
@@ -136,6 +138,7 @@ class PartenaireSerializer(serializers.ModelSerializer):
         ]
 
     # ===== Helpers affichage =====
+    @extend_schema_field(str)
     def get_created_by(self, obj):
         if obj.created_by:
             return {
@@ -144,13 +147,20 @@ class PartenaireSerializer(serializers.ModelSerializer):
             }
         return None
 
+    @extend_schema_field(str)
+
     def get_full_address(self, obj): return obj.get_full_address()
+    @extend_schema_field(str)
     def get_contact_info(self, obj): return obj.get_contact_info()
+    @extend_schema_field(str)
     def get_has_contact(self, obj): return obj.has_contact_info()
+    @extend_schema_field(str)
     def get_has_address(self, obj): return obj.has_address
+    @extend_schema_field(str)
     def get_has_web(self, obj): return obj.has_web_presence
 
     # ===== Compteurs robustes =====
+    @extend_schema_field(str)
     def get_prospections(self, obj):
         count = getattr(obj, "prospections_count", None)
         if count is None:
@@ -158,12 +168,16 @@ class PartenaireSerializer(serializers.ModelSerializer):
             count = rel.count() if rel is not None else 0
         return {"count": int(count)}
 
+    @extend_schema_field(str)
+
     def get_appairages(self, obj):
         count = getattr(obj, "appairages_count", None)
         if count is None:
             rel = getattr(obj, "appairages", None)
             count = rel.count() if rel is not None else 0
         return {"count": int(count)}
+
+    @extend_schema_field(str)
 
     def get_formations(self, obj):
         ann = getattr(obj, "formations_count", None)
@@ -180,6 +194,8 @@ class PartenaireSerializer(serializers.ModelSerializer):
         if direct_rel is not None and hasattr(direct_rel, "values_list"):
             ids.update(direct_rel.values_list("id", flat=True))
         return {"count": len(ids)}
+
+    @extend_schema_field(str)
 
     def get_candidats(self, obj):
         count = getattr(obj, "candidats_count", None)

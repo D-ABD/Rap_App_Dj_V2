@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from ...serializers.base_serializers import EmptySerializer
+
 from datetime import timedelta
 from typing import Dict, List, Optional
 
@@ -25,6 +27,7 @@ from ....models.commentaires import Commentaire
 
 
 class CommentaireStatsViewSet(viewsets.ViewSet):
+    serializer_class = EmptySerializer
     """
     /api/commentaire-stats/             -> overview
     /api/commentaire-stats/grouped/     -> groupé par centre|departement|formation|auteur

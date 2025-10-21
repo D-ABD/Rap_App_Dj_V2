@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from drf_spectacular.utils import extend_schema_serializer, extend_schema_field
+from drf_spectacular.types import OpenApiTypes
 
 from ...models.appairage import Appairage, AppairageActivite, AppairageStatut
 from ...models.formations import Formation
@@ -13,7 +14,8 @@ from ...models.commentaires_appairage import CommentaireAppairage
 # ----------------- Commentaires -----------------
 class CommentaireAppairageSerializer(serializers.ModelSerializer):
     auteur_nom = serializers.SerializerMethodField()
-
+    
+    @extend_schema_field(str)
     def get_auteur_nom(self, obj):
         u = getattr(obj, "created_by", None)
         if not u:
@@ -58,7 +60,8 @@ class AppairageBaseSerializer(serializers.ModelSerializer):
     statut_display = serializers.CharField(source="get_statut_display", read_only=True)
     peut_modifier = serializers.SerializerMethodField()
     est_dernier_appairage = serializers.SerializerMethodField()
-
+    
+    @extend_schema_field(str)
     def get_est_dernier_appairage(self, obj):
         cand = getattr(obj, "candidat", None)
         if not cand:
@@ -73,7 +76,8 @@ class AppairageBaseSerializer(serializers.ModelSerializer):
             .first()
         )
         return last_id == obj.id
-
+   
+    @extend_schema_field(str)
     def get_candidat_nom(self, obj):
         c = getattr(obj, "candidat", None)
         if not c:
@@ -88,7 +92,8 @@ class AppairageBaseSerializer(serializers.ModelSerializer):
                 pass
         v = attr if isinstance(attr, str) else None
         return v or str(c)
-
+    
+    @extend_schema_field(str)
     def get_peut_modifier(self, instance):
         request = self.context.get("request")
         user = getattr(request, "user", None)
@@ -97,21 +102,26 @@ class AppairageBaseSerializer(serializers.ModelSerializer):
         return getattr(user, "role", None) in ["admin", "superadmin", "staff"]
 
     # ---------- helpers formation ----------
+    @extend_schema_field(str)
     def _get_formation(self, obj):
         return obj.formation or getattr(obj.candidat, "formation", None)
 
+    @extend_schema_field(str)
     def get_formation_nom(self, obj):
         f = self._get_formation(obj)
         return getattr(f, "nom", None) if f else None
 
+    @extend_schema_field(str)
     def get_formation_detail(self, obj):
         f = self._get_formation(obj)
         return f.get_formation_identite_complete() if f else None
-
+    
+    @extend_schema_field(str)
     def get_formation_bref(self, obj):
         f = self._get_formation(obj)
         return f.get_formation_identite_bref() if f else None
 
+    @extend_schema_field(OpenApiTypes.STR)
     def get_formation_type_offre(self, obj):
         f = self._get_formation(obj)
         if not f or not getattr(f, "type_offre", None):
@@ -125,6 +135,7 @@ class AppairageBaseSerializer(serializers.ModelSerializer):
             pass
         return getattr(to, "nom", None)
 
+    @extend_schema_field(str)
     def get_formation_places_total(self, obj):
         f = self._get_formation(obj)
         if not f:
@@ -140,6 +151,7 @@ class AppairageBaseSerializer(serializers.ModelSerializer):
             return int(inscrits_total)
         return None
 
+    @extend_schema_field(str)
     def get_formation_places_disponibles(self, obj):
         f = self._get_formation(obj)
         if not f:
@@ -166,11 +178,13 @@ class AppairageSerializer(AppairageBaseSerializer):
     updated_by = serializers.PrimaryKeyRelatedField(read_only=True)
     partenaire_contact_nom = serializers.CharField(source="partenaire.contact_nom", read_only=True)
 
+    @extend_schema_field(str)
     def validate_activite(self, value):
         if value not in dict(AppairageActivite.choices):
             raise serializers.ValidationError("Valeur d'activité invalide.")
         return value
 
+    @extend_schema_field(str)
     def _user_label(self, u):
         if not u:
             return None
@@ -185,12 +199,15 @@ class AppairageSerializer(AppairageBaseSerializer):
                 return v
         return str(u)
 
+    @extend_schema_field(str)
     def get_created_by_nom(self, obj):
         return self._user_label(getattr(obj, "created_by", None))
 
+    @extend_schema_field(str)
     def get_updated_by_nom(self, obj):
         return self._user_label(getattr(obj, "updated_by", None))
 
+    @extend_schema_field(str)
     def get_last_commentaire(self, obj):
         last = obj.commentaires.order_by("-created_at").first()
         return last.body if last else None
@@ -288,6 +305,7 @@ class AppairageListSerializer(AppairageBaseSerializer):
         ]
         read_only_fields = fields
 
+    @extend_schema_field(str)
     def _user_label(self, u):
         if not u:
             return None
@@ -302,12 +320,15 @@ class AppairageListSerializer(AppairageBaseSerializer):
                 return v
         return str(u)
 
+    @extend_schema_field(str)
     def get_created_by_nom(self, obj):
         return self._user_label(getattr(obj, "created_by", None))
 
+    @extend_schema_field(str)
     def get_updated_by_nom(self, obj):
         return self._user_label(getattr(obj, "updated_by", None))
 
+    @extend_schema_field(str)
     def get_last_commentaire(self, obj):
         last = obj.commentaires.order_by("-created_at").first()
         return last.body if last else None
@@ -325,6 +346,7 @@ class AppairageCreateUpdateSerializer(serializers.ModelSerializer):
         model = Appairage
         exclude = ["created_by", "updated_by", "updated_at"]
 
+    @extend_schema_field(str)
     def validate_statut(self, value):
         user = self.context.get("request").user
         allowed_roles = {"admin", "superadmin", "staff"}
@@ -337,6 +359,7 @@ class AppairageCreateUpdateSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(f"Statut '{value}' non reconnu.")
         return value
 
+    @extend_schema_field(str)
     def validate_formation(self, value):
         request = self.context.get("request")
         user = request.user if request else None
@@ -366,6 +389,7 @@ class AppairageMetaSerializer(serializers.Serializer):
     def get_candidat_cv_statut_choices(self, _):
         return [{"value": k, "label": v} for k, v in Candidat.CVStatut.choices]
 
+    @extend_schema_field(str)
     def _resolve_label(self, obj, label_field="__str__"):
         if callable(label_field):
             try:
@@ -389,26 +413,31 @@ class AppairageMetaSerializer(serializers.Serializer):
                     break
         return str(val) if val is not None else str(obj)
 
+    @extend_schema_field(str)
     def _serialize_queryset(self, queryset, value_field="id", label_field="__str__"):
         return [
             {"value": getattr(obj, value_field), "label": self._resolve_label(obj, label_field)}
             for obj in queryset
         ]
 
+    @extend_schema_field(str)
     def get_formation_choices(self, _):
         qs = Formation.objects.all().order_by("nom")
         return self._serialize_queryset(qs, "id", "nom")
 
+    @extend_schema_field(OpenApiTypes.STR)
     def get_candidat_choices(self, _):
         ids = Appairage.objects.values_list("candidat", flat=True).distinct()
         qs = Candidat.objects.filter(id__in=ids)
         return self._serialize_queryset(qs, "id", "nom_complet")
 
+    @extend_schema_field(OpenApiTypes.STR)
     def get_partenaire_choices(self, _):
         ids = Appairage.objects.values_list("partenaire", flat=True).distinct()
         qs = Partenaire.objects.filter(id__in=ids)
         return self._serialize_queryset(qs, "id", "nom")
 
+    @extend_schema_field(OpenApiTypes.STR)
     def get_user_choices(self, _):
         ids = (
             Appairage.objects.exclude(created_by__isnull=True)

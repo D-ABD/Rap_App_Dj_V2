@@ -1,6 +1,8 @@
 # rap_app/api/viewsets/stats_viewsets/prospection_comment_stats_viewset.py
 from __future__ import annotations
 
+from ...serializers.base_serializers import EmptySerializer
+
 from typing import Optional
 
 from django.db.models import Q, Value, Count
@@ -31,6 +33,7 @@ except Exception:  # pragma: no cover
 
 
 class ProspectionCommentStatsViewSet(RestrictToUserOwnedQueryset, GenericViewSet):
+    serializer_class = EmptySerializer
     """
     Endpoints:
       GET /prospection-comment-stats/latest/   → derniers commentaires (limit=5 par défaut)

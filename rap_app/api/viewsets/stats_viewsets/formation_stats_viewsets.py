@@ -1,4 +1,5 @@
 from __future__ import annotations
+from ...serializers.base_serializers import EmptySerializer
 
 from typing import Literal, Iterable, Optional
 
@@ -37,6 +38,7 @@ GroupKey = Literal["formation", "centre", "departement", "type_offre", "statut"]
 
 
 class FormationStatsViewSet(RestrictToUserOwnedQueryset, GenericViewSet):
+    serializer_class = EmptySerializer
     """Vue d’agrégats/KPI sur **Formation** (JSON only)."""
 
     permission_classes = [IsStaffOrAbove]

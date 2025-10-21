@@ -3,7 +3,7 @@ from bleach.css_sanitizer import CSSSanitizer
 from rest_framework import serializers
 from django.utils.translation import gettext_lazy as _
 from django.utils.html import strip_tags
-from drf_spectacular.utils import extend_schema_serializer, OpenApiExample
+from drf_spectacular.utils import extend_schema_serializer, extend_schema_field, OpenApiExample
 
 from ...models.commentaires import Commentaire
 
@@ -113,6 +113,7 @@ class CommentaireSerializer(serializers.ModelSerializer):
     # ----------------------------
     # Getters principaux
     # ----------------------------
+    @extend_schema_field(str)
     def get_saturation(self, obj):
         if obj.saturation is not None:
             return obj.saturation
@@ -121,28 +122,44 @@ class CommentaireSerializer(serializers.ModelSerializer):
         formation = getattr(obj, "formation", None)
         return getattr(formation, "saturation", None) if formation else None
 
+    @extend_schema_field(str)
+
     def get_centre_nom(self, obj):
         return getattr(getattr(obj.formation, "centre", None), "nom", None)
+
+    @extend_schema_field(str)
 
     def get_statut_nom(self, obj):
         return getattr(getattr(obj.formation, "statut", None), "nom", None)
 
+    @extend_schema_field(str)
+
     def get_type_offre_nom(self, obj):
         return getattr(getattr(obj.formation, "type_offre", None), "nom", None)
+
+    @extend_schema_field(str)
 
     def get_num_offre(self, obj):
         return getattr(obj.formation, "num_offre", None)
 
+    @extend_schema_field(str)
+
     def get_formation_nom(self, obj):
         return getattr(obj.formation, "nom", None)
+
+    @extend_schema_field(str)
 
     def get_auteur(self, obj):
         user = getattr(obj, "created_by", None)
         return getattr(user, "get_full_name", lambda: None)() or getattr(user, "username", None)
 
+    @extend_schema_field(str)
+
     def get_taux_saturation(self, obj):
         formation = getattr(obj, "formation", None)
         return getattr(formation, "taux_saturation", None) if formation else None
+
+    @extend_schema_field(str)
 
     def get_saturation_commentaires(self, obj):
         formation = getattr(obj, "formation", None)
