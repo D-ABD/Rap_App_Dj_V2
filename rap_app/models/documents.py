@@ -359,6 +359,8 @@ class Document(BaseModel):
             "formation_id": self.formation_id,
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "created_by": str(self.created_by) if self.created_by else None,
+            "updated_at": self.updated_at.isoformat() if hasattr(self, "updated_at") and self.updated_at else None,
+
         }
 
     def clean(self):
