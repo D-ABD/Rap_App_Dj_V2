@@ -78,7 +78,7 @@ class DocumentSerializer(serializers.ModelSerializer):
             "id", "nom_fichier", "fichier", "type_document",
             "type_document_display", "taille_fichier", "taille_readable",
             "mime_type", "extension", "icon_class", "download_url",
-            "formation", "created_at", "created_by", "is_viewable_in_browser",
+            "formation", "created_at", "created_by", "updated_at", "is_viewable_in_browser",
 
             # Champs enrichis
             "formation_nom", "formation_num_offre", "formation_start_date",

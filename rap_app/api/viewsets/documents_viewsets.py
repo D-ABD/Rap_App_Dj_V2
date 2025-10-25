@@ -1,6 +1,8 @@
 import csv
 import logging
-from django.http import HttpResponse
+import mimetypes
+import urllib.parse
+from django.http import HttpResponse, FileResponse
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -10,6 +12,7 @@ from drf_spectacular.utils import (
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.exceptions import PermissionDenied
 import django_filters
+
 
 from ...models.documents import Document
 from ...models.logs import LogUtilisateur
@@ -313,7 +316,7 @@ class DocumentViewSet(viewsets.ModelViewSet):
     def get_filtres(self, request):
         """
         Renvoie les options de filtres disponibles pour les documents.
-        ⚠️ Affiche uniquement les centres/statuts/types liés à au moins un document,
+        ⚠️ Affiche uniquement les centres/statuts/types/formations liés à au moins un document,
         et uniquement dans le périmètre de l'utilisateur.
         """
         scoped = self.get_queryset()
@@ -333,6 +336,18 @@ class DocumentViewSet(viewsets.ModelViewSet):
             .values_list("formation__type_offre_id", "formation__type_offre__nom") \
             .distinct()
 
+        # ✅ Liste des formations liées à des documents
+        formations = scoped \
+            .filter(formation__isnull=False) \
+            .values_list(
+                "formation__id",
+                "formation__nom",
+                "formation__num_offre",
+                "formation__type_offre__nom",
+            ) \
+            .distinct() \
+            .order_by("formation__nom")
+
         return Response({
             "success": True,
             "message": "Filtres documents récupérés avec succès",
@@ -340,5 +355,65 @@ class DocumentViewSet(viewsets.ModelViewSet):
                 "centres": [{"id": c[0], "nom": c[1]} for c in centres],
                 "statuts": [{"id": s[0], "nom": s[1]} for s in statuts],
                 "type_offres": [{"id": t[0], "nom": t[1]} for t in type_offres],
+                # ✅ Ajout du filtre formation (compatibilité front)
+                "formations": [
+                    {
+                        "id": f[0],
+                        "nom": f[1],
+                        "num_offre": f[2],
+                        "type_offre_nom": f[3],
+                        "type_offre_libelle": f[3],  # même valeur pour compat front
+                    }
+                    for f in formations
+                ],
             }
         })
+
+
+
+    @extend_schema(
+        summary="⬇️ Télécharger un document",
+        description="Permet de télécharger directement le fichier du document (avec Content-Disposition).",
+        responses={200: OpenApiResponse(response=OpenApiTypes.BINARY)},
+    )
+    @action(detail=True, methods=["get"], url_path="download")
+    def download(self, request, pk=None):
+        """
+        Téléchargement direct du fichier associé au document.
+        Retourne une vraie réponse fichier (FileResponse) avec les bons headers HTTP.
+        """
+        doc = self.get_object()
+
+        # 🔒 Vérifie qu’un fichier existe
+        if not doc.fichier:
+            return Response(
+                {"success": False, "message": "Aucun fichier associé à ce document."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        # 📂 Ouvre le fichier en lecture binaire
+        try:
+            file_handle = doc.fichier.open("rb")
+        except FileNotFoundError:
+            return Response(
+                {"success": False, "message": "Fichier introuvable sur le serveur."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        # 🧠 Détermine le type MIME
+        mime_type, _ = mimetypes.guess_type(doc.fichier.name)
+        mime_type = mime_type or "application/octet-stream"
+
+        # 📤 Crée la réponse
+        response = FileResponse(file_handle, content_type=mime_type)
+
+        # 🔠 Encode proprement le nom du fichier pour tous les navigateurs
+        filename = urllib.parse.quote(doc.nom_fichier or doc.fichier.name)
+        response["Content-Disposition"] = f"attachment; filename*=UTF-8''{filename}"
+
+        # 🚫 Évite la mise en cache pour les fichiers sensibles
+        response["Cache-Control"] = "no-cache, no-store, must-revalidate"
+        response["Pragma"] = "no-cache"
+        response["Expires"] = "0"
+
+        return response
