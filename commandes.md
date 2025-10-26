@@ -5,6 +5,9 @@
 python3 manage.py check    
 python3 manage.py makemigrations 
 python3 manage.py migrate 
+En local :
+cp .env.local .env
+python3 manage.py runserver
 
 python3 manage.py runserver 0.0.0.0:8000
 python3 manage.py spectacular --file schema.yaml
@@ -186,209 +189,49 @@ python3 manage.py test rap_app.tests.test_model
 # --------------------------
 Commande: python3 manage.py verifie_modeles
 
+ Hook Git automatique
 
+Créer le hook :
 
-Je souhaite que tu m’aides à écrire des serializers et des viewsets ultra complets pour mon application Django.
-⚠️ Les tests des modèles sont déjà faits et validés.
+echo -e '#!/bin/bash\nnpm run precommit' > .git/hooks/pre-commit
+chmod +x .git/hooks/pre-commit
 
-Pour chaque modèle que je vais t’envoyer :
 
-🔹 Serializers :
-Expose tous les champs du modèle, y compris :
+➡️ Chaque git commit exécutera automatiquement les vérifications avant validation.
 
-Les champs standards,
+🚀 1️⃣3️⃣ AUTOMATISATION DU DÉPLOIEMENT
+🔹 Fichier scripts/deploy_front.sh
+#!/bin/bash
+set -e
+echo "🚀 Build & déploiement du frontend vers production..."
 
-Les méthodes @property utiles au frontend,
+npm run lint && npm run type-check
+npm run build
 
-Les listes de choix (choices) avec un affichage clair dans Swagger (clé + libellé).
+ssh root@147.93.126.119 "rm -rf /srv/rap_app_front/*"
+scp -r dist/* root@147.93.126.119:/srv/rap_app_front/
+ssh root@147.93.126.119 "sudo systemctl reload nginx"
 
-Ajoute des messages d'erreur personnalisés pour chaque champ requis ou mal renseigné.
-Exemple : "Création de la formation échouée : vous devez renseigner le statut."
+echo "✅ Déploiement terminé avec succès !"
 
-Ajoute des messages de succès exploitables côté frontend.
-Exemple : "Formation créée avec succès."
+🔹 Rendre exécutable
+chmod +x scripts/deploy_front.sh
 
-Utilise @extend_schema pour que Swagger/OpenAPI :
+🧠 1️⃣4️⃣ BONNES PRATIQUES DE MAINTENANCE
 
-Affiche les paramètres attendus,
+Toujours lancer npm run precommit avant tout commit important.
 
-Montre les formats des requêtes et des réponses,
+Toujours exécuter npm run build && npm run deploy pour publier en prod.
 
-Propose des exemples concrets testables dans l’interface Swagger.
+Ne jamais modifier manuellement le dossier /srv/rap_app_front côté serveur.
 
-🔹 ViewSets :
-Complet, avec :
+Si un build échoue : vérifier le log de build local (vite build) avant de retenter le déploiement.
 
-Permissions,
+En cas de doute, tester localement le build avec :
 
-Filtres personnalisés (filterset_class),
+npm run preview
 
-Recherche (search_fields) et tri (ordering_fields).
 
-🔹 Tests :
-Tests unitaires des serializers :
+→ Cela simule exactement ce que Nginx servira en production.
 
-Cas de succès,
 
-Cas d’échec (avec vérification des messages d'erreurs).
-
-Tests unitaires des viewsets :
-
-Lecture,
-
-Création (si autorisée),
-
-Filtres, recherche, tri.
-
-🔐 L’objectif est de protéger le frontend, développé par une personne débutante qui n’aura pas accès aux modèles Django.
-Tous les comportements doivent donc être clairs, testables et sans ambiguïté via Swagger.
-
-👉 Je vais t’envoyer les modèles un par un.
-Dans un premier temps, contente-toi de les enregistrer en mémoire.
-Quand je te dirai "GO", tu pourras commencer à générer le code.
-
-
-
-
-
-# Liste de contrôle exhaustive pour les modèles Django
-
-## 1. Structure et héritage des modèles
-
-- [ ] **Éviter la duplication des champs hérités**
-  - Retirer `created_at`, `updated_at`, `created_by`, `updated_by` des modèles enfants s'ils sont déjà définis dans `BaseModel`
-  - Implémenter une méthode dans `BaseModel` pour récupérer l'utilisateur actuel (`get_current_user()`)
-
-- [ ] **Cohérence entre modèles**
-  - Les champs communs ont des noms et types cohérents dans tous les modèles
-  - Les relations entre modèles sont correctement définies (ForeignKey, ManyToMany, etc.)
-
-## 2. Champs et validations
-
-- [ ] **Tous les champs ont**:
-  - `verbose_name` explicite (pour l'interface d'admin)
-  - `help_text` pour l'aide contextuelle
-  - Valeurs par défaut explicites pour les champs numériques (`default=0` au lieu de `null=True`)
-
-- [ ] **Validations robustes**:
-  - Méthode `clean()` implémentée pour valider la cohérence (ex: `start_date` < `end_date`)
-  - Gestion des cas limites dans les calculs (division par zéro, etc.)
-  - Pour les champs "autre", ajouter un champ texte conditionnel (`autre_precision` activé si choix="autre")
-
-## 3. Performance et indexation
-
-- [ ] **Indexation appropriée**:
-  - Indexes sur les champs fréquemment utilisés pour le filtrage et le tri
-  - Indexes composites pour les requêtes communes
-  ```python
-  exemples: class Meta:
-      indexes = [
-          models.Index(fields=['date_debut', 'date_fin']),
-          models.Index(fields=['centre', 'annee']),
-      ]
-  ```
-
-- [ ] **Optimisation des requêtes**:
-  - Utilisation d'`annotate()` et `F()` pour les calculs au niveau SQL
-  - Éviter les requêtes N+1 avec `select_related()` et `prefetch_related()`
-
-## 4. Documentation et lisibilité
-
-- [ ] **Documentation complète**:
-  - Docstrings de classe expliquant le rôle du modèle et ses cas d'usage
-  - Docstrings pour toutes les méthodes (y compris paramètres et valeurs de retour)
-  - Commentaires sur la logique métier complexe
-
-- [ ] **Méthodes de représentation**:
-  - Méthode `__str__()` claire et informative
-  - Implémentation de `__repr__()` pour le débogage si nécessaire
-
-## 5. API et sérialisation
-
-- [ ] **Méthodes de sérialisation**:
-  - `to_serializable_dict()` implémentée dans tous les modèles
-  - Conversion appropriée des objets complexes (dates, relations, etc.)
-  - Gestion des champs sensibles (exclusion des données confidentielles)
-
-- [ ] **Navigation**:
-  - Méthode `()` pour les liens dans l'admin et l'API
-  - Schéma Swagger généré pour la documentation de l'API
-
-## 6. Journalisation et signaux
-
-- [ ] **Architecture propre pour les signaux**:
-  - Signaux déplacés dans un module dédié (`signals.py`)
-  - Implémentation de `ready()` dans `apps.py` pour connecter les signaux
-
-- [ ] **Journalisation complète**:
-  - Modèle `LogUtilisateur` pour suivre toutes les actions CRUD
-  - Signaux pour les opérations `post_save` et `pre_delete`
-  - Format standardisé pour les messages de journalisation
-
-```python
-
-## 7. Gestion des erreurs
-
-- [ ] **Messages d'erreur**:
-  - Messages d'erreur clairs et exploitables dans tous les modèles
-  - Codes d'erreur standardisés pour le frontend
-  - Traductions des messages d'erreur (si multilangue)
-
-
-## 9. Éléments supplémentaires
-
-- [ ] **Caching**:
-  - Définir des stratégies de cache pour les données fréquemment accédées
-  - Implémenter `@cached_property` pour les calculs coûteux
-
-- [ ] **Gestion des versions**:
-  - Système de versionnage pour les modifications importantes des modèles
-  - Historique des changements (`django-simple-history`)
-
-- [ ] **Tests unitaires**:
-  - Tests de validation pour les méthodes personnalisées
-  - Tests de comportement pour les signaux
-  - Tests d'intégration pour les interactions entre modèles
-
-
-
-
-
-🔹 1. Modèles fondamentaux (peu ou pas de dépendances) :
-statut.py ✅ (déjà traité)
-
-types_offre.py ✅ (déjà traité)
-
-base.py (abstrait, pas besoin de serializer dédié)
-
-🔹 2. Référentiels et entités simples :
-centres.py (nécessaire pour formations)
-
-custom_user.py (utilisé partout comme created_by, updated_by)
-
-logs.py (utile pour audit, mais souvent read-only)
-
-🔹 3. Entités secondaires liées aux formations :
-partenaires.py
-
-commentaires.py
-
-documents.py
-
-evenements.py
-
-🔹 4. Entité centrale :
-formations.py (le cœur du projet, dépend de statut, type_offre, centre, etc.)
-
-🔹 5. Entités métier complémentaires :
-prospection.py + historique_prospection (dépendent de partenaire)
-
-rapports.py (souvent basé sur des exports ou des vues)
-
-prepacomp.py (liée à centre et semaine)
-
-vae_jury.py (liée à user, centre, statut, etc.)
-
-
-
-modif de istafforabove (permissions)- men place de permission_classes = [IsStaffOrAbove] dans les viewsets stats, modification des scope pour que candidat et stagiaire ne voeint que leurs propres stats

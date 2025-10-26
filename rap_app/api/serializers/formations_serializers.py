@@ -260,14 +260,15 @@ class FormationDetailSerializer(serializers.Serializer):
     🎓 Serializer détaillé pour la vue `retrieve`.
     Contient des validations, les champs complets, et un wrapper `success` + `data`.
     """
+
     id = serializers.IntegerField(read_only=True)
     est_archivee = serializers.BooleanField(read_only=True)
     activite = serializers.CharField(read_only=True)
 
     nom = serializers.CharField(required=True)
-    centre_id = serializers.IntegerField(required=True, write_only=True)
-    type_offre_id = serializers.IntegerField(required=True, write_only=True)
-    statut_id = serializers.IntegerField(required=True, write_only=True)
+    centre_id = serializers.IntegerField(required=True)
+    type_offre_id = serializers.IntegerField(required=True)
+    statut_id = serializers.IntegerField(required=True)
 
     start_date = serializers.DateField(required=False, allow_null=True)
     end_date = serializers.DateField(required=False, allow_null=True)
@@ -313,24 +314,24 @@ class FormationDetailSerializer(serializers.Serializer):
     partenaires = PartenaireSerializer(many=True, read_only=True)
     prospections = ProspectionSerializer(many=True, read_only=True)
 
-    @extend_schema_field(str)
+    # ------------------------------------------
+    # 🔹 Champs calculés
+    # ------------------------------------------
 
+    @extend_schema_field(float)
     def get_inscrits_total(self, obj):
         return (obj.inscrits_crif or 0) + (obj.inscrits_mp or 0)
 
-    @extend_schema_field(str)
-
+    @extend_schema_field(float)
     def get_prevus_total(self, obj):
         return (obj.prevus_crif or 0) + (obj.prevus_mp or 0)
 
-    @extend_schema_field(str)
-
+    @extend_schema_field(float)
     def get_places_restantes(self, obj):
         inscrits = self.get_inscrits_total(obj)
         return obj.cap - inscrits if obj.cap is not None else None
 
-    @extend_schema_field(str)
-
+    @extend_schema_field(float)
     def get_taux_transformation(self, obj):
         if obj.nombre_candidats:
             total_inscrits = self.get_inscrits_total(obj)
@@ -338,7 +339,6 @@ class FormationDetailSerializer(serializers.Serializer):
         return None
 
     @extend_schema_field(str)
-
     def get_transformation_badge(self, obj):
         taux = self.get_taux_transformation(obj)
         if taux is None:
@@ -356,9 +356,8 @@ class FormationDetailSerializer(serializers.Serializer):
         return "badge-danger"
 
     @extend_schema_field(str)
-
     def get_saturation_badge(self, obj):
-        taux = obj.saturation
+        taux = getattr(obj, "saturation", None)
         if taux is None:
             return "default"
         if taux >= 100:
@@ -373,13 +372,15 @@ class FormationDetailSerializer(serializers.Serializer):
             return "badge-orange"
         return "badge-danger"
 
-    @extend_schema_field(str)
+    # ------------------------------------------
+    # 🔹 Relations liées
+    # ------------------------------------------
 
+    @extend_schema_field(dict)
     def get_centre(self, obj):
         return {"id": obj.centre.id, "nom": obj.centre.nom} if obj.centre else None
 
-    @extend_schema_field(str)
-
+    @extend_schema_field(dict)
     def get_statut(self, obj):
         if obj.statut:
             return {
@@ -390,8 +391,7 @@ class FormationDetailSerializer(serializers.Serializer):
             }
         return None
 
-    @extend_schema_field(str)
-
+    @extend_schema_field(dict)
     def get_type_offre(self, obj):
         if obj.type_offre:
             return {
@@ -401,6 +401,10 @@ class FormationDetailSerializer(serializers.Serializer):
                 "couleur": obj.type_offre.couleur,
             }
         return None
+
+    # ------------------------------------------
+    # 🔹 Validation et persistence
+    # ------------------------------------------
 
     def validate(self, data):
         start = data.get("start_date")
@@ -414,13 +418,9 @@ class FormationDetailSerializer(serializers.Serializer):
 
     def create(self, validated_data):
         user = self.context["request"].user
-
-        # Extraire les IDs et les retirer de validated_data
         centre_id = validated_data.pop("centre_id", None)
         type_offre_id = validated_data.pop("type_offre_id", None)
         statut_id = validated_data.pop("statut_id", None)
-
-        # Créer l'instance avec les FK explicitement passées
         instance = Formation(
             **validated_data,
             centre_id=centre_id,
@@ -430,13 +430,16 @@ class FormationDetailSerializer(serializers.Serializer):
         instance.save(user=user)
         return instance
 
-
     def update(self, instance, validated_data):
         user = self.context["request"].user
         for attr, val in validated_data.items():
             setattr(instance, attr, val)
         instance.save(user=user)
         return instance
+
+    # ------------------------------------------
+    # 🔹 Sortie finale
+    # ------------------------------------------
 
     def to_representation(self, instance):
         base = super().to_representation(instance)
@@ -445,7 +448,6 @@ class FormationDetailSerializer(serializers.Serializer):
             "message": "Formation récupérée avec succès.",
             "data": base,
         }
-
 
 
 

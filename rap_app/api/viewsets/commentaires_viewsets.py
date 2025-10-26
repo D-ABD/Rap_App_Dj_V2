@@ -140,7 +140,10 @@ class CommentaireViewSet(viewsets.ModelViewSet):
         auteurs_data = [{"id": a.id, "nom": a.get_full_name() or a.username} for a in auteurs]
 
         # --- Formations pour dropdown ---
-        formations_data = [{"id": f.id, "nom": f.nom} for f in formations]
+        formations_data = [
+            {"id": f.id, "nom": f.nom, "num_offre": getattr(f, "num_offre", "")}
+            for f in formations
+        ]
 
         # --- Statuts possibles ---
         commentaire_statuts = [
@@ -206,6 +209,11 @@ class CommentaireViewSet(viewsets.ModelViewSet):
         formation_nom = params.get("formation_nom")
         if formation_nom:
             qs = qs.filter(formation__nom__icontains=formation_nom)
+
+        # ✅ AJOUT ICI — filtrage direct par formation
+        formation_id = params.get("formation")
+        if formation_id and str(formation_id).isdigit():
+            qs = qs.filter(formation_id=int(formation_id))
 
         # ------------------------------------------------------------------
         # 🔐 Périmètre utilisateur
