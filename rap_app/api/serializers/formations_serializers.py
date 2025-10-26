@@ -105,7 +105,7 @@ class FormationListSerializer(serializers.Serializer):
     # Champs calculés
     inscrits_total = serializers.SerializerMethodField()
     prevus_total = serializers.SerializerMethodField()
-    places_restantes = serializers.SerializerMethodField()
+    places_restantes = serializers.IntegerField(source="places_disponibles", read_only=True)
     taux_transformation = serializers.SerializerMethodField()
     transformation_badge = serializers.SerializerMethodField()
 
@@ -118,17 +118,6 @@ class FormationListSerializer(serializers.Serializer):
 
     def get_prevus_total(self, obj):
         return (obj.prevus_crif or 0) + (obj.prevus_mp or 0)
-
-    @extend_schema_field(str)
-
-    def get_places_restantes(self, obj):
-        inscrits = self.get_inscrits_total(obj)
-        return obj.cap - inscrits if obj.cap is not None else None
-
-    @extend_schema_field(str)
-
-    def get_total_places(self, obj):
-        return (obj.inscrits_crif or 0) + (obj.inscrits_mp or 0)
 
     @extend_schema_field(str)
 
@@ -298,7 +287,7 @@ class FormationDetailSerializer(serializers.Serializer):
 
     inscrits_total = serializers.SerializerMethodField()
     prevus_total = serializers.SerializerMethodField()
-    places_restantes = serializers.SerializerMethodField()
+    places_restantes = serializers.IntegerField(source="places_disponibles", read_only=True)
     taux_transformation = serializers.SerializerMethodField()
     transformation_badge = serializers.SerializerMethodField()
 
@@ -325,11 +314,6 @@ class FormationDetailSerializer(serializers.Serializer):
     @extend_schema_field(float)
     def get_prevus_total(self, obj):
         return (obj.prevus_crif or 0) + (obj.prevus_mp or 0)
-
-    @extend_schema_field(float)
-    def get_places_restantes(self, obj):
-        inscrits = self.get_inscrits_total(obj)
-        return obj.cap - inscrits if obj.cap is not None else None
 
     @extend_schema_field(float)
     def get_taux_transformation(self, obj):
@@ -453,27 +437,35 @@ class FormationDetailSerializer(serializers.Serializer):
 
 class FormationCreateSerializer(serializers.ModelSerializer):
     centre_id = serializers.PrimaryKeyRelatedField(
-        source='centre', queryset=Centre.objects.all(), write_only=True
+        source='centre',
+        queryset=Centre.objects.all(),
+        write_only=True,
+        required=True
     )
     type_offre_id = serializers.PrimaryKeyRelatedField(
-        source='type_offre', queryset=TypeOffre.objects.all(), write_only=True
+        source='type_offre',
+        queryset=TypeOffre.objects.all(),
+        write_only=True,
+        required=True
     )
     statut_id = serializers.PrimaryKeyRelatedField(
-        source='statut', queryset=Statut.objects.all(), write_only=True
+        source='statut',
+        queryset=Statut.objects.all(),
+        write_only=True,
+        required=True
     )
 
     class Meta:
         model = Formation
         fields = [
             "id", "nom", "num_offre", "start_date", "end_date",
-            "centre_id", "type_offre_id", "statut_id",
+            "centre_id", "type_offre_id", "statut_id",           # ⬅️ requis
             "intitule_diplome", "code_diplome", "code_rncp",
             "total_heures", "heures_distanciel",
             "prevus_crif", "prevus_mp", "inscrits_crif", "inscrits_mp",
             "cap", "nombre_candidats", "nombre_entretiens",
             "convocation_envoie",
         ]
-
 
     def validate(self, data):
         start = data.get("start_date")
@@ -487,9 +479,8 @@ class FormationCreateSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         user = self.context["request"].user
-
-        # Pas besoin d’extraire les IDs, les objets sont déjà présents
         instance = Formation(**validated_data)
         instance.save(user=user)
         return instance
+
 
