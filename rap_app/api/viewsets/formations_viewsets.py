@@ -19,6 +19,8 @@ from openpyxl.utils import get_column_letter
 from openpyxl.styles import PatternFill, Font, Alignment
 from openpyxl.drawing.image import Image as XLImage
 from openpyxl.styles import PatternFill, Font, Alignment, Border, Side
+from rest_framework import serializers
+from django.db import transaction
 
 from openpyxl import Workbook
 from openpyxl.utils import get_column_letter
@@ -37,13 +39,15 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters
 from rest_framework.views import APIView
 
+
+
 from ..roles import is_admin_like, is_staff_or_staffread, staff_centre_ids
 
-from ...utils.filters import HistoriqueFormationFilter
-
-from ...models.formations import Formation, HistoriqueFormation
+from ...models.statut import Statut
+from ...models.types_offre import TypeOffre
+from ...models.formations import Formation
 from ...api.paginations import RapAppPagination
-from ...api.permissions import IsStaffOrAbove, ReadWriteAdminReadStaff, UserVisibilityScopeMixin
+from ...api.permissions import IsStaffOrAbove, UserVisibilityScopeMixin
 from ...api.serializers.formations_serializers import (
     FormationCreateSerializer,
     FormationListSerializer,
@@ -92,6 +96,115 @@ class FormationViewSet(UserVisibilityScopeMixin, viewsets.ModelViewSet):
 
     search_fields = ["nom", "num_offre", "centre__nom", "type_offre__nom"]
     ordering_fields = ["nom", "centre__nom", "date_debut", "created_at"]
+
+    # ---------- Helpers FK ----------
+    def _normalize_payload_for_fk(self, data):
+        """
+        Accepte à la fois:
+          - *_id:  { "type_offre_id": 2, "statut_id": 3, "centre_id": 1 }
+          - nested: { "type_offre": {"id":2}, "statut": {"id":3}, "centre": {"id":1} }
+        → Retourne un dict propre avec *_id normalisés.
+        """
+        p = dict(data)  # typiquement QueryDict → on copie
+        # si nested, on extrait l'id
+        for field in ("centre", "type_offre", "statut"):
+            obj = p.get(field)
+            if isinstance(obj, dict) and "id" in obj:
+                p[f"{field}_id"] = obj.get("id")
+        # cast string → int si besoin
+        for fk in ("centre_id", "type_offre_id", "statut_id"):
+            if fk in p and p[fk] in ("", None):
+                p[fk] = None
+            elif fk in p:
+                try:
+                    p[fk] = int(p[fk])
+                except (TypeError, ValueError):
+                    pass
+        return p
+
+    def _ensure_required_refs(self, payload):
+        missing = []
+        if not payload.get("centre_id"):
+            missing.append("centre_id (ou centre.id)")
+        if not payload.get("type_offre_id"):
+            missing.append("type_offre_id (ou type_offre.id)")
+        if not payload.get("statut_id"):
+            missing.append("statut_id (ou statut.id)")
+        if missing:
+            from rest_framework.exceptions import ValidationError
+            raise ValidationError({"detail": f"Champs obligatoires manquants: {', '.join(missing)}"})
+
+    # ---------- Serializer par action ----------
+    def get_serializer_class(self):
+        if self.action == "list":
+            return FormationListSerializer
+        if self.action == "retrieve":
+            return FormationDetailSerializer
+        if self.action == "create":
+            # ⬅️ input minimal (exige type_offre + statut)
+            return FormationCreateSerializer
+        if self.action in ["update", "partial_update"]:
+            # ⬅️ input large : on autorise la MAJ de TOUS les champs
+            return FormationDetailSerializer
+        return super().get_serializer_class()
+
+    # ---------- CREATE ----------
+    @extend_schema(
+        summary="Créer une formation",
+        request=FormationCreateSerializer,           # ✅ cohérent avec get_serializer_class
+        responses={201: FormationDetailSerializer}
+    )
+    def create(self, request, *args, **kwargs):
+        payload = self._normalize_payload_for_fk(request.data)
+        self._ensure_required_refs(payload)          # ✅ type_offre + statut exigés
+
+        serializer = self.get_serializer(data=payload)
+        serializer.is_valid(raise_exception=True)
+
+        with transaction.atomic():
+            formation = serializer.save()
+
+        # Rechargement avec relations pour une réponse complète
+        formation = (
+            Formation.objects
+            .select_related("centre", "type_offre", "statut")
+            .get(pk=formation.pk)
+        )
+        response_serializer = FormationDetailSerializer(formation, context={"request": request})
+
+        return Response(
+            {"success": True, "message": "Formation créée avec succès.", "data": response_serializer.data},
+            status=status.HTTP_201_CREATED,
+        )
+
+    # ---------- UPDATE (tous champs) ----------
+    @extend_schema(
+        summary="Mettre à jour une formation",
+        request=FormationDetailSerializer,           # ✅ accepte tous les champs en entrée
+        responses={200: FormationDetailSerializer}
+    )
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        payload = self._normalize_payload_for_fk(request.data)  # accepte nested ou *_id
+
+        serializer = self.get_serializer(instance, data=payload, partial=True)  # PATCH-like
+        serializer.is_valid(raise_exception=True)
+
+        with transaction.atomic():
+            formation = serializer.save()
+
+        formation = (
+            Formation.objects
+            .select_related("centre", "type_offre", "statut")
+            .get(pk=formation.pk)
+        )
+        response_serializer = FormationDetailSerializer(formation, context={"request": request})
+        return Response(
+            {"success": True, "message": "Formation mise à jour avec succès.", "data": response_serializer.data},
+            status=status.HTTP_200_OK,
+        )
+
+
     # ---------- Scope centres ----------
     def _restrict_to_user_centres(self, qs):
         u = self.request.user
@@ -134,19 +247,6 @@ class FormationViewSet(UserVisibilityScopeMixin, viewsets.ModelViewSet):
         qs = Formation.objects.all_including_archived().select_related("centre", "type_offre", "statut")
         qs = self._restrict_to_user_centres(qs)
         return qs.get(pk=pk)
-
-
-
-    def get_serializer_class(self):
-        if self.action == "list":
-            return FormationListSerializer
-        if self.action == "retrieve":
-            return FormationDetailSerializer
-        if self.action == "create":
-            return FormationCreateSerializer  # ✅ ici on valide avec un serializer simplifié
-        if self.action in ["update", "partial_update"]:
-            return FormationDetailSerializer
-        return super().get_serializer_class()
 
     @extend_schema(
         summary="Lister les formations",
@@ -235,116 +335,44 @@ class FormationViewSet(UserVisibilityScopeMixin, viewsets.ModelViewSet):
             }
         })
 
-    @extend_schema(
-        summary="Créer une formation",
-        request=FormationDetailSerializer,
-        responses={201: FormationDetailSerializer}
-    )
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        if serializer.is_valid():
-            # 💾 Création de la formation
-            formation = serializer.save()
-
-            # 🔁 Recharge avec les relations nécessaires pour la sérialisation complète
-            formation = (
-                Formation.objects.select_related("centre", "type_offre", "statut")
-                .get(pk=formation.pk)
-            )
-
-            # 🧩 Sérialisation complète
-            response_serializer = FormationDetailSerializer(
-                formation, context={"request": request}
-            )
-
-            return Response(
-                {
-                    "success": True,
-                    "message": "Formation créée avec succès.",
-                    "data": response_serializer.data,
-                },
-                status=status.HTTP_201_CREATED,
-            )
-
-        logger.warning(f"[API] Erreur création formation : {serializer.errors}")
-        return Response(
-            {
-                "success": False,
-                "message": "Erreur de validation.",
-                "errors": serializer.errors,
-            },
-            status=status.HTTP_400_BAD_REQUEST,
-        )
-
-
-    @extend_schema(
-        summary="Mettre à jour une formation",
-        request=FormationDetailSerializer,
-        responses={200: FormationDetailSerializer}
-    )
-    def update(self, request, *args, **kwargs):
-        instance = self.get_object()  # ✅ récupère formation (même archivée)
-        serializer = self.get_serializer(instance, data=request.data, partial=True)
-        if serializer.is_valid():
-            # 💾 Sauvegarde
-            formation = serializer.save()
-
-            # 🔁 Recharge avec les relations nécessaires
-            formation = (
-                Formation.objects.select_related("centre", "type_offre", "statut")
-                .get(pk=formation.pk)
-            )
-
-            # 🧩 Sérialisation complète pour la réponse
-            response_serializer = FormationDetailSerializer(
-                formation, context={"request": request}
-            )
-
-            return Response(
-                {
-                    "success": True,
-                    "message": "Formation mise à jour avec succès.",
-                    "data": response_serializer.data,
-                },
-                status=status.HTTP_200_OK,
-            )
-
-        logger.warning(f"[API] Erreur mise à jour formation : {serializer.errors}")
-        return Response(
-            {
-                "success": False,
-                "message": "Erreur de validation.",
-                "errors": serializer.errors,
-            },
-            status=status.HTTP_400_BAD_REQUEST,
-        )
-
     # ---------- Actions annexes (toutes restreintes aussi) ----------
 
-    @extend_schema(
-        summary="Filtres disponibles (restreints aux centres autorisés du staff)",
-        responses={200: OpenApiResponse(description="Filtres disponibles")}
-    )
     @extend_schema(summary="Filtres disponibles (centres, statuts, types d’offre, activités)")
     @action(detail=False, methods=["get"])
     def filtres(self, request):
-        qs = self.get_queryset()  # ✅ respect du scope et des archivages
-        centres = qs.values_list("centre_id", "centre__nom").distinct().order_by("centre__nom")
-        statuts = qs.values_list("statut_id", "statut__nom").distinct().order_by("statut__nom")
-        type_offres = qs.values_list("type_offre_id", "type_offre__nom").distinct().order_by("type_offre__nom")
+        ref_complet = str(request.query_params.get("ref_complet", "")).lower() in {"1","true","yes","on"}
+
+        # centres : toujours selon le périmètre
+        qs = self.get_queryset()
+        centres_qs = qs.values_list("centre_id", "centre__nom").distinct().order_by("centre__nom")
+        centres = [{"id": c[0], "nom": c[1]} for c in centres_qs if c[0]]
+
+        if ref_complet:
+            # ⬅️ référentiels complets (non scopés)
+            statuts_qs = Statut.objects.all().values_list("id", "nom").order_by("nom")
+            type_offres_qs = TypeOffre.objects.all().values_list("id", "nom").order_by("nom")
+            statuts = [{"id": s[0], "nom": s[1]} for s in statuts_qs]
+            type_offres = [{"id": t[0], "nom": t[1]} for t in type_offres_qs]
+        else:
+            # ⬅️ comportement historique (scopé par le queryset)
+            statuts_qs = qs.values_list("statut_id", "statut__nom").distinct().order_by("statut__nom")
+            type_offres_qs = qs.values_list("type_offre_id", "type_offre__nom").distinct().order_by("type_offre__nom")
+            statuts = [{"id": s[0], "nom": s[1]} for s in statuts_qs if s[0]]
+            type_offres = [{"id": t[0], "nom": t[1]} for t in type_offres_qs if t[0]]
 
         return Response({
             "success": True,
             "data": {
-                "centres": [{"id": c[0], "nom": c[1]} for c in centres if c[0]],
-                "statuts": [{"id": s[0], "nom": s[1]} for s in statuts if s[0]],
-                "type_offres": [{"id": t[0], "nom": t[1]} for t in type_offres if t[0]],
+                "centres": centres,              # ⬅️ reste avec périmètre
+                "statuts": statuts,              # ⬅️ complets si ref_complet=true
+                "type_offres": type_offres,      # ⬅️ complets si ref_complet=true
                 "activites": [
                     {"code": "active", "libelle": "Active"},
                     {"code": "archivee", "libelle": "Archivée"},
                 ],
             },
         })
+
 
 
     @extend_schema(summary="Obtenir l'historique d'une formation")

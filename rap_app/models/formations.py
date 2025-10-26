@@ -858,6 +858,10 @@ class Formation(BaseModel):
     def places_disponibles(self): 
         """Nombre total de places encore disponibles."""
         return max(0, self.total_places - self.total_inscrits)
+    
+    @property
+    def places_restantes(self):
+        return self.places_disponibles
         
     @property
     def taux_saturation(self): 
