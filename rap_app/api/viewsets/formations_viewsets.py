@@ -130,12 +130,11 @@ class FormationViewSet(UserVisibilityScopeMixin, viewsets.ModelViewSet):
         """
         🔓 Permet d'accéder aussi aux formations archivées.
         """
-        # on désactive le manager filtrant pour cette récupération
-        from ...models.formations import Formation
         pk = self.kwargs.get(self.lookup_field, None)
-        qs = Formation.objects.all_including_archived()
+        qs = Formation.objects.all_including_archived().select_related("centre", "type_offre", "statut")
         qs = self._restrict_to_user_centres(qs)
         return qs.get(pk=pk)
+
 
 
     def get_serializer_class(self):
@@ -244,20 +243,27 @@ class FormationViewSet(UserVisibilityScopeMixin, viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
+            # 💾 Création de la formation
             formation = serializer.save()
 
-            # Recharge avec les relations nécessaires pour le rendu
-            formation = Formation.objects.select_related(
-                "centre", "type_offre", "statut"
-            ).get(pk=formation.pk)
+            # 🔁 Recharge avec les relations nécessaires pour la sérialisation complète
+            formation = (
+                Formation.objects.select_related("centre", "type_offre", "statut")
+                .get(pk=formation.pk)
+            )
+
+            # 🧩 Sérialisation complète
+            response_serializer = FormationDetailSerializer(
+                formation, context={"request": request}
+            )
 
             return Response(
                 {
                     "success": True,
                     "message": "Formation créée avec succès.",
-                    "data": formation.to_serializable_dict()
+                    "data": response_serializer.data,
                 },
-                status=status.HTTP_201_CREATED
+                status=status.HTTP_201_CREATED,
             )
 
         logger.warning(f"[API] Erreur création formation : {serializer.errors}")
@@ -265,10 +271,11 @@ class FormationViewSet(UserVisibilityScopeMixin, viewsets.ModelViewSet):
             {
                 "success": False,
                 "message": "Erreur de validation.",
-                "errors": serializer.errors
+                "errors": serializer.errors,
             },
-            status=status.HTTP_400_BAD_REQUEST
+            status=status.HTTP_400_BAD_REQUEST,
         )
+
 
     @extend_schema(
         summary="Mettre à jour une formation",
@@ -276,26 +283,40 @@ class FormationViewSet(UserVisibilityScopeMixin, viewsets.ModelViewSet):
         responses={200: FormationDetailSerializer}
     )
     def update(self, request, *args, **kwargs):
-        instance = self.get_object()  # ✅ passe par get_queryset() restreint
+        instance = self.get_object()  # ✅ récupère formation (même archivée)
         serializer = self.get_serializer(instance, data=request.data, partial=True)
         if serializer.is_valid():
+            # 💾 Sauvegarde
             formation = serializer.save()
+
+            # 🔁 Recharge avec les relations nécessaires
+            formation = (
+                Formation.objects.select_related("centre", "type_offre", "statut")
+                .get(pk=formation.pk)
+            )
+
+            # 🧩 Sérialisation complète pour la réponse
+            response_serializer = FormationDetailSerializer(
+                formation, context={"request": request}
+            )
+
             return Response(
                 {
                     "success": True,
                     "message": "Formation mise à jour avec succès.",
-                    "data": formation.to_serializable_dict()
+                    "data": response_serializer.data,
                 },
-                status=status.HTTP_200_OK
+                status=status.HTTP_200_OK,
             )
+
         logger.warning(f"[API] Erreur mise à jour formation : {serializer.errors}")
         return Response(
             {
                 "success": False,
                 "message": "Erreur de validation.",
-                "errors": serializer.errors
+                "errors": serializer.errors,
             },
-            status=status.HTTP_400_BAD_REQUEST
+            status=status.HTTP_400_BAD_REQUEST,
         )
 
     # ---------- Actions annexes (toutes restreintes aussi) ----------

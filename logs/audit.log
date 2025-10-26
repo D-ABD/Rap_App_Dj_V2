@@ -2518,3 +2518,8 @@ AttributeError: 'HistoriqueProspection' object has no attribute 'prochain_contac
 2025-10-19 16:31:59,904 | INFO | custom_user | 🔄 Utilisateur mis à jour : salim@test.com
 2025-10-19 16:32:51,210 | INFO | custom_user | 🔄 Utilisateur mis à jour : salim@test.com
 2025-10-19 19:28:29,659 | INFO | prospections_signals | [Signal] Modification prospection #13 pour partenaire Partner User Test
+2025-10-25 20:43:12,213 | INFO | formations_signals | [Signal] Historique enregistré pour formation #3 par ABD – Modification du champ 'document' : — → test
+2025-10-25 22:50:53,303 | INFO | formations_signals | [Signal] Historique enregistré pour formation #3 par ABD – Modification du champ 'document' : — → tyuiop
+2025-10-25 22:53:52,596 | INFO | formations_signals | [Signal] Formation modifiée : EEB(Electricien du Bâtiment) (ID=3) par ABD
+2025-10-25 22:53:52,611 | INFO | formations_signals | [Signal] Historique enregistré pour formation #3 par ABD – Modification du champ 'type_offre' : 1 → 3
+2025-10-25 22:53:52,620 | INFO | formations_signals | [Signal] Historique enregistré pour formation #3 par ABD – Modification du champ 'statut' : 1 → 10
