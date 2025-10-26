@@ -77,7 +77,10 @@ def strip_html_tags_pretty(html: str) -> str:
     text = re.sub(r"\n{3,}", "\n\n", text)
     return text.strip()
 
-
+# 🔎 Ajoute ce mini backend pour utiliser ?texte= comme paramètre de recherche
+class FormationSearchFilter(filters.SearchFilter):
+    search_param = "texte"   # ex: ?texte=Responsable
+    
 @extend_schema(tags=["Formations"])
 class FormationViewSet(UserVisibilityScopeMixin, viewsets.ModelViewSet):
     """
@@ -90,10 +93,18 @@ class FormationViewSet(UserVisibilityScopeMixin, viewsets.ModelViewSet):
     queryset = Formation.objects.all()
     permission_classes = [IsStaffOrAbove]
     pagination_class = RapAppPagination
-    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+
+    # ⬇️ remplace SearchFilter par FormationSearchFilter (texte)
+    filter_backends = [
+            DjangoFilterBackend,
+            FormationSearchFilter,     # accepte ?texte=...
+            filters.SearchFilter,  # accepte ?search=...
+            filters.OrderingFilter
+        ]
     filterset_fields = ["centre", "type_offre", "statut", "created_by", "activite"]
     serializer_class = FormationListSerializer
 
+    # ✅ DRF cherchera dans ces champs quand ?texte= est présent
     search_fields = ["nom", "num_offre", "centre__nom", "type_offre__nom"]
     ordering_fields = ["nom", "centre__nom", "date_debut", "created_at"]
 
@@ -252,78 +263,52 @@ class FormationViewSet(UserVisibilityScopeMixin, viewsets.ModelViewSet):
         summary="Lister les formations",
         description="Retourne une liste paginée des formations avec filtres disponibles.",
         parameters=[
-            OpenApiParameter("texte", str, description="Recherche texte libre (nom, commentaire...)"),
+            OpenApiParameter("texte", str, description="Recherche texte (nom, numéro d’offre, centre, type d’offre)"),
             OpenApiParameter("type_offre", str, description="ID du type d'offre"),
             OpenApiParameter("centre", str, description="ID du centre"),
             OpenApiParameter("statut", str, description="ID du statut"),
             OpenApiParameter("date_debut", str, description="Date de début minimale (AAAA-MM-JJ)"),
             OpenApiParameter("date_fin", str, description="Date de fin maximale (AAAA-MM-JJ)"),
             OpenApiParameter("places_disponibles", str, description="Filtre les formations avec des places disponibles"),
-            OpenApiParameter("tri", str, description="Champ de tri (ex: -start_date, nom...)"),
+            OpenApiParameter("tri", str, description="Alias de tri (équivalent à ?ordering=, ex: -start_date, nom)"),
         ],
         responses={200: OpenApiResponse(response=FormationListSerializer(many=True))}
     )
     def list(self, request, *args, **kwargs):
         params = request.query_params
-        qs = self.get_queryset()  # ✅ point de départ restreint
 
-        # Recherche (méthode custom si dispo, sinon fallback)
-        if hasattr(qs, "recherche"):
-            qs = qs.recherche(
-                texte=params.get("texte"),
-                type_offre=params.get("type_offre"),
-                centre=params.get("centre"),
-                statut=params.get("statut"),
-                date_debut=params.get("date_debut"),
-                date_fin=params.get("date_fin"),
-                places_disponibles=params.get("places_disponibles") == "true"
-            )
-        else:
-            texte = params.get("texte")
-            if texte:
-                qs = qs.filter(
-                    Q(nom__icontains=texte) |
-                    Q(description__icontains=texte) |
-                    Q(centre__nom__icontains=texte)
-                )
-            if params.get("type_offre"):
-                qs = qs.filter(type_offre_id=params.get("type_offre"))
-            if params.get("centre"):
-                qs = qs.filter(centre_id=params.get("centre"))
-            if params.get("statut"):
-                qs = qs.filter(statut_id=params.get("statut"))
-            if params.get("date_debut"):
-                qs = qs.filter(date_debut__date__gte=params.get("date_debut"))
-            if params.get("date_fin"):
-                qs = qs.filter(date_fin__date__lte=params.get("date_fin"))
-            if params.get("places_disponibles") == "true":
-                qs = qs.filter(places_disponibles__gt=0)
+        # ✅ Applique: DjangoFilterBackend + SearchFilter(texte) + OrderingFilter(ordering)
+        qs = self.filter_queryset(self.get_queryset())
+        
 
-        # Tri (méthode custom si dispo, sinon order_by)
+        # ⬇️ Compléments non gérés par DjangoFilterBackend
+        if params.get("date_debut"):
+            qs = qs.filter(date_debut__date__gte=params.get("date_debut"))
+        if params.get("date_fin"):
+            qs = qs.filter(date_fin__date__lte=params.get("date_fin"))
+        if params.get("places_disponibles") == "true":
+            qs = qs.filter(places_disponibles__gt=0)
+
+        # 🔁 Alias rétro-compat: ?tri=... (en plus de ?ordering=... déjà géré par OrderingFilter)
         tri = params.get("tri")
         if tri:
-            if hasattr(qs, "trier_par"):
-                try:
-                    qs = qs.trier_par(tri)
-                except Exception as e:
-                    logger.warning(f"tri via trier_par échoué ('{tri}'): {e}")
-            else:
-                try:
-                    qs = qs.order_by(tri)
-                except Exception as e:
-                    logger.warning(f"Tri ignoré (paramètre invalide '{tri}') : {e}")
+            try:
+                qs = qs.order_by(tri)
+            except Exception as e:
+                logger.warning(f"Tri ignoré (paramètre invalide '{tri}') : {e}")
 
+        # 📄 Pagination + sérialisation (une seule fois, après tous les filtres)
         page = self.paginate_queryset(qs)
         serializer = self.get_serializer(page or qs, many=True)
 
-        if page:
+        if page is not None:
             return Response({
                 "success": True,
                 "message": "Liste paginée des formations",
                 "data": {
                     "count": self.paginator.page.paginator.count,
-                    "results": serializer.data
-                }
+                    "results": serializer.data,
+                },
             })
 
         return Response({
@@ -331,9 +316,10 @@ class FormationViewSet(UserVisibilityScopeMixin, viewsets.ModelViewSet):
             "message": "Liste complète des formations",
             "data": {
                 "count": len(serializer.data),
-                "results": serializer.data
-            }
+                "results": serializer.data,
+            },
         })
+
 
     # ---------- Actions annexes (toutes restreintes aussi) ----------
 
