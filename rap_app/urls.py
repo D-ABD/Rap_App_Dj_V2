@@ -1,6 +1,7 @@
-from django.urls import path
-
 from .views import home_views
+
+from django.urls import path, include
+
 
 
 
@@ -10,6 +11,8 @@ from .views import home_views
 urlpatterns = [
     # Page d'accueil
     path('', home_views.home, name='home'),
+    # === API principale ===
+    path('api/', include('rap_app.api.api_urls')),
 
     # Rapports
     # Liste des rapports
