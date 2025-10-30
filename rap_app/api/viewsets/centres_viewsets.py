@@ -71,19 +71,24 @@ class CentreViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         """
         Renvoie la liste des centres visibles selon le rôle de l'utilisateur.
-        - Admin / Superadmin : tous les centres
-        - Staff : uniquement les centres auxquels il est rattaché
+        - Superadmin / Admin : tous les centres
+        - Staff (non superuser) : uniquement les centres auxquels il est rattaché
         """
         user = self.request.user
         qs = Centre.objects.all().order_by("nom")
 
-        # 🔒 Restreindre la visibilité pour les rôles staff
-        if hasattr(user, "role"):
-            if user.role.startswith("staff") and not user.is_superuser:
-                # ⚠️ À adapter selon ton modèle User : ici on suppose user.centres est une M2M
+        # 🧠 Seuls les utilisateurs "staff" non superadmin sont restreints
+        role = getattr(user, "role", "") or ""
+        if role.startswith("staff") and not user.is_superuser:
+            try:
+                # ⚠️ suppose que user.centres est une M2M
                 return qs.filter(id__in=user.centres.values_list("id", flat=True))
+            except Exception:
+                # si pas de relation centres sur le user -> aucun centre
+                return qs.none()
 
         return qs
+
     
     @action(detail=False, methods=["get"], url_path="liste-simple")
     def liste_simple(self, request):
