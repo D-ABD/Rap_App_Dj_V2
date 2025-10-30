@@ -2526,3 +2526,4 @@ AttributeError: 'HistoriqueProspection' object has no attribute 'prochain_contac
 2025-10-26 18:56:18,693 | INFO | formations_signals | [Signal] Formation créée : RPMS(Responsable  Petite et Moyennes Struture) (ID=6) par ABD
 2025-10-26 18:56:19,120 | INFO | formations_signals | [Signal] Historique enregistré pour formation #6 par ABD – création du champ 'formation' : — → RPMS(Responsable  Petite et Moyennes Struture)
 2025-10-26 18:57:23,592 | INFO | formations_signals | [Signal] Formation modifiée : RPMS(Responsable  Petite et Moyennes Struture) (ID=6) par ABD
+2025-10-27 00:43:16,951 | INFO | prospections_signals | [Signal] Création prospection #14 pour partenaire Partner User Test
