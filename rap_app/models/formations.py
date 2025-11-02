@@ -7,6 +7,8 @@ from django.core.exceptions import ValidationError
 from django.db.models import F, Q, Sum, Count, Case, When, Value, ExpressionWrapper, FloatField
 from django.utils.translation import gettext_lazy as _
 from django.utils.functional import cached_property
+from datetime import timedelta
+from django.utils import timezone
 
 from typing import Optional, Dict
 
@@ -56,14 +58,44 @@ class FormationManager(models.Manager):
         today = timezone.now().date()
         return self.filter(start_date__lte=today, end_date__gte=today)
 
-    def formations_a_venir(self):
-        """
-        Retourne uniquement les formations qui n'ont pas encore commencé.
-        
-        Returns:
-            QuerySet: Formations dont la date de début est dans le futur
-        """
-        return self.filter(start_date__gt=timezone.now().date())
+    def formations_a_venir(self, dans=None):
+            """
+            Retourne les formations qui n'ont pas encore commencé.
+            
+            Args:
+                dans (str | int | None): 
+                    - None → toutes les formations à venir
+                    - '4w' → dans les 4 semaines
+                    - '3m' → dans les 3 mois
+                    - '6m' → dans les 6 mois
+                    - ou un nombre de jours (int)
+            
+            Returns:
+                QuerySet: Formations à venir dans la période donnée
+            """
+            today = timezone.now().date()
+            queryset = self.filter(start_date__gt=today)
+
+            if dans:
+                # mapping flexible
+                mapping = {
+                    "4w": timedelta(weeks=4),
+                    "3m": timedelta(days=90),
+                    "6m": timedelta(days=180),
+                }
+
+                if isinstance(dans, str):
+                    delta = mapping.get(dans.lower())
+                elif isinstance(dans, (int, float)):
+                    delta = timedelta(days=int(dans))
+                else:
+                    delta = None
+
+                if delta:
+                    end_limit = today + delta
+                    queryset = queryset.filter(start_date__lte=end_limit)
+
+            return queryset
 
     def formations_terminees(self):
         """
@@ -73,6 +105,17 @@ class FormationManager(models.Manager):
             QuerySet: Formations dont la date de fin est passée
         """
         return self.filter(end_date__lt=timezone.now().date())
+    
+    ########## Alias #######
+    def formations_dans_4_semaines(self):
+        return self.formations_a_venir(dans="4w")
+
+    def formations_dans_3_mois(self):
+        return self.formations_a_venir(dans="3m")
+
+    def formations_dans_6_mois(self):
+        return self.formations_a_venir(dans="6m")
+
 
     def formations_a_recruter(self):
         """

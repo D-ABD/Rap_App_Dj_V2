@@ -3,6 +3,10 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework import status
 from drf_spectacular.utils import extend_schema, OpenApiResponse
+from rest_framework.generics import RetrieveUpdateAPIView
+from rest_framework import exceptions
+
+from ..serializers.candidat_serializers import CandidatCreateUpdateSerializer
 
 from ..serializers.base_serializers import EmptySerializer
 
@@ -109,3 +113,19 @@ class RoleChoicesView(APIView):
     def get(self, request):
         data = [{"value": value, "label": label} for value, label in CustomUser.ROLE_CHOICES]
         return Response(data, status=status.HTTP_200_OK)
+
+
+class MonCandidatView(RetrieveUpdateAPIView):
+    """
+    Endpoint /api/candidats/me/
+    Permet au candidat connecté de consulter et modifier son propre profil candidat.
+    """
+    serializer_class = CandidatCreateUpdateSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        # Sécurité : seul le candidat lié à l'utilisateur courant
+        user = self.request.user
+        if not hasattr(user, "candidat"):
+            raise exceptions.NotFound("Aucun profil candidat associé à cet utilisateur.")
+        return user.candidat

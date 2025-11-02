@@ -28,6 +28,8 @@ from rest_framework.exceptions import PermissionDenied
 from openpyxl import Workbook
 from openpyxl.utils import get_column_letter
 from io import BytesIO
+
+from ...models.custom_user import CustomUser
 from ..roles import is_admin_like, is_staff_or_staffread, staff_centre_ids
 from ...models import atelier_tre
 
@@ -312,12 +314,29 @@ class CandidatViewSet(viewsets.ModelViewSet):
 
     # ---------- create/update : contrôle périmètre formation ----------
 
+
     def perform_create(self, serializer):
+        data = serializer.validated_data
+        user = data.get("compte_utilisateur")
+
+        if not user:
+            # 🔧 Auto-création d’un utilisateur minimal
+            email = data.get("email") or f"temp_{dj_timezone.now().timestamp()}@example.com"
+            user = CustomUser.objects.create_user(
+                email=email,
+                first_name=data.get("prenom", "") or "",
+                last_name=data.get("nom", "") or "",
+                role="candidat",
+                password=CustomUser.objects.make_random_password(),
+            )
+            serializer.validated_data["compte_utilisateur"] = user
+
+        # Vérif périmètre formation
         instance = serializer.save()
-        # Si formation fournie, vérifier périmètre du staff
         self._assert_staff_can_use_formation(getattr(instance, "formation", None))
+
         try:
-            instance.save(user=self.request.user)  # si BaseModel.save(user=...)
+            instance.save(user=self.request.user)
         except TypeError:
             pass
 
@@ -370,12 +389,36 @@ class CandidatViewSet(viewsets.ModelViewSet):
 
         with transaction.atomic():
             instance = serializer.save()
+
+            # --- 2bis) si le candidat n’a pas de compte lié, on le crée automatiquement ---
+            if not instance.compte_utilisateur:
+                email = instance.email or f"temp_{dj_timezone.now().timestamp()}@example.com"
+
+                # Vérifie si un user avec cet email existe déjà
+                existing_user = CustomUser.objects.filter(email=email).first()
+                if existing_user:
+                    user = existing_user
+                    logger.info(f"🔗 Utilisateur existant réutilisé pour le candidat #{instance.id} ({email})")
+                else:
+                    user = CustomUser.objects.create_user(
+                        email=email,
+                        first_name=instance.prenom or "",
+                        last_name=instance.nom or "",
+                        role="candidat",
+                        password=CustomUser.objects.make_random_password(),
+                    )
+                    logger.warning(f"👤 Compte utilisateur créé automatiquement pour le candidat #{instance.id} ({email})")
+
+                instance.compte_utilisateur = user
+                instance.save(update_fields=["compte_utilisateur"])
+
+            # --- 3) sauvegarde avec utilisateur (journalisation si supportée) ---
             try:
                 instance.save(user=self.request.user)
             except TypeError:
                 pass
 
-            # --- 3) cascade sur Prospection si la formation a changé ---
+            # --- 4) cascade sur Prospection si la formation a changé ---
             old_id = getattr(old_formation, "id", None)
             new_id = getattr(instance.formation, "id", None)
             if old_id != new_id:

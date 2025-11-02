@@ -2527,3 +2527,78 @@ AttributeError: 'HistoriqueProspection' object has no attribute 'prochain_contac
 2025-10-26 18:56:19,120 | INFO | formations_signals | [Signal] Historique enregistré pour formation #6 par ABD – création du champ 'formation' : — → RPMS(Responsable  Petite et Moyennes Struture)
 2025-10-26 18:57:23,592 | INFO | formations_signals | [Signal] Formation modifiée : RPMS(Responsable  Petite et Moyennes Struture) (ID=6) par ABD
 2025-10-27 00:43:16,951 | INFO | prospections_signals | [Signal] Création prospection #14 pour partenaire Partner User Test
+2025-10-30 22:32:51,455 | INFO | formations_signals | [Signal] Formation créée : test (ID=7) par ABD
+2025-10-30 22:32:51,757 | INFO | formations_signals | [Signal] Historique enregistré pour formation #7 par ABD – création du champ 'formation' : — → test
+2025-10-30 22:33:14,686 | WARNING | formations_signals | [Signal] Formation supprimée : test (ID=7) par Système
+2025-10-30 22:33:14,740 | INFO | formations_signals | [Signal] Historique enregistré pour formation #None par Système – Suppression du champ 'formation' : test → —
+2025-10-30 22:33:14,741 | WARNING | formations_signals | [Signal] Suppression enregistrée pour formation #None
+2025-10-31 23:19:09,119 | INFO | formations_signals | [Signal] Formation modifiée : RPMS(Responsable  Petite et Moyennes Struture) (ID=6) par ABD
+2025-11-01 13:29:11,866 | INFO | prospections_signals | [Signal] Création prospection #15 pour partenaire Test Entreprise Candidat
+2025-11-01 13:30:11,973 | INFO | prospections_signals | [Signal] Modification prospection #15 pour partenaire Test Entreprise Candidat
+2025-11-01 13:30:11,975 | INFO | prospection | [Prospection #15] Changements par usertest : statut: a_faire→en_cours
+2025-11-01 13:30:12,117 | INFO | prospections_signals | [Signal] Historique ajouté pour prospection #15 – Changement de statut : À faire → En cours
+2025-11-01 13:32:52,595 | INFO | prospections_signals | [Signal] Modification prospection #15 pour partenaire Test Entreprise Candidat
+2025-11-01 13:34:00,449 | INFO | prospections_signals | [Signal] Modification prospection #15 pour partenaire Test Entreprise Candidat
+2025-11-01 13:36:11,120 | INFO | prospections_signals | [Signal] Modification prospection #15 pour partenaire Test Entreprise Candidat
+2025-11-01 13:36:22,470 | INFO | prospections_signals | [Signal] Modification prospection #15 pour partenaire Test Entreprise Candidat
+2025-11-01 13:37:16,740 | INFO | prospections_signals | [Signal] Modification prospection #15 pour partenaire Test Entreprise Candidat
+2025-11-01 13:42:14,023 | INFO | prospections_signals | [Signal] Modification prospection #15 pour partenaire Test Entreprise Candidat
+2025-11-01 13:42:21,596 | INFO | prospections_signals | [Signal] Modification prospection #15 pour partenaire Test Entreprise Candidat
+2025-11-01 13:45:33,079 | INFO | prospections_signals | [Signal] Modification prospection #15 pour partenaire Test Entreprise Candidat
+2025-11-01 13:45:48,753 | INFO | prospections_signals | [Signal] Modification prospection #15 pour partenaire Test Entreprise Candidat
+2025-11-01 13:50:27,075 | INFO | prospections_signals | [Signal] Modification prospection #15 pour partenaire Test Entreprise Candidat
+2025-11-01 13:50:39,321 | INFO | prospections_signals | [Signal] Modification prospection #15 pour partenaire Test Entreprise Candidat
+2025-11-01 14:00:18,389 | INFO | prospections_signals | [Signal] Modification prospection #15 pour partenaire Test Entreprise Candidat
+2025-11-01 14:01:12,051 | INFO | prospections_signals | [Signal] Modification prospection #15 pour partenaire Test Entreprise Candidat
+2025-11-01 14:02:30,626 | INFO | prospections_signals | [Signal] Modification prospection #15 pour partenaire Test Entreprise Candidat
+2025-11-01 14:03:28,683 | INFO | prospections_signals | [Signal] Modification prospection #15 pour partenaire Test Entreprise Candidat
+2025-11-01 14:16:13,175 | INFO | prospections_signals | [Signal] Modification prospection #15 pour partenaire Test Entreprise Candidat
+2025-11-01 14:17:48,393 | INFO | prospections_signals | [Signal] Modification prospection #15 pour partenaire Test Entreprise Candidat
+2025-11-01 14:54:45,683 | INFO | prospections_signals | [Signal] Modification prospection #15 pour partenaire Test Entreprise Candidat
+2025-11-01 14:55:49,239 | INFO | prospections_signals | [Signal] Modification prospection #15 pour partenaire Test Entreprise Candidat
+2025-11-01 14:57:40,809 | INFO | prospections_signals | [Signal] Modification prospection #15 pour partenaire Test Entreprise Candidat
+2025-11-01 14:57:54,587 | INFO | prospections_signals | [Signal] Modification prospection #15 pour partenaire Test Entreprise Candidat
+2025-11-01 15:44:38,569 | INFO | custom_user | 🔄 Utilisateur mis à jour : adserv.fr@gmail.com
+2025-11-01 15:45:40,793 | INFO | custom_user | 🔄 Utilisateur mis à jour : salim@test.com
+2025-11-01 15:59:24,047 | INFO | prospections_signals | [Signal] Création prospection #16 pour partenaire ADSERV
+2025-11-01 16:00:09,202 | INFO | prospections_signals | [Signal] Modification prospection #16 pour partenaire ADSERV
+2025-11-01 16:05:10,285 | INFO | custom_user | 🔄 Utilisateur mis à jour : salim@test.com
+2025-11-01 16:06:22,825 | INFO | prospections_signals | [Signal] Création prospection #17 pour partenaire ADSERV
+2025-11-01 16:14:56,543 | INFO | prospections_signals | [Signal] Création prospection #18 pour partenaire Club Tree
+2025-11-01 16:39:33,333 | INFO | prospections_signals | [Signal] Création prospection #19 pour partenaire Apple
+2025-11-01 16:51:35,677 | INFO | prospections_signals | [Signal] Création prospection #20 pour partenaire ADSERV
+2025-11-01 18:56:10,150 | INFO | prospections_signals | [Signal] Modification prospection #20 pour partenaire ADSERV
+2025-11-01 18:57:32,296 | INFO | prospections_signals | [Signal] Création prospection #21 pour partenaire Acorus
+2025-11-01 18:59:31,884 | INFO | prospections_signals | [Signal] Modification prospection #21 pour partenaire Acorus
+2025-11-01 20:34:37,451 | INFO | prospections_signals | [Signal] Modification prospection #21 pour partenaire Acorus
+2025-11-01 21:03:08,452 | INFO | formations_signals | [Signal] Formation modifiée : TMI (Technicien de maintenance industrielle) (ID=1) par ABD
+2025-11-01 21:03:08,844 | INFO | formations_signals | [Signal] Historique enregistré pour formation #1 par ABD – Modification du champ 'start_date' : 2025-08-25 → 2026-01-05
+2025-11-01 21:04:10,828 | INFO | formations_signals | [Signal] Formation modifiée : RPMS(Responsable  Petite et Moyennes Struture) (ID=6) par ABD
+2025-11-01 21:04:10,887 | INFO | formations_signals | [Signal] Historique enregistré pour formation #6 par ABD – Modification du champ 'start_date' : — → 2026-09-17
+2025-11-01 21:04:10,902 | INFO | formations_signals | [Signal] Historique enregistré pour formation #6 par ABD – Modification du champ 'end_date' : — → 2027-01-04
+2025-11-01 21:04:53,610 | INFO | formations_signals | [Signal] Formation modifiée : EEB(Electricien du Bâtiment) (ID=3) par ABD
+2025-11-01 21:04:53,669 | INFO | formations_signals | [Signal] Historique enregistré pour formation #3 par ABD – Modification du champ 'start_date' : 2025-08-29 → 2025-11-24
+2025-11-01 21:04:53,695 | INFO | formations_signals | [Signal] Historique enregistré pour formation #3 par ABD – Modification du champ 'num_produit' : — → —
+2025-11-01 21:06:01,197 | INFO | formations_signals | [Signal] Formation modifiée : TMI (Technicien de maintenance industrielle) (ID=1) par ABD
+2025-11-01 21:06:01,211 | INFO | formations_signals | [Signal] Historique enregistré pour formation #1 par ABD – Modification du champ 'start_date' : 2026-01-05 → 2025-12-18
+2025-11-01 21:06:01,218 | INFO | formations_signals | [Signal] Historique enregistré pour formation #1 par ABD – Modification du champ 'num_kairos' : — → aa
+2025-11-01 22:36:51,355 | INFO | formations_signals | [Signal] Formation modifiée : AD (Assistante de direction) (ID=4) par ABD
+2025-11-01 22:36:51,563 | INFO | formations_signals | [Signal] Historique enregistré pour formation #4 par ABD – Modification du champ 'type_offre' : 7 → 4
+2025-11-01 22:36:51,575 | INFO | formations_signals | [Signal] Historique enregistré pour formation #4 par ABD – Modification du champ 'statut' : — → 10
+2025-11-01 22:36:51,587 | INFO | formations_signals | [Signal] Historique enregistré pour formation #4 par ABD – Modification du champ 'num_kairos' : — → —
+2025-11-01 22:36:51,597 | INFO | formations_signals | [Signal] Historique enregistré pour formation #4 par ABD – Modification du champ 'num_produit' : — → —
+2025-11-01 22:38:57,888 | INFO | formations_signals | [Signal] Formation modifiée : AD (Assistante de direction) (ID=4) par ABD
+2025-11-01 23:27:55,254 | INFO | formations_signals | [Signal] Formation modifiée : AD (Assistante de direction) (ID=4) par ABD
+2025-11-01 23:33:03,074 | INFO | formations_signals | [Signal] Formation modifiée : AD (Assistante de direction) (ID=4) par ABD
+2025-11-01 23:33:13,359 | INFO | formations_signals | [Signal] Formation modifiée : AD (Assistante de direction) (ID=4) par ABD
+2025-11-01 23:33:21,173 | INFO | formations_signals | [Signal] Formation modifiée : AD (Assistante de direction) (ID=4) par ABD
+2025-11-01 23:36:45,266 | INFO | formations_signals | [Signal] Formation modifiée : AD (Assistante de direction) (ID=4) par ABD
+2025-11-01 23:38:21,163 | INFO | formations_signals | [Signal] Formation créée : SST (ID=8) par ABD
+2025-11-01 23:38:21,261 | INFO | formations_signals | [Signal] Historique enregistré pour formation #8 par ABD – création du champ 'formation' : — → SST
+2025-11-02 11:15:05,946 | INFO | custom_user | 🔄 Utilisateur mis à jour : testgirl@test.com
+2025-11-02 11:19:22,298 | INFO | custom_user | 🔄 Utilisateur mis à jour : testgirl@test.com
+2025-11-03 00:47:35,395 | INFO | formations_signals | [Signal] Formation modifiée : RPMS(Responsable  Petite et Moyennes Struture) (ID=6) par Système
+2025-11-03 00:48:59,434 | INFO | formations_signals | [Signal] Formation créée : formation he (ID=9) par Système
+2025-11-03 00:48:59,451 | INFO | formations_signals | [Signal] Historique enregistré pour formation #9 par Système – création du champ 'formation' : — → formation he
+2025-11-03 00:49:25,455 | INFO | formations_signals | [Signal] Formation modifiée : formation he (ID=9) par Système
+2025-11-03 00:49:25,508 | INFO | formations_signals | [Signal] Historique enregistré pour formation #9 par Système – Modification du champ 'num_offre' : 67 → 674587

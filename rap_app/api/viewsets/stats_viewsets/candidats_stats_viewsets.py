@@ -2,6 +2,7 @@ from __future__ import annotations
 # rap_app/api/viewsets/stats_viewsets/candidats_stats_viewsets.py
 # ViewSet DRF — Statistiques des candidats (scope centre + département + appairages)
 from ...serializers.base_serializers import EmptySerializer
+from drf_spectacular.utils import extend_schema, OpenApiParameter
 
 
 import logging
@@ -152,6 +153,16 @@ class CandidatStatsViewSet(RestrictToUserOwnedQueryset, GenericViewSet):
     # ───────────────────────────────
     # Data
     # ───────────────────────────────
+    @extend_schema(
+    parameters=[
+        OpenApiParameter(
+            name="avec_archivees",
+            type=bool,
+            required=False,
+            description="Inclure les candidats liés à des formations archivées (true/false)"
+        ),
+    ],
+)
     def get_queryset(self):
         qs = (
             Candidat.objects
@@ -162,9 +173,15 @@ class CandidatStatsViewSet(RestrictToUserOwnedQueryset, GenericViewSet):
                 "responsable_placement",
             )
         )
-        # 1) périmètre staff/admin
+        # 1️⃣ Périmètre user
         qs = self._scope_candidats_for_user(qs, getattr(self.request, "user", None))
-        # 2) restriction "owned" uniquement pour les non-staff
+
+        # 2️⃣ Gestion des formations archivées
+        inclure_archivees = str(self.request.query_params.get("avec_archivees", "false")).lower() in ["1", "true", "yes", "on"]
+        if not inclure_archivees:
+            qs = qs.exclude(formation__activite="archivee")
+
+        # 3️⃣ Restriction "owned" pour non-staff
         user = getattr(self.request, "user", None)
         is_staff_like = bool(
             user and (
@@ -173,10 +190,9 @@ class CandidatStatsViewSet(RestrictToUserOwnedQueryset, GenericViewSet):
                 or (hasattr(user, "is_admin") and callable(user.is_admin) and user.is_admin())
             )
         )
-
-
         if not is_staff_like and hasattr(self, "restrict_queryset_to_user"):
             qs = self.restrict_queryset_to_user(qs)
+
         return qs
 
     # Bool parsing
@@ -368,17 +384,18 @@ class CandidatStatsViewSet(RestrictToUserOwnedQueryset, GenericViewSet):
         )
 
         group_fields_map = {
-            "centre": ["formation__centre_id", "formation__centre__nom"],
-            "departement": ["departement"],
-            "formation": ["formation_id", "formation__nom"],
-            "statut": ["statut"],
-            "type_contrat": ["type_contrat"],
-            "cv_statut": ["cv_statut"],
-            "resultat_placement": ["resultat_placement"],
-            "contrat_signe": ["contrat_signe"],
-            "responsable": ["responsable_placement_id"],  # label résolu plus bas
-            "entreprise": ["entreprise_placement_id", "entreprise_placement__nom"],
-        }
+        "centre": ["formation__centre_id", "formation__centre__nom", "formation__num_offre"],
+        "departement": ["departement"],
+        "formation": ["formation_id", "formation__nom", "formation__num_offre"],
+        "statut": ["statut"],
+        "type_contrat": ["type_contrat"],
+        "cv_statut": ["cv_statut"],
+        "resultat_placement": ["resultat_placement"],
+        "contrat_signe": ["contrat_signe"],
+        "responsable": ["responsable_placement_id"],
+        "entreprise": ["entreprise_placement_id", "entreprise_placement__nom"],
+    }
+
         fields = group_fields_map[by]
 
         rows = list(
@@ -437,9 +454,15 @@ class CandidatStatsViewSet(RestrictToUserOwnedQueryset, GenericViewSet):
         elif by == "formation":
             for r in rows:
                 r["group_key"] = r.get("formation_id")
-                r["group_label"] = r.get("formation__nom") or (
-                    f"Formation #{r.get('formation_id')}" if r.get("formation_id") is not None else "—"
-                )
+                num = r.get("formation__num_offre")
+                nom = r.get("formation__nom")
+                if nom and num:
+                    r["group_label"] = f"{nom} ({num})"
+                else:
+                    r["group_label"] = nom or (
+                        f"Formation #{r.get('formation_id')}" if r.get("formation_id") is not None else "—"
+                    )
+
         elif by in {"statut", "type_contrat", "cv_statut", "resultat_placement", "contrat_signe"}:
             key = fields[0]
             for r in rows:

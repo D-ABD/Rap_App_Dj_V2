@@ -316,3 +316,18 @@ class Centre(BaseModel):
             self.created_at.strftime('%Y-%m-%d %H:%M') if self.created_at else '',
             self.updated_at.strftime('%Y-%m-%d %H:%M') if self.updated_at else ''
         ]
+
+    @property
+    def departement(self) -> str:
+        """
+        Retourne automatiquement le code du département (ex: 33, 92, 75) à partir du code postal.
+        Fonctionne pour la France métropolitaine.
+        """
+        if not self.code_postal:
+            return ""
+        # Cas particuliers (DOM, Corse, etc.)
+        if self.code_postal.startswith(("97", "98")):
+            return self.code_postal[:3]
+        if self.code_postal.startswith("20"):  # Corse
+            return "2A" if self.code_postal[2] in "012345" else "2B"
+        return self.code_postal[:2]

@@ -12,7 +12,6 @@ from .documents import Document
 from .partenaires import Partenaire
 from .rapports import Rapport
 from .prospection import Prospection, HistoriqueProspection
-from .prepacomp import Semaine, PrepaCompGlobal
 from .vae import   VAE, HistoriqueStatutVAE
 from .jury import SuiviJury
 from .logs import LogUtilisateur
@@ -38,7 +37,6 @@ from . import (
     formations,
     logs,
     partenaires,
-    prepacomp,
     prospection,
     rapports,
     statut,

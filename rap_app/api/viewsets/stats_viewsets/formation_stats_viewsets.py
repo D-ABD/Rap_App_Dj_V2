@@ -1,4 +1,10 @@
 from __future__ import annotations
+
+from django.forms import CharField
+
+from ....models.centres import Centre
+from ....models.statut import Statut
+from ....models.types_offre import TypeOffre
 from ...serializers.base_serializers import EmptySerializer
 
 from typing import Literal, Iterable, Optional
@@ -14,6 +20,7 @@ from rest_framework.viewsets import GenericViewSet
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from django.db.models.functions import Substr
 
 from ...permissions import IsStaffOrAbove, is_staff_or_staffread
 
@@ -50,7 +57,7 @@ class FormationStatsViewSet(RestrictToUserOwnedQueryset, GenericViewSet):
         return bool(
             getattr(user, "is_superuser", False)
             or (hasattr(user, "is_admin") and callable(user.is_admin) and user.is_admin())
-        )
+        )   
 
     def _staff_centre_ids(self, user) -> Optional[list[int]]:
         """Retourne la liste des centres visibles pour un staff/staff_read, None si admin-like."""
@@ -524,3 +531,109 @@ class FormationStatsViewSet(RestrictToUserOwnedQueryset, GenericViewSet):
             "top_saturees": top_saturees,
             "en_tension": en_tension,
         })
+    
+
+    # ────────────────────────────────────────────────────────────
+    # Metrics
+    # ────────────────────────────────────────────────────────────
+
+    def _base_metrics(self, qs):
+        today = timezone.now().date()
+        agg = qs.aggregate(
+            # --- États des formations ---
+            nb_formations=Count("id"),
+            nb_actives=Count("id", filter=Q(start_date__lte=today, end_date__gte=today)),  # ← utilisé par le front
+            nb_a_venir=Count("id", filter=Q(start_date__gt=today)),
+            nb_terminees=Count("id", filter=Q(end_date__lt=today)),
+            nb_annulees=Count("id", filter=Q(statut__nom__icontains="annul")),
+            nb_archivees=Count("id", filter=Q(activite="archivee")),
+
+            # --- Agrégats places/inscriptions ---
+            total_places_crif=Coalesce(Sum("prevus_crif"), Value(0)),
+            total_places_mp=Coalesce(Sum("prevus_mp"), Value(0)),
+            total_inscrits_crif=Coalesce(Sum("inscrits_crif"), Value(0)),
+            total_inscrits_mp=Coalesce(Sum("inscrits_mp"), Value(0)),
+
+            total_places=Coalesce(Sum(F("prevus_crif") + F("prevus_mp")), Value(0)),
+            total_inscrits=Coalesce(Sum(F("inscrits_crif") + F("inscrits_mp")), Value(0)),
+
+            total_dispo_crif=Coalesce(
+                Sum(Greatest(F("prevus_crif") - F("inscrits_crif"), Value(0))), Value(0)
+            ),
+            total_dispo_mp=Coalesce(
+                Sum(Greatest(F("prevus_mp") - F("inscrits_mp"), Value(0))), Value(0)
+            ),
+        )
+
+        # --- Post-traitements ---
+        agg["total_disponibles"] = int(agg["total_dispo_crif"]) + int(agg["total_dispo_mp"])
+        agg["taux_saturation"] = self._pct(agg["total_inscrits"], agg["total_places"])
+        agg["repartition_financeur"] = {
+            "crif": int(agg["total_inscrits_crif"]),
+            "mp": int(agg["total_inscrits_mp"]),
+            "crif_pct": self._pct(agg["total_inscrits_crif"], agg["total_inscrits"]),
+            "mp_pct": self._pct(agg["total_inscrits_mp"], agg["total_inscrits"]),
+        }
+        return agg
+
+    # ────────────────────────────────────────────────────────────
+    # Filter options (pour les <Select> du front)
+    # ────────────────────────────────────────────────────────────
+
+    @action(detail=False, methods=["GET"], url_path="filter-options")
+    def filter_options(self, request):
+        """Retourne les dictionnaires pour les filtres (centres, types d'offre, statuts, départements)."""
+        try:
+            user = request.user
+
+            # 🔐 Déterminer le périmètre du staff
+            if self._is_admin_like(user):
+                qs_centre = Centre.objects.filter(is_active=True)
+            elif is_staff_or_staffread(user):
+                centre_ids = self._staff_centre_ids(user) or []
+                dep_codes = self._staff_departement_codes(user) or []
+
+                q = Q()
+                if centre_ids:
+                    q |= Q(id__in=centre_ids)
+                if dep_codes:
+                    for code in dep_codes:
+                        q |= Q(code_postal__startswith=code)
+                qs_centre = Centre.objects.filter(is_active=True).filter(q)
+            else:
+                # Non staff → aucun centre visible
+                qs_centre = Centre.objects.none()
+
+            qs_centre = qs_centre.order_by("nom")
+            qs_type = TypeOffre.objects.filter(is_active=True).order_by("nom")
+            qs_statut = Statut.objects.filter(is_active=True).order_by("nom")
+
+            # 🧠 Extraction des départements visibles
+            departements = (
+                qs_centre.exclude(code_postal__isnull=True)
+                .exclude(code_postal__exact="")
+                .annotate(
+                    dep=Substr(
+                        Coalesce("code_postal", Value("")),
+                        1,
+                        2,
+                        output_field=models.CharField(),
+                    )
+                )
+                .values_list("dep", flat=True)
+                .distinct()
+                .order_by("dep")
+            )
+
+            data = {
+                "centresById": {str(c.id): c.nom for c in qs_centre},
+                "typeOffreById": {str(t.id): t.nom for t in qs_type},
+                "statutById": {str(s.id): s.nom for s in qs_statut},
+                "departements": list(departements),
+            }
+            return Response(data)
+
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+            return Response({"error": str(e)}, status=500)

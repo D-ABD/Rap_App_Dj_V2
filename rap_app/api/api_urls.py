@@ -27,7 +27,6 @@ from .viewsets.formations_viewsets import FormationViewSet
 from .viewsets.login_logout_viewset import LoginAPIView, LogoutAPIView
 from .viewsets.logs_viewsets import LogUtilisateurViewSet
 from .viewsets.partenaires_viewsets import PartenaireViewSet
-from .viewsets.prepacomp_viewsets import PrepaCompGlobalViewSet, SemaineViewSet
 from .viewsets.prospection_viewsets import ProspectionViewSet
 from .viewsets.prospection_comment_viewsets import ProspectionCommentViewSet
 from .viewsets.rapports_viewsets import RapportViewSet
@@ -90,8 +89,8 @@ router.register(r'suivis-jury', SuiviJuryViewSet, basename='suivijury')
 router.register(r'vaes', VAEViewSet, basename='vae')
 
 # 📊 Prépa compétences
-router.register(r'semaines', SemaineViewSet, basename='semaine')
-router.register(r'prepa-globaux', PrepaCompGlobalViewSet, basename='prepa-global')
+
+
 
 # 🪵 Logs & rapports
 router.register(r'logs', LogUtilisateurViewSet, basename='logutilisateur')

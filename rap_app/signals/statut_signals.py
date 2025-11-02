@@ -9,7 +9,6 @@ from ..models.jury import SuiviJury
 from ..models.vae import VAE, HistoriqueStatutVAE
 
 from ..models.logs import LogUtilisateur
-from ..models.prepacomp import Semaine
 
 logger = logging.getLogger("rap_app.vae")
 
@@ -73,28 +72,6 @@ def create_vae_status_history(sender, instance, created, **kwargs):
             instance.invalidate_caches()
     except Exception as e:
         logger.error(f"❌ Erreur dans le signal VAE {getattr(instance, 'reference', instance.pk)} : {e}", exc_info=True)
-
-
-# ---------------------------
-# 📊 Log des semaines
-# ---------------------------
-
-@receiver(post_save, sender=Semaine)
-def log_semaine_save(sender, instance, created, **kwargs):
-    if skip_during_migrations():
-        return
-
-    try:
-        LogUtilisateur.log_action(
-            instance=instance,
-            action="Création" if created else "Mise à jour",
-            user=instance.updated_by or instance.created_by,
-            details=f"Semaine pour {instance.centre} – {instance.get_periode_display()}"
-        )
-        if hasattr(instance, 'invalidate_caches'):
-            instance.invalidate_caches()
-    except Exception as e:
-        logger.warning(f"⚠️ [Semaine] Erreur de log : {e}", exc_info=True)
 
 
 # ---------------------------

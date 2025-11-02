@@ -91,7 +91,7 @@ class FormationListSerializer(serializers.Serializer):
     inscrits_mp = serializers.IntegerField()
     prevus_crif = serializers.IntegerField()
     prevus_mp = serializers.IntegerField()
-    cap = serializers.IntegerField()
+    cap = serializers.IntegerField(allow_null=True)
     nombre_candidats = serializers.IntegerField()
     nombre_entretiens = serializers.IntegerField()
 
@@ -110,17 +110,14 @@ class FormationListSerializer(serializers.Serializer):
     transformation_badge = serializers.SerializerMethodField()
 
     @extend_schema_field(str)
-
     def get_inscrits_total(self, obj):
         return (obj.inscrits_crif or 0) + (obj.inscrits_mp or 0)
 
     @extend_schema_field(str)
-
     def get_prevus_total(self, obj):
         return (obj.prevus_crif or 0) + (obj.prevus_mp or 0)
 
     @extend_schema_field(str)
-
     def get_taux_transformation(self, obj):
         if obj.nombre_candidats:
             total_inscrits = self.get_inscrits_total(obj)
@@ -128,7 +125,6 @@ class FormationListSerializer(serializers.Serializer):
         return None
 
     @extend_schema_field(str)
-
     def get_transformation_badge(self, obj):
         taux = self.get_taux_transformation(obj)
         if taux is None:
@@ -140,7 +136,6 @@ class FormationListSerializer(serializers.Serializer):
         return "badge-danger"
 
     @extend_schema_field(str)
-
     def get_saturation_badge(self, obj):
         taux = obj.saturation
         if taux is None:
@@ -152,12 +147,10 @@ class FormationListSerializer(serializers.Serializer):
         return "badge-danger"
 
     @extend_schema_field(str)
-
     def get_centre(self, obj):
         return {"id": obj.centre.id, "nom": obj.centre.nom} if obj.centre else None
 
     @extend_schema_field(str)
-
     def get_statut(self, obj):
         if obj.statut:
             return {
@@ -169,7 +162,6 @@ class FormationListSerializer(serializers.Serializer):
         return None
 
     @extend_schema_field(str)
-
     def get_type_offre(self, obj):
         if obj.type_offre:
             return {

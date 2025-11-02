@@ -219,7 +219,13 @@ class CandidatSerializer(serializers.ModelSerializer):
     ateliers_counts = serializers.SerializerMethodField()
     centre_id = serializers.IntegerField(source="formation.centre_id", read_only=True)
     centre_nom = serializers.CharField(source="formation.centre.nom", read_only=True)
-
+    formation_nom = serializers.CharField(source="formation.nom", read_only=True)
+    formation_centre_nom = serializers.CharField(source="formation.centre.nom", read_only=True)
+    formation_type_offre_nom = serializers.CharField(source="formation.type_offre.nom", read_only=True)
+    formation_type_offre_libelle = serializers.CharField(source="formation.type_offre.libelle", read_only=True)
+    formation_num_offre = serializers.CharField(source="formation.num_offre", read_only=True)
+    formation_date_debut = serializers.SerializerMethodField()
+    formation_date_fin = serializers.SerializerMethodField()
     # Projections
     formation_info = FormationLiteSerializer(source="formation", read_only=True)
     last_appairage = serializers.SerializerMethodField()
@@ -246,7 +252,10 @@ class CandidatSerializer(serializers.ModelSerializer):
 
             # Statut & formation
             "entretien_done", "test_is_ok", "cv_statut", "cv_statut_display", "statut",
-            "formation", "formation_info", "evenement", "notes", "origine_sourcing",
+            "formation", "formation_info", "formation_nom", "formation_centre_nom", "formation_type_offre_nom",
+            "formation_type_offre_libelle", "formation_num_offre",
+            "formation_date_debut", "formation_date_fin",
+            "evenement", "notes", "origine_sourcing",
             "date_inscription", "rqth", "type_contrat", "disponibilite", "permis_b",
             "communication", "experience", "csp", "vu_par", "vu_par_nom",
 
@@ -286,6 +295,9 @@ class CandidatSerializer(serializers.ModelSerializer):
             "responsable_placement_nom", "entreprise_placement_nom",
             "entreprise_validee_nom", "vu_par_nom",
             "resultat_placement_display", "ateliers_counts",
+            "formation_nom", "formation_centre_nom", "formation_type_offre_nom",
+            "formation_type_offre_libelle", "formation_num_offre",
+            "formation_date_debut", "formation_date_fin",
         ]
         
     # ------- label getters -------
@@ -336,6 +348,29 @@ class CandidatSerializer(serializers.ModelSerializer):
             .first()
         )
         return AppairageLiteSerializer(last, context=self.context).data if last else None
+   
+    @extend_schema_field(str)
+    def get_formation_date_debut(self, obj):
+        f = getattr(obj, "formation", None)
+        if not f:
+            return None
+        # même logique que FormationLiteSerializer
+        for name in ["date_debut", "date_rentree", "debut", "start_date", "startDate"]:
+            val = getattr(f, name, None)
+            if val:
+                return val
+        return None
+
+    @extend_schema_field(str)
+    def get_formation_date_fin(self, obj):
+        f = getattr(obj, "formation", None)
+        if not f:
+            return None
+        for name in ["date_fin", "fin", "end_date", "endDate"]:
+            val = getattr(f, name, None)
+            if val:
+                return val
+        return None
     # -----------------------------
 
     @extend_schema_field(str)
@@ -763,9 +798,17 @@ class CandidatCreateUpdateSerializer(serializers.ModelSerializer):
     def validate(self, data):
         request = self.context.get("request")
         user = request.user if request else None
+
         if not request or not user or not user.is_authenticated:
             raise exceptions.PermissionDenied("Authentification requise.")
 
+        # ✅ Empêche les candidats orphelins
+        if not data.get("compte_utilisateur"):
+            raise serializers.ValidationError({
+                "compte_utilisateur": "Un compte utilisateur est obligatoire pour créer un candidat."
+            })
+
+        # 🔒 Champs réservés aux admin/superadmin
         restricted_fields = [
             "admissible",
             "notes",
@@ -785,12 +828,14 @@ class CandidatCreateUpdateSerializer(serializers.ModelSerializer):
                         {field: "Ce champ ne peut être modifié que par un administrateur."}
                     )
 
+        # 🔒 Vérif numéro OSIA
         if "numero_osia" in data:
             if user.role not in ["admin", "superadmin", "staff"]:
                 raise serializers.ValidationError({"numero_osia": "Non autorisé."})
             if self.instance and self.instance.numero_osia and data["numero_osia"] != self.instance.numero_osia:
                 raise serializers.ValidationError({"numero_osia": "Déjà attribué et non modifiable."})
 
+        # 🔄 Cohérence contrat signé ↔ OSIA
         contrat_signe_val = data.get("contrat_signe", getattr(self.instance, "contrat_signe", None))
         numero_osia_val = data.get("numero_osia", getattr(self.instance, "numero_osia", None))
         SIGNED_VALUES = {"oui", "signed", "valide"}
@@ -805,7 +850,6 @@ class CandidatCreateUpdateSerializer(serializers.ModelSerializer):
         if not user or user.role not in ["admin", "superadmin", "staff"]:
             raise serializers.ValidationError("Seul le staff peut créer/modifier la formation d’un candidat.")
         return value
-
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Meta
@@ -862,6 +906,16 @@ class CandidatQueryParamsSerializer(serializers.Serializer):
     type_contrat = LabelOrValueChoiceField(choices=dict(Candidat.TypeContrat.choices), required=False)
     cv_statut = LabelOrValueChoiceField(choices=dict(Candidat.CVStatut.choices), required=False)
 
+    contrat_signe = LabelOrValueChoiceField(
+    choices=dict(Candidat.ContratSigne.choices), required=False
+    )
+
+    # variantes CSV
+    contrat_signe__in = serializers.CharField(required=False)
+
+    # alias camelCase éventuel
+    contratSigne = serializers.CharField(required=False)
+
     # variantes CSV si présentes côté FilterSet
     statut__in = serializers.CharField(required=False)
     type_contrat__in = serializers.CharField(required=False)
@@ -888,12 +942,15 @@ class CandidatQueryParamsSerializer(serializers.Serializer):
             attrs["type_contrat"] = attrs.pop("typeContrat")
         if "cvStatut" in attrs and "cv_statut" not in attrs:
             attrs["cv_statut"] = attrs.pop("cvStatut")
+        if "contratSigne" in attrs and "contrat_signe" not in attrs:
+            attrs["contrat_signe"] = attrs.pop("contratSigne")    
 
         # normalise les champs __in si fournis en CSV (labels ou values)
         for key, choices in (
             ("statut__in", dict(Candidat.StatutCandidat.choices)),
             ("type_contrat__in", dict(Candidat.TypeContrat.choices)),
             ("cv_statut__in", dict(Candidat.CVStatut.choices)),
+            ("contrat_signe__in", dict(Candidat.ContratSigne.choices)),
         ):
             if key in attrs and isinstance(attrs[key], str):
                 raw = [x.strip() for x in attrs[key].split(",") if x.strip()]
@@ -910,6 +967,20 @@ class CandidatLiteSerializer(serializers.ModelSerializer):
     formation_type_offre = serializers.CharField(source="formation.type_offre.nom", read_only=True)
     centre_nom = serializers.CharField(source="formation.centre.nom", read_only=True)
 
+    # 🟢 ajout pour la modale front
+    compte_utilisateur_id = serializers.IntegerField(source="compte_utilisateur.id", read_only=True)
+    compte_utilisateur = serializers.SerializerMethodField()
+
+    def get_compte_utilisateur(self, obj):
+        cu = getattr(obj, "compte_utilisateur", None)
+        if cu:
+            return {
+                "id": cu.id,
+                "role": getattr(cu, "role", None),
+                "is_active": getattr(cu, "is_active", None),
+            }
+        return None
+
     class Meta:
         model = Candidat
         fields = [
@@ -920,4 +991,7 @@ class CandidatLiteSerializer(serializers.ModelSerializer):
             "formation_num_offre",
             "formation_type_offre",
             "centre_nom",
+            # 🟢 ajoutés :
+            "compte_utilisateur_id",
+            "compte_utilisateur",
         ]

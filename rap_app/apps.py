@@ -16,7 +16,6 @@ class RapAppConfig(AppConfig):
         import rap_app.signals.formations_signals
         import rap_app.signals.rapports_signals
         import rap_app.signals.prospections_signals
-        import rap_app.signals.prepacomp_signals
         import rap_app.signals.logs_signals  
         import rap_app.signals.statut_signals
         import rap_app.signals.appairage_signals

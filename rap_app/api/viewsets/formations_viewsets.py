@@ -28,6 +28,7 @@ from io import BytesIO
 import datetime
 from django.utils import timezone as dj_timezone
 from openpyxl.worksheet.table import Table, TableStyleInfo
+from django.utils import timezone
 
 
 from rest_framework import viewsets, status
@@ -101,13 +102,15 @@ class FormationViewSet(UserVisibilityScopeMixin, viewsets.ModelViewSet):
             filters.SearchFilter,  # accepte ?search=...
             filters.OrderingFilter
         ]
-    filterset_fields = ["centre", "type_offre", "statut", "created_by", "activite"]
+    filterset_fields = ["centre", "type_offre", "statut", "created_by", ]
     serializer_class = FormationListSerializer
 
     # ✅ DRF cherchera dans ces champs quand ?texte= est présent
-    search_fields = ["nom", "num_offre", "centre__nom", "type_offre__nom"]
-    ordering_fields = ["nom", "centre__nom", "date_debut", "created_at"]
-
+    search_fields = ["nom", "num_offre", "centre__nom", "type_offre__nom","assistante",]
+    ordering_fields = ["start_date", "end_date", "nom", "centre__nom",  "created_at"]
+    # 👇 Ordre par défaut : formations les plus proches d'abord
+    ordering = ["start_date"]
+    
     # ---------- Helpers FK ----------
     def _normalize_payload_for_fk(self, data):
         """
@@ -236,19 +239,58 @@ class FormationViewSet(UserVisibilityScopeMixin, viewsets.ModelViewSet):
         return qs
 
     def get_queryset(self):
-        # 🔸 On part du manager "non filtré"
+        """
+        Retourne le queryset filtré selon le périmètre utilisateur et les paramètres :
+        - activite: active / archivee / en_cours / terminee / annulee
+        - dans: 4w / 3m / 6m (période à venir)
+        - avec_archivees: inclut les archivées si demandé
+        """
         qs = Formation.objects.all_including_archived()
         qs = self._restrict_to_user_centres(qs)
 
-        activite = self.request.query_params.get("activite")
-        if activite in ["active", "archivee"]:
-            qs = qs.filter(activite=activite)
+        params = self.request.query_params
+        activite = params.get("activite")
+        dans = params.get("dans")
+        now = timezone.now().date()
+
+        # 🔹 Filtrage par activité
+        if activite:
+            if activite in ["active", "archivee"]:
+                qs = qs.filter(activite=activite)
+            elif activite == "en_cours":
+                qs = qs.filter(start_date__lte=now, end_date__gte=now)
+            elif activite == "terminee":
+                qs = qs.filter(end_date__lt=now)
+            elif activite == "annulee":
+                qs = qs.filter(statut__nom__icontains="annul")
         else:
-            avec_archivees = self.request.query_params.get("avec_archivees")
+            # Par défaut, exclut les archivées sauf si demandé
+            avec_archivees = params.get("avec_archivees")
             if not (avec_archivees and str(avec_archivees).lower() in ["1", "true", "yes", "on"]):
                 qs = qs.exclude(activite="archivee")
 
+        # 🔹 Filtrage par période "à venir"
+        if dans:
+            try:
+                if dans == "4w":
+                    limite = now + datetime.timedelta(weeks=4)
+                elif dans == "3m":
+                    limite = now + datetime.timedelta(days=90)
+                elif dans == "6m":
+                    limite = now + datetime.timedelta(days=180)
+                elif dans.isdigit():
+                    limite = now + datetime.timedelta(days=int(dans))
+                else:
+                    limite = None
+
+                if limite:
+                    qs = qs.filter(start_date__gte=now, start_date__lte=limite)
+            except Exception as e:
+                logger.warning(f"[filtres formations] paramètre 'dans' invalide ({dans}) : {e}")
+
         return qs
+
+
 
     def get_object(self):
         """
@@ -280,6 +322,13 @@ class FormationViewSet(UserVisibilityScopeMixin, viewsets.ModelViewSet):
         # ✅ Applique: DjangoFilterBackend + SearchFilter(texte) + OrderingFilter(ordering)
         qs = self.filter_queryset(self.get_queryset())
         
+        # ⏳ Filtre temporel : ?dans=4w / 3m / 6m / N (jours)
+        dans = params.get("dans")
+        if dans:
+            try:
+                qs = Formation.objects.formations_a_venir(dans=dans)
+            except Exception as e:
+                logger.warning(f"Filtre 'dans' ignoré (paramètre invalide '{dans}') : {e}")
 
         # ⬇️ Compléments non gérés par DjangoFilterBackend
         if params.get("date_debut"):
@@ -323,41 +372,80 @@ class FormationViewSet(UserVisibilityScopeMixin, viewsets.ModelViewSet):
 
     # ---------- Actions annexes (toutes restreintes aussi) ----------
 
-    @extend_schema(summary="Filtres disponibles (centres, statuts, types d’offre, activités)")
+    @extend_schema(summary="Filtres disponibles (centres, statuts, types d’offre, activités, périodes à venir)")
     @action(detail=False, methods=["get"])
     def filtres(self, request):
-        ref_complet = str(request.query_params.get("ref_complet", "")).lower() in {"1","true","yes","on"}
+        user = request.user
+        ref_complet = str(request.query_params.get("ref_complet", "")).lower() in {"1", "true", "yes", "on"}
 
-        # centres : toujours selon le périmètre
         qs = self.get_queryset()
-        centres_qs = qs.values_list("centre_id", "centre__nom").distinct().order_by("centre__nom")
+
+        # ✅ Centres : si admin/superadmin → tous, sinon selon périmètre
+        if is_admin_like(user):
+            from ...models.centres import Centre  # ⚠️ adapte l’import selon ton projet
+            centres_qs = (
+                Centre.objects.filter(is_active=True)
+                .values_list("id", "nom")
+                .order_by("nom")
+            )
+        else:
+            centres_qs = (
+                qs.values_list("centre_id", "centre__nom")
+                .distinct()
+                .order_by("centre__nom")
+            )
+
         centres = [{"id": c[0], "nom": c[1]} for c in centres_qs if c[0]]
 
+        # ✅ Statuts et types d’offre
         if ref_complet:
-            # ⬅️ référentiels complets (non scopés)
             statuts_qs = Statut.objects.all().values_list("id", "nom").order_by("nom")
             type_offres_qs = TypeOffre.objects.all().values_list("id", "nom").order_by("nom")
             statuts = [{"id": s[0], "nom": s[1]} for s in statuts_qs]
             type_offres = [{"id": t[0], "nom": t[1]} for t in type_offres_qs]
         else:
-            # ⬅️ comportement historique (scopé par le queryset)
-            statuts_qs = qs.values_list("statut_id", "statut__nom").distinct().order_by("statut__nom")
-            type_offres_qs = qs.values_list("type_offre_id", "type_offre__nom").distinct().order_by("type_offre__nom")
+            statuts_qs = (
+                qs.values_list("statut_id", "statut__nom")
+                .distinct()
+                .order_by("statut__nom")
+            )
+            type_offres_qs = (
+                qs.values_list("type_offre_id", "type_offre__nom")
+                .distinct()
+                .order_by("type_offre__nom")
+            )
             statuts = [{"id": s[0], "nom": s[1]} for s in statuts_qs if s[0]]
             type_offres = [{"id": t[0], "nom": t[1]} for t in type_offres_qs if t[0]]
 
-        return Response({
-            "success": True,
-            "data": {
-                "centres": centres,              # ⬅️ reste avec périmètre
-                "statuts": statuts,              # ⬅️ complets si ref_complet=true
-                "type_offres": type_offres,      # ⬅️ complets si ref_complet=true
-                "activites": [
-                    {"code": "active", "libelle": "Active"},
-                    {"code": "archivee", "libelle": "Archivée"},
-                ],
-            },
-        })
+        # ✅ Périodes temporelles "à venir"
+        periodes_a_venir = [
+            {"code": "4w", "libelle": "Dans les 4 semaines"},
+            {"code": "3m", "libelle": "Dans les 3 mois"},
+            {"code": "6m", "libelle": "Dans les 6 mois"},
+            {"code": "180", "libelle": "Dans les 6 mois (approximatif)"},
+        ]
+
+        # ✅ Activités enrichies (pour filtres front)
+        activites = [
+            {"code": "active", "libelle": "Active"},
+            {"code": "en_cours", "libelle": "En cours"},
+            {"code": "terminee", "libelle": "Terminée"},
+            {"code": "annulee", "libelle": "Annulée"},
+            {"code": "archivee", "libelle": "Archivée"},
+        ]
+
+        return Response(
+            {
+                "success": True,
+                "data": {
+                    "centres": centres,
+                    "statuts": statuts,
+                    "type_offres": type_offres,
+                    "activites": activites,
+                    "periodes_a_venir": periodes_a_venir,
+                },
+            }
+        )
 
 
 

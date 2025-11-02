@@ -93,7 +93,14 @@ class CandidatFilter(django_filters.FilterSet):
     type_contrat_isnull = django_filters.BooleanFilter(field_name="type_contrat", lookup_expr="isnull")
 
     disponibilite = django_filters.ChoiceFilter(field_name="disponibilite", choices=Candidat.Disponibilite.choices)
+
+    # ✅ Nouveau : Contrat signé (avec variantes)
     contrat_signe = django_filters.ChoiceFilter(field_name="contrat_signe", choices=Candidat.ContratSigne.choices)
+    contrat_signe__in = SafeCharInFilter(field_name="contrat_signe", lookup_expr="in")
+    contrat_signe_i = django_filters.CharFilter(field_name="contrat_signe", lookup_expr="iexact")
+    contrat_signe_isnull = django_filters.BooleanFilter(field_name="contrat_signe", lookup_expr="isnull")
+
+    # 🔁 Résultat placement
     resultat_placement = django_filters.ChoiceFilter(
         field_name="resultat_placement", choices=ResultatPlacementChoices.choices
     )
@@ -102,6 +109,7 @@ class CandidatFilter(django_filters.FilterSet):
     cv_statut = django_filters.ChoiceFilter(field_name="cv_statut", choices=Candidat.CVStatut.choices)
     cv_statut__in = SafeCharInFilter(field_name="cv_statut", lookup_expr="in")
 
+    # 🏙️ Localisation
     ville = django_filters.CharFilter(field_name="ville", lookup_expr="icontains")
     code_postal = django_filters.CharFilter(field_name="code_postal", lookup_expr="istartswith")
 
@@ -114,6 +122,7 @@ class CandidatFilter(django_filters.FilterSet):
 
     # 🆕 a-t-il un OSIA ?
     has_osia = django_filters.BooleanFilter(method="filter_has_osia")
+
     def filter_has_osia(self, qs, name, value):
         if value is None:
             return qs
@@ -124,11 +133,15 @@ class CandidatFilter(django_filters.FilterSet):
     class Meta:
         model = Candidat
         fields = [
-            "statut", "type_contrat", "disponibilite",
+            "statut", "statut__in", "statut_i",
+            "type_contrat", "type_contrat__in", "type_contrat_i", "type_contrat_isnull",
+            "disponibilite",
+            "contrat_signe", "contrat_signe__in", "contrat_signe_i", "contrat_signe_isnull",
+            "resultat_placement",
+            "cv_statut", "cv_statut__in",
             "formation", "centre",
             "responsable_placement", "vu_par",
             "admissible", "entretien_done", "test_is_ok",
-            "contrat_signe", "resultat_placement",
             "entreprise_placement", "entreprise_validee",
             "ville", "code_postal", "id__in",
             "rqth", "permis_b",
@@ -136,8 +149,6 @@ class CandidatFilter(django_filters.FilterSet):
             "date_min", "date_max",
             "date_naissance_min", "date_naissance_max",
             "has_osia",
-            "statut__in", "type_contrat__in", "type_contrat_isnull", "statut_i", "type_contrat_i",
-            "cv_statut", "cv_statut__in",
         ]
 
 

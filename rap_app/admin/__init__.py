@@ -12,7 +12,6 @@ from .evenements_admin import *
 from .formations_admin import *
 from .logs_admin import *
 from .partenaires_admin import *
-from .prepa_admin import *
 from .prospection_admin import *
 from .rapports_admin import *
 from .statuts_admin import *
@@ -24,3 +23,4 @@ from .atelier_tre_admin import *
 from .candidat_admin import *
 from .prospection_comments_admin import *
 from .appairage_commentaires_admin import * 
+from .prepa2_admin import *

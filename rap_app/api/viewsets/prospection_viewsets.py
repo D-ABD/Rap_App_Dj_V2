@@ -102,27 +102,6 @@ def annotate_last_visible_comment(queryset, user):
         comments_count=Count("comments", filter=comments_filter, distinct=True),
     )
 
-# ─────────────────────────────────────────────────────────────────────────────
-# Utils parsing ids CSV
-# ─────────────────────────────────────────────────────────────────────────────
-def _parse_id_list(raw):
-    if raw is None:
-        return []
-    if isinstance(raw, (list, tuple)):
-        items = raw
-    else:
-        items = str(raw).split(",")
-    out = []
-    for it in items:
-        it = str(it).strip()
-        if not it:
-            continue
-        try:
-            out.append(int(it))
-        except ValueError:
-            continue
-    return out
-
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Serializers « créer depuis prospection »
@@ -440,30 +419,35 @@ class ProspectionViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         user = self.request.user
 
+        # 🧩 Cas 1 : Candidat ou stagiaire → owner forcé à lui-même
         if hasattr(user, "is_candidat_or_stagiaire") and user.is_candidat_or_stagiaire():
             instance = serializer.save(
                 created_by=user,
                 owner=user,
                 formation=get_candidate_formation(user),
             )
+
+        # 🧩 Cas 2 : Staff / Admin → owner par défaut = user, mais modifiable
         else:
             owner = serializer.validated_data.get("owner") or user
             owner_form = get_owner_formation(owner)
             formation_payload = serializer.validated_data.get("formation")
             partenaire = serializer.validated_data.get("partenaire")
 
+            # Choisit la formation en priorité liée au owner, sinon celle du payload
             chosen_formation = owner_form or formation_payload
 
-            # ✅ staff non admin : contrôle périmètre formation
+            # 🔒 Contrôle périmètre staff (si non admin)
             self._ensure_staff_can_use_formation(user, chosen_formation)
 
-            # ✅ centre résolu : formation.centre > partenaire.default_centre > (rien)
+            # Résolution du centre
             centre_id = None
             if chosen_formation:
                 centre_id = chosen_formation.centre_id
             elif partenaire:
                 centre_id = getattr(partenaire, "default_centre_id", None)
 
+            # ✅ Enregistrement final
             instance = serializer.save(
                 created_by=user,
                 owner=owner,
@@ -471,43 +455,50 @@ class ProspectionViewSet(viewsets.ModelViewSet):
                 centre_id=centre_id,
             )
 
-        LogUtilisateur.log_action(instance, LogUtilisateur.ACTION_CREATE, user, "Création d’une prospection")
-
+        LogUtilisateur.log_action(
+            instance,
+            LogUtilisateur.ACTION_CREATE,
+            user,
+            f"Création d’une prospection (owner={instance.owner or '—'})"
+        )
     def perform_update(self, serializer):
         user = self.request.user
         instance = serializer.instance
 
+        # 🧩 Cas 1 — candidat : restrictions fortes
         if hasattr(user, "is_candidat_or_stagiaire") and user.is_candidat_or_stagiaire():
-            # ⚠️ candidat ne peut pas changer owner ni formation
+            # Interdit de changer formation ou owner
             new_form = serializer.validated_data.get("formation")
             if new_form and new_form != instance.formation:
                 raise PermissionDenied("Vous n’avez pas le droit de modifier la formation associée.")
+            if "owner" in serializer.validated_data and serializer.validated_data["owner"] != instance.owner:
+                raise PermissionDenied("Vous n’avez pas le droit de modifier le responsable (owner).")
+
             data_owner = instance.owner
             data_formation = instance.formation
 
+        # 🧩 Cas 2 — staff/admin
         else:
-            # ✅ staff / admin → peut modifier le owner
             new_owner = serializer.validated_data.get("owner", instance.owner)
             owner_changed = (new_owner is not None and new_owner.pk != instance.owner_id)
 
+            # Si on change d’owner → la formation suit celle du candidat (s’il en a une)
             if owner_changed:
                 owner_form = get_owner_formation(new_owner)
                 if owner_form:
                     data_formation = owner_form
-                elif "formation" in serializer.validated_data:
-                    data_formation = serializer.validated_data["formation"]
                 else:
-                    data_formation = instance.formation
+                    data_formation = serializer.validated_data.get("formation", instance.formation)
             else:
+                # Si pas de changement d’owner → on peut modifier librement la formation
                 data_formation = serializer.validated_data.get("formation", instance.formation)
 
-            # ✅ staff non admin : on vérifie juste que la formation reste dans ses centres
+            # Vérification périmètre formation (staff non admin)
             self._ensure_staff_can_use_formation(user, data_formation)
 
-            # ⚠️ ici on autorise staff/admin à modifier le owner sans restriction
             data_owner = new_owner
 
-        # recalcul du centre
+        # 🔁 recalcul du centre en fonction de la formation ou du partenaire
         partenaire = serializer.validated_data.get("partenaire", instance.partenaire)
         if data_formation:
             centre_id = data_formation.centre_id
@@ -516,17 +507,19 @@ class ProspectionViewSet(viewsets.ModelViewSet):
         else:
             centre_id = instance.centre_id
 
+        # 💾 Sauvegarde finale
         instance = serializer.save(
             updated_by=user,
             owner=data_owner,
             formation=data_formation,
             centre_id=centre_id,
         )
+
         LogUtilisateur.log_action(
             instance,
             LogUtilisateur.ACTION_UPDATE,
             user,
-            "Mise à jour d’une prospection (incl. owner)"
+            f"Mise à jour d’une prospection (owner={data_owner or '—'})",
         )
 
     # ---------- DRF actions ----------
@@ -741,9 +734,15 @@ class ProspectionViewSet(viewsets.ModelViewSet):
                     "owners": owners,
                     "partenaires": partenaires,
                     "user_role": user_role,
+                    # 🆕 Ajout ici :
+                    "current_user": {
+                        "id": request.user.id,
+                        "username": getattr(request.user, "get_full_name", lambda: None)() or request.user.username,
+                    },
                 },
             }
         )
+
 
     @extend_schema(summary="Exporter les prospections au format XLSX")
     @action(detail=False, methods=["get", "post"], url_path="export-xlsx")

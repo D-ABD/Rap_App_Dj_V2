@@ -2,242 +2,354 @@ import logging
 from django.contrib import admin, messages
 from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
-from ..models.formations import Formation
+from django.utils import timezone
+
+from ..models.formations import Formation, HistoriqueFormation, Activite
 
 logger = logging.getLogger("application.formation")
 
 
+# =====================================================
+# 🔹 Filtres personnalisés
+# =====================================================
+
+class ActiviteFilter(admin.SimpleListFilter):
+    title = _("Activité")
+    parameter_name = "activite"
+
+    def lookups(self, request, model_admin):
+        return [
+            (Activite.ACTIVE, _("Active")),
+            (Activite.ARCHIVEE, _("Archivée")),
+        ]
+
+    def queryset(self, request, queryset):
+        if self.value():
+            return queryset.filter(activite=self.value())
+        return queryset
+
+
+class StatutTemporelFilter(admin.SimpleListFilter):
+    title = _("Statut temporel")
+    parameter_name = "status_temporel"
+
+    def lookups(self, request, model_admin):
+        return [
+            ("active", _("En cours")),
+            ("future", _("À venir")),
+            ("past", _("Terminée")),
+        ]
+
+    def queryset(self, request, queryset):
+        today = timezone.now().date()
+        if self.value() == "active":
+            return queryset.filter(start_date__lte=today, end_date__gte=today)
+        elif self.value() == "future":
+            return queryset.filter(start_date__gt=today)
+        elif self.value() == "past":
+            return queryset.filter(end_date__lt=today)
+        return queryset
+
+
+class SaturationFilter(admin.SimpleListFilter):
+    title = _("Saturation")
+    parameter_name = "saturation"
+
+    def lookups(self, request, model_admin):
+        return [
+            ("low", _("🟢 Faible (<50%)")),
+            ("medium", _("🟡 Moyenne (50–79%)")),
+            ("high", _("🔴 Saturée (≥80%)")),
+        ]
+
+    def queryset(self, request, queryset):
+        if self.value() == "low":
+            return queryset.filter(saturation__lt=50)
+        elif self.value() == "medium":
+            return queryset.filter(saturation__gte=50, saturation__lt=80)
+        elif self.value() == "high":
+            return queryset.filter(saturation__gte=80)
+        return queryset
+
+
+# =====================================================
+# 🔹 Inline : Historique des modifications
+# =====================================================
+
+class HistoriqueFormationInline(admin.TabularInline):
+    model = HistoriqueFormation
+    extra = 0
+    can_delete = False
+    readonly_fields = (
+        "created_at",
+        "created_by",
+        "action",
+        "champ_modifie",
+        "ancienne_valeur",
+        "nouvelle_valeur",
+        "commentaire",
+    )
+    ordering = ("-created_at",)
+    verbose_name_plural = _("Historique des modifications")
+    show_change_link = False
+
+    def has_add_permission(self, request, obj=None):
+        return False
+
+
+# =====================================================
+# 🔹 Admin principal : Formation
+# =====================================================
+
 @admin.register(Formation)
 class FormationAdmin(admin.ModelAdmin):
-    """
-    📚 Administration complète et homogène des formations.
-    Inclut affichage enrichi, filtres pertinents, actions groupées et audit.
-    """
-
-    model = Formation
-
-    # ───────────────────────────────
-    # Liste principale
-    # ───────────────────────────────
     list_display = (
-        "id",
         "nom",
-        "centre_nom",
-        "type_offre_nom",
-        "statut_colored",
-        "start_date_display",
-        "end_date_display",
-        "total_places",
-        "total_inscrits",
-        "places_disponibles",
-        "taux_saturation_display",
-        "saturation_display",
-        "status_temporel_badge",
-        "activite_badge",
+        "centre_display",
+        "type_offre_display",
+        "statut_display",
+        "start_date",
+        "end_date",
+        "saturation_badge",
+        "places_disponibles_display",
+        "status_temporel_display",
+        "activite_display",
     )
+
     list_filter = (
+        ActiviteFilter,
+        StatutTemporelFilter,
+        SaturationFilter,
         "centre",
         "type_offre",
         "statut",
         "convocation_envoie",
-        "entree_formation",
-        "start_date",
-        "end_date",
-        "activite",
     )
+
     search_fields = (
         "nom",
         "num_kairos",
         "num_offre",
         "num_produit",
         "assistante",
+        "centre__nom",
+        "type_offre__nom",
+        "statut__nom",
     )
-    ordering = ("-start_date",)
-    date_hierarchy = "start_date"
-    list_per_page = 50
 
-    # ───────────────────────────────
-    # Champs en lecture seule
-    # ───────────────────────────────
+    ordering = ("-start_date", "nom")
+    date_hierarchy = "start_date"
+    inlines = [HistoriqueFormationInline]
+
     readonly_fields = (
+        "saturation",
+        "total_places_display",
+        "total_inscrits_display",
+        "places_disponibles_display",
+        "taux_saturation_display",
+        "status_temporel_display",
         "created_at",
         "updated_at",
-        "created_by",
-        "updated_by",
-        "saturation",
-        "total_places",
-        "total_inscrits",
-        "places_disponibles",
-        "taux_saturation",
     )
 
-    # ───────────────────────────────
-    # Actions personnalisées
-    # ───────────────────────────────
-    actions = [
-        "dupliquer_formations",
-        "archiver_selection",
-        "restaurer_selection",
-    ]
-
-    # ───────────────────────────────
-    # Organisation du formulaire
-    # ───────────────────────────────
     fieldsets = (
-        ("📘 Informations générales", {
-            "fields": ("nom", "centre", "type_offre", "statut", "assistante"),
-        }),
-        ("📅 Dates & Références", {
-            "fields": ("start_date", "end_date", "num_kairos", "num_offre", "num_produit"),
-        }),
-        ("📊 Capacités & Inscriptions", {
+        (_("Informations générales"), {
             "fields": (
-                "prevus_crif", "prevus_mp",
-                "inscrits_crif", "inscrits_mp",
-                "cap", "convocation_envoie", "entree_formation",
-                "total_places", "total_inscrits", "places_disponibles", "taux_saturation",
-            ),
+                "nom",
+                "centre",
+                "type_offre",
+                "statut",
+                "activite",
+                "assistante",
+            )
         }),
-        ("🎓 Diplôme & Durée", {
+        (_("Dates et identifiants"), {
             "fields": (
-                "intitule_diplome", "code_diplome", "code_rncp",
-                "total_heures", "heures_distanciel",
-            ),
+                "start_date",
+                "end_date",
+                "num_kairos",
+                "num_offre",
+                "num_produit",
+            )
         }),
-        ("👥 Statistiques & Commentaires", {
+        (_("Places et inscriptions"), {
             "fields": (
-                "nombre_candidats", "nombre_entretiens", "nombre_evenements",
-                "dernier_commentaire", "saturation",
-            ),
+                ("prevus_crif", "inscrits_crif"),
+                ("prevus_mp", "inscrits_mp"),
+                "saturation",
+                "total_places_display",
+                "total_inscrits_display",
+                "places_disponibles_display",
+                "taux_saturation_display",
+            )
         }),
-        ("🔗 Partenaires", {
-            "fields": ("partenaires",),
+        (_("Suivi et activité"), {
+            "fields": (
+                "convocation_envoie",
+                "entree_formation",
+                "nombre_candidats",
+                "nombre_entretiens",
+                "nombre_evenements",
+                "dernier_commentaire",
+                "status_temporel_display",
+            )
         }),
-        ("🧾 Suivi & Métadonnées", {
-            "fields": ("activite", "created_by", "created_at", "updated_by", "updated_at"),
+        (_("Méta"), {
             "classes": ("collapse",),
+            "fields": (
+                "created_at",
+                "updated_at",
+            ),
         }),
     )
 
-    # ───────────────────────────────
-    # Méthodes d’affichage lisibles
-    # ───────────────────────────────
-    def centre_nom(self, obj):
+    # =================================================
+    # 🧮 Méthodes d’affichage
+    # =================================================
+
+    @admin.display(description=_("Centre"))
+    def centre_display(self, obj):
         return obj.centre.nom if obj.centre else "—"
-    centre_nom.short_description = "Centre"
 
-    def type_offre_nom(self, obj):
+    @admin.display(description=_("Type d’offre"))
+    def type_offre_display(self, obj):
         return obj.type_offre.nom if obj.type_offre else "—"
-    type_offre_nom.short_description = "Type d’offre"
 
-    def statut_colored(self, obj):
-        if not obj.statut:
-            return "—"
-        color = obj.get_status_color()
-        return format_html('<b style="color:{};">{}</b>', color, obj.statut.nom)
-    statut_colored.short_description = "Statut"
+    @admin.display(description=_("Statut"))
+    def statut_display(self, obj):
+        if obj.statut:
+            color = obj.get_status_color()
+            return format_html(
+                '<span style="color:{}; font-weight:bold;">{}</span>',
+                color,
+                obj.statut.nom,
+            )
+        return "—"
 
-    def start_date_display(self, obj):
-        return obj.start_date.strftime("%d/%m/%Y") if obj.start_date else "—"
-    start_date_display.short_description = "Début"
+    @admin.display(description=_("Activité"))
+    def activite_display(self, obj):
+        color = "#16a34a" if obj.activite == Activite.ACTIVE else "#9ca3af"
+        label = _("Active") if obj.activite == Activite.ACTIVE else _("Archivée")
+        return format_html('<span style="color:{};">{}</span>', color, label)
 
-    def end_date_display(self, obj):
-        return obj.end_date.strftime("%d/%m/%Y") if obj.end_date else "—"
-    end_date_display.short_description = "Fin"
-
-    def taux_saturation_display(self, obj):
-        if obj.total_places == 0:
-            return "—"
-        val = obj.taux_saturation or 0
-        color = (
-            "#dc3545" if val >= 90 else
-            "#fd7e14" if val >= 70 else
-            "#ffc107" if val >= 50 else
-            "#28a745"
-        )
-        return format_html("<b style='color:{}'>{:.1f}%</b>", color, val)
-    taux_saturation_display.short_description = "Taux occ."
-
-    def saturation_display(self, obj):
+    @admin.display(description=_("Saturation"))
+    def saturation_badge(self, obj):
         if obj.saturation is None:
             return "—"
-        val = obj.saturation
-        color = (
-            "#dc3545" if val >= 90 else
-            "#fd7e14" if val >= 70 else
-            "#ffc107" if val >= 50 else
-            "#28a745"
-        )
-        return format_html("<b style='color:{}'>{:.1f}%</b>", color, val)
-    saturation_display.short_description = "Saturation"
+        try:
+            value = float(obj.saturation)
+        except (ValueError, TypeError):
+            value = 0.0
+        color = "green" if value < 50 else "orange" if value < 80 else "red"
+        return format_html('<b><span style="color:{};">{}%</span></b>', color, f"{value:.1f}")
 
-    def status_temporel_badge(self, obj):
+    @admin.display(description=_("Statut temporel"))
+    def status_temporel_display(self, obj):
         mapping = {
-            "active": ("🟢", "En cours"),
-            "future": ("🔵", "À venir"),
-            "past": ("⚪", "Terminée"),
-            "unknown": ("⚫", "Inconnue"),
+            "active": _("🟢 En cours"),
+            "future": _("🟡 À venir"),
+            "past": _("🔴 Terminée"),
         }
-        icon, label = mapping.get(obj.status_temporel, ("⚫", "Inconnue"))
-        return format_html("<span title='{}'>{}</span>", label, icon)
-    status_temporel_badge.short_description = "État"
+        return mapping.get(obj.status_temporel, "❓ Inconnu")
 
-    def activite_badge(self, obj):
-        if obj.est_archivee:
-            return format_html('<span style="color:#999;">🗃️ Archivée</span>')
-        return format_html('<span style="color:#28a745;">✅ Active</span>')
-    activite_badge.short_description = "Activité"
+    @admin.display(description=_("Total places"))
+    def total_places_display(self, obj):
+        return obj.total_places
 
-    # ───────────────────────────────
-    # Actions personnalisées
-    # ───────────────────────────────
-    @admin.action(description="📄 Dupliquer les formations sélectionnées")
-    def dupliquer_formations(self, request, queryset):
+    @admin.display(description=_("Total inscrits"))
+    def total_inscrits_display(self, obj):
+        return obj.total_inscrits
+
+    @admin.display(description=_("Places disponibles"))
+    def places_disponibles_display(self, obj):
+        return obj.places_disponibles
+
+    @admin.display(description=_("Taux saturation"))
+    def taux_saturation_display(self, obj):
+        return f"{obj.taux_saturation:.1f}%"
+
+    # =================================================
+    # ⚙️ Actions personnalisées
+    # =================================================
+
+    @admin.action(description=_("🗃️ Archiver les formations sélectionnées"))
+    def action_archiver(self, request, queryset):
+        count = 0
+        for formation in queryset:
+            if formation.activite != Activite.ARCHIVEE:
+                formation.archiver(user=request.user, commentaire="Archivage via admin Django")
+                count += 1
+        self.message_user(request, _(f"{count} formation(s) archivée(s)."), messages.SUCCESS)
+
+    @admin.action(description=_("♻️ Désarchiver les formations sélectionnées"))
+    def action_desarchiver(self, request, queryset):
+        count = 0
+        for formation in queryset:
+            if formation.activite != Activite.ACTIVE:
+                formation.desarchiver(user=request.user, commentaire="Restauration via admin Django")
+                count += 1
+        self.message_user(request, _(f"{count} formation(s) restaurée(s)."), messages.SUCCESS)
+
+    @admin.action(description=_("📄 Dupliquer les formations sélectionnées"))
+    def action_dupliquer(self, request, queryset):
         count = 0
         for formation in queryset:
             formation.duplicate(user=request.user)
             count += 1
-        self.message_user(request, f"{count} formation(s) dupliquée(s).", messages.SUCCESS)
-        logger.info("[Admin] %s formation(s) dupliquée(s) par %s", count, request.user)
+        self.message_user(request, _(f"{count} formation(s) dupliquée(s)."), messages.SUCCESS)
 
-    @admin.action(description="🗃️ Archiver les formations sélectionnées")
-    def archiver_selection(self, request, queryset):
-        total, deja = 0, 0
-        for f in queryset:
-            if f.est_archivee:
-                deja += 1
-            else:
-                f.archiver(user=request.user)
-                total += 1
-        msg = f"{total} formation(s) archivée(s)."
-        if deja:
-            msg += f" ({deja} déjà archivées ignorées)"
-        self.message_user(request, msg, messages.WARNING)
-        logger.info("[Admin] %s formation(s) archivées (%s ignorées) par %s", total, deja, request.user)
+    actions = ("action_archiver", "action_desarchiver", "action_dupliquer")
 
-    @admin.action(description="🔁 Restaurer les formations archivées")
-    def restaurer_selection(self, request, queryset):
-        total, actives = 0, 0
-        for f in queryset:
-            if f.est_archivee:
-                f.desarchiver(user=request.user)
-                total += 1
-            else:
-                actives += 1
-        msg = f"{total} formation(s) restaurée(s)."
-        if actives:
-            msg += f" ({actives} déjà actives ignorées)"
-        self.message_user(request, msg, messages.SUCCESS)
-        logger.info("[Admin] %s formation(s) restaurées (%s actives ignorées) par %s", total, actives, request.user)
+    # =================================================
+    # ⚡ Optimisation queryset
+    # =================================================
 
-    # ───────────────────────────────
-    # Audit : auteur auto
-    # ───────────────────────────────
-    def save_model(self, request, obj, form, change):
-        """Assure la traçabilité de création/modification."""
-        if not change and not obj.created_by:
-            obj.created_by = request.user
-        obj.updated_by = request.user
-        super().save_model(request, obj, form, change)
-        action = "créée" if not change else "modifiée"
-        logger.info("[Admin] Formation %s : %s par %s", action, obj.nom, request.user)
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        return qs.select_related("centre", "type_offre", "statut")
+
+
+# =====================================================
+# 🔹 Admin HistoriqueFormation
+# =====================================================
+
+@admin.register(HistoriqueFormation)
+class HistoriqueFormationAdmin(admin.ModelAdmin):
+    list_display = (
+        "formation",
+        "champ_modifie",
+        "valeur_changement",
+        "action",
+        "created_by",
+        "created_at",
+    )
+    list_filter = ("action", "champ_modifie", "created_by", "created_at")
+    search_fields = (
+        "formation__nom",
+        "champ_modifie",
+        "nouvelle_valeur",
+        "commentaire",
+        "created_by__username",
+    )
+    readonly_fields = (
+        "formation",
+        "action",
+        "champ_modifie",
+        "ancienne_valeur",
+        "nouvelle_valeur",
+        "commentaire",
+        "details",
+        "created_by",
+        "created_at",
+        "updated_at",
+    )
+    ordering = ("-created_at",)
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return request.user.is_superuser

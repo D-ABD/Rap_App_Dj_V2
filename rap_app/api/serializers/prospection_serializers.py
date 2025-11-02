@@ -4,6 +4,8 @@ from rest_framework import serializers
 from drf_spectacular.utils import extend_schema_serializer, extend_schema_field, OpenApiExample
 from django.utils.translation import gettext_lazy as _
 
+from ...models.candidat import Candidat
+
 from ..serializers.prospection_comment_serializers import ProspectionCommentSerializer
 
 from ...models.formations import Formation
@@ -252,6 +254,43 @@ class ProspectionSerializer(BaseProspectionSerializer):
             raise serializers.ValidationError(_("La date de relance prévue doit être dans le futur."))
         return value
 
+    def create(self, validated_data):
+            """
+            Si le owner correspond à un candidat ayant une formation, 
+            on force la formation et le centre à ceux du candidat.
+            """
+            owner = validated_data.get("owner")
+            if owner:
+                try:
+                    candidat = Candidat.objects.select_related("formation", "formation__centre").filter(
+                        compte_utilisateur=owner
+                    ).first()
+                    if candidat and candidat.formation:
+                        validated_data["formation"] = candidat.formation
+                        validated_data["centre"] = candidat.formation.centre
+                except Exception:
+                    pass
+
+            return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        """
+        Même logique lors d'une mise à jour : 
+        si le owner est un candidat avec formation → on force celle du candidat.
+        """
+        owner = validated_data.get("owner") or instance.owner
+        if owner:
+            try:
+                candidat = Candidat.objects.select_related("formation", "formation__centre").filter(
+                    compte_utilisateur=owner
+                ).first()
+                if candidat and candidat.formation:
+                    validated_data["formation"] = candidat.formation
+                    validated_data["centre"] = candidat.formation.centre
+            except Exception:
+                pass
+
+        return super().update(instance, validated_data)
 
 # ---------------------------------------------------------------------
 # List / Detail
