@@ -47,16 +47,7 @@ class CentreManager(models.Manager):
         """
         return self.filter(code_postal=code_postal)
     
-    def with_prepa_for_year(self, year=None):
-        from .prepacomp import PrepaCompGlobal
-        year = year or now().year
-        return self.prefetch_related(
-            models.Prefetch(
-                'prepacompglobal_set',
-                queryset=PrepaCompGlobal.objects.filter(annee=year),
-                to_attr='prepa_for_year'
-            )
-        )
+
     
     def search(self, query):
         """
@@ -179,14 +170,6 @@ class Centre(BaseModel):
             address += f" ({self.code_postal})"
         return address
 
-    @cached_property
-    def nb_prepa_comp_global(self):
-        """
-        Nombre d'objectifs annuels associés à ce centre.
-        Utilisation de cached_property pour optimiser les performances.
-        """
-        from .prepacomp import PrepaCompGlobal
-        return PrepaCompGlobal.objects.filter(centre=self).count()
 
     def invalidate_caches(self):
         """Invalide les caches calculés."""
@@ -195,7 +178,7 @@ class Centre(BaseModel):
 
     def to_serializable_dict(self, include_related=False) -> dict:
         """
-        Renvoie un dictionnaire JSON-serializable de l'objet.
+        Renvoie un dictionnaire JSON-serializable de l'objet Centre.
         """
         base_dict = super().to_serializable_dict(exclude=['created_by', 'updated_by'])
         centre_dict = {
@@ -206,17 +189,16 @@ class Centre(BaseModel):
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,
         }
+
         result = {**base_dict, **centre_dict}
+
+        # On peut garder la logique "include_related" pour d'autres relations à venir
         if include_related:
-            from .prepacomp import PrepaCompGlobal
-            current_year = now().year
-            prepa_global = PrepaCompGlobal.objects.filter(centre=self, annee=current_year).first()
-            if prepa_global:
-                result["prepa_global"] = {
-                    "id": prepa_global.pk,
-                    "annee": prepa_global.annee,
-                }
+            # Exemple : tu pourras y ajouter plus tard d'autres liens (formations, candidats, etc.)
+            result["related_data"] = "À compléter si besoin"
+
         return result
+
 
     def save(self, *args, **kwargs):
         """
@@ -264,11 +246,6 @@ class Centre(BaseModel):
             if len(self.code_postal) != self.CODE_POSTAL_LENGTH:
                 raise ValidationError({"code_postal": f"Le code postal doit contenir exactement {self.CODE_POSTAL_LENGTH} chiffres."})
 
-    def prepa_global(self, annee=None):
-        """Raccourci pour accéder à l'objectif annuel via PrepaCompGlobal."""
-        from .prepacomp import PrepaCompGlobal
-        annee = annee or now().year
-        return PrepaCompGlobal.objects.filter(centre=self, annee=annee).first()
 
     def mark_as_inactive(self):
         """Marque le centre comme inactif (si un champ statut existe)."""

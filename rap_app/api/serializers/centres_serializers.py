@@ -2,7 +2,6 @@
 
 from rest_framework import serializers
 from ...models.centres import Centre
-from drf_spectacular.utils import extend_schema_field
 
 
 class CentreSerializer(serializers.ModelSerializer):
@@ -12,7 +11,6 @@ class CentreSerializer(serializers.ModelSerializer):
     """
 
     full_address = serializers.CharField(read_only=True, help_text="Adresse complète du centre.")
-    nb_prepa_comp_global = serializers.SerializerMethodField(help_text="Nombre de PrepaCompGlobal associés.")
 
     class Meta:
         model = Centre
@@ -49,7 +47,6 @@ class CentreSerializer(serializers.ModelSerializer):
 
             # Champs calculés
             "full_address",
-            "nb_prepa_comp_global",
         ]
 
         read_only_fields = [
@@ -57,12 +54,7 @@ class CentreSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
             "full_address",
-            "nb_prepa_comp_global",
         ]
-
-    @extend_schema_field(serializers.IntegerField())
-    def get_nb_prepa_comp_global(self, obj):
-        return obj.nb_prepa_comp_global
 
 
 class CentreConstantsSerializer(serializers.Serializer):

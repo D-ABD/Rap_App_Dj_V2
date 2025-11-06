@@ -4,6 +4,7 @@ venv/
 
 # === Fichiers sensibles ===
 .env
+.env.local
 
 # === Caches Python ===
 __pycache__/

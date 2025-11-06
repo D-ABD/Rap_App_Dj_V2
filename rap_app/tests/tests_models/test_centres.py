@@ -29,9 +29,6 @@ class CentreModelTest(BaseModelTestSetupMixin):
     def test_cache_invalidation(self):
         centre = self.create_instance(Centre, nom="Centre Cache", code_postal="75000")
 
-        # Crée une instance liée dans la BDD
-        from ...models.prepacomp import PrepaCompGlobal
-        PrepaCompGlobal.objects.create(centre=centre, annee=now().year)
 
         # Recharge le centre depuis la base pour éviter les incohérences
         centre = Centre.objects.get(pk=centre.pk)

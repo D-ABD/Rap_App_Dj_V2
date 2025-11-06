@@ -7,18 +7,25 @@ from pathlib import Path
 from datetime import timedelta
 import os
 import sys
-from decouple import config
-
-
 import warnings
-if not config("DEBUG", default="False").lower() == "true":
-    warnings.filterwarnings("ignore", message=".*drf_spectacular.*")
-
+from decouple import Config, RepositoryEnv
 
 # ==========
 # BASE DIR
 # ==========
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# ==========
+# ENVIRONNEMENT (.env.local prioritaire)
+# ==========
+env_path = BASE_DIR / ".env.local" if os.path.exists(BASE_DIR / ".env.local") else BASE_DIR / ".env"
+config = Config(RepositoryEnv(str(env_path)))
+
+# ==========
+# AVERTISSEMENTS
+# ==========
+if not config("DEBUG", default="False").lower() == "true":
+    warnings.filterwarnings("ignore", message=".*drf_spectacular.*")
 
 # ==========
 # HELPERS
@@ -34,6 +41,7 @@ DEBUG = config("DEBUG", default="False").lower() == "true"
 
 # Ex: .env -> ALLOWED_HOSTS=rap.adserv.fr,147.93.126.119
 ALLOWED_HOSTS = csv("ALLOWED_HOSTS", default="localhost,rap.adserv.fr")
+
 
 # ==========
 # APPS
