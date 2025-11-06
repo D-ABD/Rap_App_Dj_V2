@@ -100,14 +100,7 @@ class CentreAdmin(admin.ModelAdmin):
     # ───────────────────────────────
     # Helpers d’affichage
     # ───────────────────────────────
-    def nb_prepa(self, obj):
-        """Annotation dynamique du nombre de PrepaCompGlobal liés."""
-        return getattr(obj, "prepa_count", obj.nb_prepa_comp_global)
-    nb_prepa.short_description = _("Nb objectifs annuels")
 
-    def nb_prepa_display(self, obj):
-        return self.nb_prepa(obj)
-    nb_prepa_display.short_description = _("Objectifs liés")
 
     # ───────────────────────────────
     # Queryset optimisé
