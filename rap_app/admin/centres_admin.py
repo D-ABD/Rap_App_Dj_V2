@@ -5,13 +5,8 @@ from django.db.models import Count, Q
 
 from ..models.centres import Centre
 
-
 logger = logging.getLogger("application.centres")
 
-
-# ───────────────────────────────────────────────
-# ADMIN : CENTRE
-# ───────────────────────────────────────────────
 @admin.register(Centre)
 class CentreAdmin(admin.ModelAdmin):
     """Administration complète des centres de formation."""
@@ -29,7 +24,6 @@ class CentreAdmin(admin.ModelAdmin):
         "code_postal",
         "commune",
         "cfa_entreprise",
-        "nb_prepa",
         "created_by",
         "created_at",
     )
@@ -49,7 +43,6 @@ class CentreAdmin(admin.ModelAdmin):
         "created_at",
         "updated_by",
         "updated_at",
-        "nb_prepa_display",
     )
 
     fieldsets = (
@@ -85,7 +78,7 @@ class CentreAdmin(admin.ModelAdmin):
             "classes": ("collapse",),
         }),
         (_("Statistiques"), {
-            "fields": ("nb_prepa_display",),
+            "fields": (),
         }),
         (_("Métadonnées"), {
             "fields": (
@@ -98,27 +91,20 @@ class CentreAdmin(admin.ModelAdmin):
     )
 
     # ───────────────────────────────
-    # Helpers d’affichage
-    # ───────────────────────────────
-
-
-    # ───────────────────────────────
     # Queryset optimisé
     # ───────────────────────────────
     def get_queryset(self, request):
         qs = super().get_queryset(request)
-        return qs.select_related("created_by", "updated_by").annotate(prepa_count=Count("prepa_globaux", distinct=True))
+        return qs.select_related("created_by", "updated_by")
 
     # ───────────────────────────────
     # Sauvegarde avec traçabilité
     # ───────────────────────────────
     def save_model(self, request, obj, form, change):
-        """Enregistre le centre avec log + user injecté."""
         obj.save(user=request.user)
         logger.info("🏫 Centre #%s sauvegardé (%s) par %s", obj.pk, obj.nom, request.user)
 
     def delete_model(self, request, obj):
-        """Suppression avec journalisation."""
         logger.warning("❌ Suppression du centre #%s (%s) par %s", obj.pk, obj.nom, request.user)
         super().delete_model(request, obj)
 
@@ -127,7 +113,6 @@ class CentreAdmin(admin.ModelAdmin):
     # ───────────────────────────────
     @admin.action(description="🟢 Exporter la sélection en CSV (fichier local)")
     def act_export_csv(self, request, queryset):
-        """Export CSV rapide depuis admin."""
         import csv
         from io import StringIO
         buffer = StringIO()
@@ -140,16 +125,4 @@ class CentreAdmin(admin.ModelAdmin):
         response = admin.utils.stream_response(buffer, filename="centres_export.csv")
         return response
 
-    @admin.action(description="♻️ Rafraîchir les caches (nb_prepa_comp_global)")
-    def act_refresh_caches(self, request, queryset):
-        count = 0
-        for centre in queryset:
-            centre.invalidate_caches()
-            count += 1
-        self.message_user(
-            request,
-            _(f"{count} cache(s) invalidé(s) avec succès."),
-            level=messages.SUCCESS,
-        )
-
-    actions = ("act_export_csv", "act_refresh_caches")
+    actions = ("act_export_csv",)

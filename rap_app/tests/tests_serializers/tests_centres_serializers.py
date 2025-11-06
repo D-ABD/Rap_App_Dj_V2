@@ -12,4 +12,3 @@ class CentreSerializerTestCase(TestCase):
         self.assertEqual(data["nom"], "Centre Test")
         self.assertEqual(data["code_postal"], "75001")
         self.assertIn("full_address", data)
-        self.assertIn("nb_prepa_comp_global", data)

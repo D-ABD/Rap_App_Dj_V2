@@ -163,11 +163,6 @@ class Centre(BaseModel):
         return address
 
 
-    def invalidate_caches(self):
-        """Invalide les caches calculés."""
-        for prop in ['nb_prepa_comp_global']:
-            self.__dict__.pop(prop, None)
-
     def to_serializable_dict(self, include_related=False) -> dict:
         """
         Renvoie un dictionnaire JSON-serializable de l'objet Centre.

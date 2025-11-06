@@ -33,18 +33,6 @@ class CentreModelTest(BaseModelTestSetupMixin):
         # Recharge le centre depuis la base pour éviter les incohérences
         centre = Centre.objects.get(pk=centre.pk)
 
-        # Déclenche le cache
-        value = centre.nb_prepa_comp_global
-        self.assertEqual(value, 1)
-
-        # ✅ Vérifie que la propriété est bien mise en cache sous le bon nom
-        self.assertIn('nb_prepa_comp_global', centre.__dict__)
-
-        # Invalide le cache
-        centre.invalidate_caches()
-
-        # ✅ Vérifie que le cache est supprimé
-        self.assertNotIn('nb_prepa_comp_global', centre.__dict__)
 
 
     def test_to_serializable_dict(self):
@@ -89,15 +77,6 @@ class CentreModelTest(BaseModelTestSetupMixin):
         results = Centre.custom.search("Alpha")
         self.assertEqual(results.count(), 1)
 
-    def test_with_prepa_counts(self):
-        self.create_instance(Centre, nom="Centre Compte", code_postal="99999")
-        queryset = Centre.custom.with_prepa_counts()
-        self.assertGreaterEqual(queryset.count(), 1)
-
-
-    def test_prepa_global_returns_none(self):
-        centre = self.create_instance(Centre, nom="Centre Test", code_postal="75000")
-        self.assertIsNone(centre.prepa_global())
 
     def test_delete_centre(self):
         centre = self.create_instance(Centre, nom="Centre Suppr", code_postal="75000")
