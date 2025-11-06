@@ -26,14 +26,6 @@ class CentreManager(models.Manager):
         """
         return self.all()
     
-    def with_prepa_counts(self):
-        """
-        Retourne les centres avec le nombre d'objectifs annuels.
-        
-        Returns:
-            QuerySet: Centres annotés avec le nombre de PrepaCompGlobal
-        """
-        return self.annotate(prepa_count=Count('prepa_globaux'))
     
     def by_code_postal(self, code_postal):
         """
@@ -265,8 +257,9 @@ class Centre(BaseModel):
     
     @classmethod
     def get_centres_with_stats(cls):
-        """Récupère tous les centres avec statistiques calculées."""
-        return cls.custom.with_prepa_counts().order_by('nom')
+        """Récupère tous les centres (statistiques désactivées, module supprimé)."""
+        return cls.custom.all().order_by('nom')
+
 
     @classmethod
     def get_csv_fields(cls):

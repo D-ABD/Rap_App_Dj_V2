@@ -251,16 +251,6 @@ class Command(BaseCommand):
         if not hasattr(model, 'prospection'):
             issues["critical"].append("HistoriqueProspection: relation 'prospection' manquante")
 
-    def _check_prepacomp_specific(self, model, issues, show_ok):
-        for prop in ['taux_transformation', 'taux_adhesion']:
-            if not hasattr(model, prop):
-                issues["critical"].append(f"PrepaCompGlobal: propriété '{prop}' manquante")
-        for field in ['objectif_annuel_prepa', 'objectif_hebdomadaire_prepa', 'objectif_annuel_jury', 'objectif_mensuel_jury']:
-            if not hasattr(model, field):
-                issues["critical"].append(f"PrepaCompGlobal: champ d'objectif '{field}' manquant")
-        for method in ['taux_objectif_annee', 'objectif_annuel_global', 'objectif_hebdo_global', 'objectifs_par_centre', 'stats_par_mois']:
-            if not hasattr(model, method):
-                issues["info"].append(f"PrepaCompGlobal: méthode statistique '{method}' manquante")
 
 
     def _check_model_specific(self, model, issues, show_ok=False):
@@ -278,7 +268,6 @@ class Command(BaseCommand):
             'Evenement': self._check_evenement_specific,
             'Prospection': self._check_prospection_specific,
             'HistoriqueProspection': self._check_historique_prospection,
-            'PrepaCompGlobal': self._check_prepacomp_specific,
             'Rapport': self._check_rapport_specific,
             'Statut': self._check_statut_specific,
             'TypeOffre': self._check_typeoffre_specific,
