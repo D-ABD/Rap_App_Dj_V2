@@ -218,18 +218,35 @@ SPECTACULAR_SETTINGS = {
 # CSRF_TRUSTED_ORIGINS=https://rap.adserv.fr
 # CORS_ALLOWED_ORIGINS=https://rap.adserv.fr
 # ==========
-CSRF_TRUSTED_ORIGINS = csv("CSRF_TRUSTED_ORIGINS", default="https://rap.adserv.fr")
-CORS_ALLOWED_ORIGINS = csv("CORS_ALLOWED_ORIGINS", default="https://rap.adserv.fr")
+# ==========
+# CSRF / CORS
+# ==========
+CSRF_TRUSTED_ORIGINS = [
+    "https://rap.adserv.fr",
+    "https://app.adserv.fr",
+]
+
+CORS_ALLOWED_ORIGINS = [
+    "https://rap.adserv.fr",
+    "https://app.adserv.fr",
+]
+
 CORS_ALLOW_CREDENTIALS = True
 
-# En dev, on autorise les origines locales
+# En dev, on autorise aussi les origines locales
 if DEBUG:
-    CSRF_TRUSTED_ORIGINS += ["http://localhost:5173", "http://127.0.0.1:5173"]
+    CSRF_TRUSTED_ORIGINS += [
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+    ]
     CORS_ALLOWED_ORIGINS += [
         "http://localhost:5173",
         "http://127.0.0.1:5173",
         "http://localhost:3000",
     ]
+
+
+
 
 # ==========
 # EMAIL
