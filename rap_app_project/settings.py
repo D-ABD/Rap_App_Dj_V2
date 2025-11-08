@@ -290,6 +290,10 @@ LOGIN_REDIRECT_URL = "profile"
 LOGOUT_REDIRECT_URL = "login"
 LOGIN_URL = "/login/"
 
+# Fait confiance à Nginx pour le protocole/host
+USE_X_FORWARDED_HOST = True
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
 # ==========
 # PROD SECURITY (piloté par .env)
 # SECURE_SSL_REDIRECT=True
