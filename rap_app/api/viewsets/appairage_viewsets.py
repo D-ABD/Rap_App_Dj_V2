@@ -252,6 +252,23 @@ class AppairageViewSet(viewsets.ModelViewSet):
         )
         qs = qs.annotate(last_commentaire=Subquery(last_comment_qs))
 
+        annee = self.request.query_params.get("annee")
+        if annee:
+            try:
+                annee = int(annee)
+                qs = qs.filter(date_appairage__year=annee)
+            except ValueError:
+                pass
+
+        date_min = self.request.query_params.get("date_min")
+        date_max = self.request.query_params.get("date_max")
+
+        if date_min:
+            qs = qs.filter(date_appairage__date__gte=date_min)
+
+        if date_max:
+            qs = qs.filter(date_appairage__date__lte=date_max)
+            
         # 🧩 Filtrage explicite par activité
         activite = self.request.query_params.get("activite")
         if activite in [AppairageActivite.ACTIF, AppairageActivite.ARCHIVE]:

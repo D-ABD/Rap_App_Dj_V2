@@ -21,8 +21,10 @@ def passer_en_stagiaire(modeladmin, request, queryset):
     updated = 0
     for user in queryset:
         if user.role != CustomUser.ROLE_STAGIAIRE:
+            user._skip_candidate_sync = True  # 🚫 empêche le signal de recréer un user candidat
             user.role = CustomUser.ROLE_STAGIAIRE
             user.save()
+            delattr(user, "_skip_candidate_sync")
             updated += 1
     if updated:
         messages.success(request, f"{updated} utilisateur(s) passé(s) au rôle « stagiaire ».")
@@ -54,15 +56,14 @@ def export_csv(modeladmin, request, queryset):
 
 
 # ───────────────────────────────────────────────
-# ADMIN PRINCIPAL
+# ADMIN PRINCIPAL : CustomUser
 # ───────────────────────────────────────────────
 @admin.register(CustomUser)
 class CustomUserAdmin(DjangoUserAdmin):
     """
-    🛠️ Interface d'administration complète pour CustomUser.
-    - Accès scoped pour staff selon ses centres.
-    - Actions utilitaires et export CSV.
-    - UX homogène avec les autres modules.
+    🛠️ Interface d'administration pour CustomUser.
+    - Seuls les rôles admin / superadmin peuvent y accéder.
+    - Empêche la désynchronisation forcée Candidat <-> User quand un admin modifie un rôle.
     """
 
     model = CustomUser
@@ -91,7 +92,6 @@ class CustomUserAdmin(DjangoUserAdmin):
     ordering = ("-date_joined",)
     list_per_page = 50
 
-    # Formulaire
     readonly_fields = ("date_joined", "last_login", "avatar_preview")
     filter_horizontal = ("groups", "user_permissions", "centres")
 
@@ -104,7 +104,7 @@ class CustomUserAdmin(DjangoUserAdmin):
         }),
         ("🏢 Portée par centres", {
             "fields": ("centres",),
-            "description": "Les membres du staff ne voient que les utilisateurs liés à leurs centres.",
+            "description": "Les administrateurs peuvent attribuer des centres au staff.",
         }),
         ("🔐 Permissions", {
             "fields": ("role", "is_active", "is_staff", "is_superuser", "groups", "user_permissions"),
@@ -127,6 +127,24 @@ class CustomUserAdmin(DjangoUserAdmin):
     actions = [passer_en_stagiaire, export_csv]
 
     # ───────────────────────────────
+    # Permissions d'accès
+    # ───────────────────────────────
+    def has_view_permission(self, request, obj=None):
+        """Seuls admin et superadmin peuvent voir le module."""
+        return request.user.is_authenticated and (
+            request.user.role in {CustomUser.ROLE_ADMIN, CustomUser.ROLE_SUPERADMIN}
+        )
+
+    def has_module_permission(self, request):
+        return self.has_view_permission(request)
+
+    def has_change_permission(self, request, obj=None):
+        return self.has_view_permission(request)
+
+    def has_delete_permission(self, request, obj=None):
+        return self.has_view_permission(request)
+
+    # ───────────────────────────────
     # Helpers d'affichage
     # ───────────────────────────────
     def full_name_display(self, obj):
@@ -143,10 +161,13 @@ class CustomUserAdmin(DjangoUserAdmin):
             CustomUser.ROLE_STAGIAIRE: "#2e7d32",
             CustomUser.ROLE_CANDIDAT: "#6a1b9a",
             CustomUser.ROLE_CANDIDAT_USER: "#8e24aa",
+            CustomUser.ROLE_PREPA_STAFF: "#f9a825",
+            CustomUser.ROLE_DECLIC_STAFF: "#6d4c41",
             CustomUser.ROLE_TEST: "#757575",
         }.get(obj.role, "#444")
         return format_html(
-            f'<span style="color:white; background:{color}; padding:2px 8px; border-radius:8px;">{obj.get_role_display()}</span>'
+            f'<span style="color:white; background:{color}; padding:2px 8px; border-radius:8px;">'
+            f'{obj.get_role_display()}</span>'
         )
     role_badge.short_description = "Rôle"
 
@@ -175,36 +196,25 @@ class CustomUserAdmin(DjangoUserAdmin):
     avatar_preview.short_description = "Aperçu de l’avatar"
 
     # ───────────────────────────────
-    # Queryset & permissions de visibilité
-    # ───────────────────────────────
-    def get_queryset(self, request):
-        qs = super().get_queryset(request)
-        u = request.user
-        # Admin complet
-        if u.is_superuser or getattr(u, "is_admin", lambda: False)():
-            return qs
-        # Staff restreint : uniquement ses centres
-        if u.is_staff:
-            centre_ids = list(u.centres.values_list("id", flat=True))
-            if not centre_ids:
-                return qs.none()
-            return qs.filter(Q(centres__in=centre_ids)).distinct()
-        return qs.none()
-
-    def formfield_for_manytomany(self, db_field, request, **kwargs):
-        """Restreint le choix de centres pour les staff non-admins."""
-        if db_field.name == "centres":
-            u = request.user
-            if u.is_staff and not (u.is_superuser or getattr(u, "is_admin", lambda: False)()):
-                kwargs["queryset"] = db_field.related_model.objects.filter(
-                    id__in=u.centres.values_list("id", flat=True)
-                )
-        return super().formfield_for_manytomany(db_field, request, **kwargs)
-
-    # ───────────────────────────────
     # Sauvegarde & logs
     # ───────────────────────────────
     def save_model(self, request, obj, form, change):
-        super().save_model(request, obj, form, change)
+        """
+        Désactive temporairement la synchronisation User↔Candidat
+        quand un admin/superadmin modifie un utilisateur.
+        """
+        is_admin_like = (
+            hasattr(request.user, "is_superadmin") and request.user.is_superadmin()
+        ) or (
+            hasattr(request.user, "is_admin") and request.user.is_admin()
+        )
+
+        if is_admin_like:
+            # ✅ Appel explicite de la méthode save() avec le flag
+            obj.save(_skip_candidate_sync=True)
+        else:
+            # 🔹 Comportement normal pour les autres rôles
+            super().save_model(request, obj, form, change)
+
         action = "créé" if not change else "modifié"
         logger.info(f"👤 Utilisateur {action} : {obj.email} par {request.user}")

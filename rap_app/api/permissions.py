@@ -1,12 +1,18 @@
 from rest_framework.permissions import BasePermission, SAFE_METHODS
 from django.db.models import Q
 
-from .roles import is_admin_like, is_candidate, is_staff_like, is_staff_or_staffread
+from .roles import is_admin_like, is_candidate, is_declic_staff, is_prepa_staff, is_staff_like, is_staff_or_staffread, is_staff_read, is_staff_standard
 
 
 
 
 class CanAccessProspectionComment(BasePermission):
+    """
+    Accès global à la ressource 'ProspectionComment' :
+    - Le filtrage réel par centre ou propriétaire est géré dans le scope
+      (UserVisibilityScopeMixin ou get_queryset).
+    - Cette permission s'assure simplement que l'utilisateur est authentifié.
+    """
     message = "Accès refusé."
 
     def has_object_permission(self, request, view, obj):
@@ -68,23 +74,22 @@ class ReadWriteAdminReadStaff(BasePermission):
 
     def has_permission(self, request, view):
         user = request.user
-        if not user.is_authenticated:
+        if not user or not user.is_authenticated:
             self.message = "Authentification requise."
             return False
 
         role = str(getattr(user, "role", "")).lower()
 
-        # Lecture
+        # 🔹 Lecture
         if request.method in SAFE_METHODS:
             return (
                 is_staff_or_staffread(user)
-                or user.is_staff_or_admin()
+                or is_admin_like(user)
                 or role == "staff_read"
             )
 
-        # Écriture
-        return user.has_role("admin", "superadmin") or user.is_superuser
-
+        # 🔹 Écriture
+        return is_admin_like(user) or user.is_superuser
 
 class IsStaffOrAbove(BasePermission):
     message = "Accès réservé au staff, staff_read, admin ou superadmin."
@@ -94,23 +99,25 @@ class IsStaffOrAbove(BasePermission):
         if not user or not user.is_authenticated:
             return False
 
+        # ❌ Exclure les candidats
         if is_candidate(user):
             return False
 
-        role = str(getattr(user, "role", "")).lower()
-
-        # superuser → accès complet
-        if getattr(user, "is_superuser", False):
+        # ✅ Admins → accès complet
+        if is_admin_like(user):
             return True
 
-        # staff_read → lecture seule
+        role = str(getattr(user, "role", "")).lower()
+
+        # ✅ Staff_read → lecture seule
         if role == "staff_read":
             return request.method in SAFE_METHODS
 
-        # staff/admin/superadmin → accès complet
-        if role in {"staff", "admin", "superadmin"} or getattr(user, "is_staff", False):
+        # ✅ Staff standard uniquement → accès complet
+        if role == "staff":
             return True
 
+        # ❌ EXCLUSION des declic_staff et prepa_staff
         return False
 
 
@@ -251,3 +258,73 @@ class IsStaffReadOnly(BasePermission):
         if str(getattr(user, "role", "")).lower() == "staff_read":
             return request.method in SAFE_METHODS
         return True
+    
+class IsDeclicStaffOrAbove(BasePermission):
+    """
+    🔒 Autorise l’accès au module Déclic selon le rôle :
+      - admin / superadmin → lecture + écriture
+      - staff / staff_read → lecture (staff_read lecture seule)
+      - declic_staff → lecture + écriture
+      - autres → refusé
+    """
+
+    message = "Accès réservé au staff Déclic ou supérieur."
+
+    def has_permission(self, request, view):
+        u = request.user
+        if not u or not u.is_authenticated:
+            return False
+
+        # 🔹 Admin / superadmin → accès complet
+        if is_admin_like(u):
+            return True
+
+        # 🔹 Staff global (staff, staff_read, etc.)
+        if is_staff_like(u):
+            # staff_read → lecture seule
+            if str(getattr(u, "role", "")).lower() == "staff_read":
+                return request.method in SAFE_METHODS
+            return True
+
+        # 🔹 Staff Déclic → accès complet
+        if is_declic_staff(u):
+            return True
+
+        # 🔹 Candidats → refusé
+        if is_candidate(u):
+            self.message = "Les candidats n’ont pas accès à ce module."
+            return False
+
+        # 🔹 Par défaut : refus
+        return False
+
+class IsPrepaStaffOrAbove(BasePermission):
+    """
+    🔒 Autorise l’accès au module PrépaComp selon le rôle :
+      - admin / superadmin → lecture + écriture
+      - staff global → lecture + écriture
+      - staff_read → lecture seule
+      - prepa_staff → lecture + écriture
+      - autres → refusé
+    """
+
+    message = "Accès réservé au staff PrépaComp ou supérieur."
+
+    def has_permission(self, request, view):
+        u = request.user
+        if not u or not u.is_authenticated:
+            return False
+
+        if is_admin_like(u):
+            return True
+
+        if is_staff_standard(u):
+            return True
+
+        if is_prepa_staff(u):
+            return True
+
+        if is_staff_read(u):
+            return request.method in SAFE_METHODS
+
+        return False

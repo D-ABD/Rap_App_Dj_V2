@@ -23,4 +23,5 @@ from .atelier_tre_admin import *
 from .candidat_admin import *
 from .prospection_comments_admin import *
 from .appairage_commentaires_admin import * 
-from .prepa2_admin import *
+from .declic_admin import *
+from .prepa_admin import *

@@ -102,7 +102,7 @@ class FormationViewSet(UserVisibilityScopeMixin, viewsets.ModelViewSet):
             filters.SearchFilter,  # accepte ?search=...
             filters.OrderingFilter
         ]
-    filterset_fields = ["centre", "type_offre", "statut", "created_by", ]
+    filterset_fields = ["centre", "type_offre", "statut", "created_by", "start_date"]
     serializer_class = FormationListSerializer
 
     # ✅ DRF cherchera dans ces champs quand ?texte= est présent
@@ -252,6 +252,16 @@ class FormationViewSet(UserVisibilityScopeMixin, viewsets.ModelViewSet):
         activite = params.get("activite")
         dans = params.get("dans")
         now = timezone.now().date()
+        annee = params.get("annee")   # <--- OK ici
+        if annee:
+            try:
+                annee = int(annee)
+                qs = qs.filter(
+                    Q(start_date__year=annee)
+                    | Q(end_date__year=annee)
+                )
+            except ValueError:
+                pass  # année invalide → on ignore proprement
 
         # 🔹 Filtrage par activité
         if activite:

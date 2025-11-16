@@ -1,4 +1,3 @@
-# rap_app/signals/candidats_signals.py
 import logging
 from django.db import transaction, IntegrityError
 from django.db.models.signals import pre_save, post_save
@@ -12,14 +11,18 @@ from ..models.prospection import Prospection
 
 logger = logging.getLogger(__name__)
 
-# Rôles considérés comme "candidats"
+# -------------------------------------------------------------------
+# 🎯 Rôles considérés comme "candidats"
+# -------------------------------------------------------------------
 CANDIDATE_ROLES = {
     getattr(CustomUser, "ROLE_CANDIDAT", "candidat"),
     getattr(CustomUser, "ROLE_STAGIAIRE", "stagiaire"),
     getattr(CustomUser, "ROLE_CANDIDAT_USER", "candidatuser"),
 }
 
-# --------------------------- helpers ---------------------------
+# -------------------------------------------------------------------
+# 🧩 Helpers internes
+# -------------------------------------------------------------------
 def _nn(val: str | None) -> str:
     return (val or "").strip()
 
@@ -43,9 +46,11 @@ def _build_unique_username(base: str) -> str:
         username = f"{base}{i}"
     return username
 
-# ──────────────────────────────────────────────────────────────
-# A. Gestion User <-> Candidat
-# ──────────────────────────────────────────────────────────────
+
+# ===================================================================
+# 🔹 A. Synchronisation automatique User ↔ Candidat
+# ===================================================================
+
 @receiver(pre_save, sender=CustomUser)
 def _remember_old_role(sender, instance: CustomUser, **kwargs):
     """Mémorise l'ancien rôle avant update pour détecter une bascule."""
@@ -58,25 +63,38 @@ def _remember_old_role(sender, instance: CustomUser, **kwargs):
         except sender.DoesNotExist:
             instance._old_role = None  # type: ignore[attr-defined]
 
+
 @receiver(post_save, sender=CustomUser)
 def sync_candidat_for_user(sender, instance: CustomUser, created: bool, **kwargs):
     """
     Garantit la cohérence entre User et Candidat :
-    - Si le rôle est "candidat-like":
+    - Si le rôle est "candidat-like" :
         * si déjà lié → OK
         * sinon réconcilier par email
         * sinon créer un candidat minimal
-    - Si le rôle sort du périmètre "candidat-like":
-        * casser le lien avec Candidat (compte_utilisateur=None)
+    - Si le rôle sort du périmètre "candidat-like" :
+        * casser le lien avec Candidat
+    ⚙️ Ignoré pour les admins / superadmins / ou si _skip_candidate_sync est défini.
     """
-    role = (_nn(instance.role)).lower()
 
-    # Cas 1 : rôle candidat-like
+    # 🚫 Cas 0 : Ignorer si désactivé manuellement (flag ajouté par admin)
+    if getattr(instance, "_skip_candidate_sync", False):
+        logger.debug("⏭️ Sync candidat ignoré (flag admin actif) pour user #%s", instance.pk)
+        return
+
+    # 🚫 Cas 1 : Ignorer les superadmins et admins
+    if instance.is_superadmin() or instance.is_admin():
+        logger.debug("⏭️ Sync candidat ignoré pour admin/superadmin user #%s", instance.pk)
+        return
+
+    role = (instance.role or "").strip().lower()
+
+    # ✅ Cas 2 : rôle candidat-like
     if role in CANDIDATE_ROLES:
         if Candidat.objects.filter(compte_utilisateur=instance).exists():
-            return
+            return  # déjà lié
 
-        email = _nn(instance.email).lower()
+        email = (instance.email or "").lower()
         local = _email_local(email)
         safe_nom = _safe_non_blank(instance.last_name, instance.username, local)
         safe_prenom = _safe_non_blank(instance.first_name)
@@ -92,10 +110,8 @@ def sync_candidat_for_user(sender, instance: CustomUser, created: bool, **kwargs
                         .first()
                     )
                     if cand:
-                        if not _nn(cand.nom):
-                            cand.nom = safe_nom
-                        if not _nn(cand.prenom):
-                            cand.prenom = safe_prenom
+                        cand.nom = cand.nom or safe_nom
+                        cand.prenom = cand.prenom or safe_prenom
                         cand.compte_utilisateur = instance
                         cand.save(update_fields=["compte_utilisateur", "nom", "prenom"])
                         logger.info("🔗 Réconciliation Candidat #%s ↔ User #%s", cand.pk, instance.pk)
@@ -103,7 +119,7 @@ def sync_candidat_for_user(sender, instance: CustomUser, created: bool, **kwargs
             except IntegrityError as e:
                 logger.warning("⚠️ Conflit réconciliation User->Candidat (email=%s): %s", email, e)
 
-        # Si pas trouvé : créer un candidat minimal
+        # Sinon, création minimale
         Candidat.objects.get_or_create(
             compte_utilisateur=instance,
             defaults={"nom": safe_nom, "prenom": safe_prenom, "email": email or None},
@@ -111,7 +127,7 @@ def sync_candidat_for_user(sender, instance: CustomUser, created: bool, **kwargs
         logger.info("➕ Candidat créé pour User #%s (role=%s)", instance.pk, role)
         return
 
-    # Cas 2 : rôle non candidat → délier
+    # 🚫 Cas 3 : rôle non candidat → délier le Candidat associé
     cand = getattr(instance, "candidat_associe", None)
     if cand:
         cand.compte_utilisateur = None
@@ -119,14 +135,23 @@ def sync_candidat_for_user(sender, instance: CustomUser, created: bool, **kwargs
         logger.info("🚫 Lien Candidat #%s ↔ User #%s supprimé (role=%s)", cand.pk, instance.pk, role)
 
 
+# ===================================================================
+# 🔹 B. Création automatique User depuis Candidat
+# ===================================================================
 @receiver(post_save, sender=Candidat)
 def ensure_user_for_candidate(sender, instance: Candidat, created: bool, **kwargs):
     """
     Garantit qu'un Candidat a un User associé si email disponible :
     - si un user existe avec le même email → lier
     - sinon créer un user ROLE_TEST puis basculer en ROLE_CANDIDAT
+    ⚙️ Ignoré si _skip_candidate_sync est actif sur le user lié.
     """
+    # 🚫 Si déjà lié, rien à faire
     if instance.compte_utilisateur_id:
+        user = instance.compte_utilisateur
+        if user and getattr(user, "_skip_candidate_sync", False):
+            logger.debug("⏭️ ensure_user_for_candidate ignoré (flag admin) pour user #%s", user.pk)
+            return
         return
 
     email = _nn(instance.email).lower()
@@ -146,6 +171,7 @@ def ensure_user_for_candidate(sender, instance: Candidat, created: bool, **kwarg
             user.save(update_fields=["role"])
         return
 
+    # 🆕 Si aucun user n’existe, en créer un minimal
     username = _build_unique_username(f"{instance.prenom}.{instance.nom}" or email.split("@")[0])
     try:
         with transaction.atomic():
@@ -166,9 +192,10 @@ def ensure_user_for_candidate(sender, instance: Candidat, created: bool, **kwarg
     except IntegrityError as e:
         logger.error("❌ IntegrityError ensure_user_for_candidate (cand#%s, email=%s): %s", instance.pk, email, e)
 
-# ──────────────────────────────────────────────────────────────
-# C. Prospection -> formation héritée du candidat
-# ──────────────────────────────────────────────────────────────
+
+# ===================================================================
+# 🔹 C. Prospection -> formation héritée du candidat
+# ===================================================================
 @receiver(pre_save, sender=Prospection)
 def sync_formation_from_owner(sender, instance: Prospection, **kwargs):
     owner = getattr(instance, "owner", None)
