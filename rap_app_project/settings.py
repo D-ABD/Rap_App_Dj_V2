@@ -70,6 +70,90 @@ INSTALLED_APPS = [
     # À désactiver en prod si non utilisé
     "django_extensions",
 ]
+JAZZMIN_SETTINGS = {
+    "site_title": "RAP_APP — Administration",
+    "site_header": "RAP_APP Admin",
+    "site_brand": "RAP_APP",
+    "site_logo": None,  # si tu as un logo, donne-moi le chemin static
+    "login_logo": None,
+    "login_logo_dark": None,
+    "copyright": "RAP_APP © 2025",
+
+    # -------------------------
+    # 🎨 Thème Dark complet
+    # -------------------------
+    "theme": "darkly",  # Jazzmin built-in dark theme
+    "dark_mode_theme": "darkly",
+    "show_ui_builder": False,
+
+    # -------------------------
+    # 🧭 Navigation (sidebar)
+    # -------------------------
+    "navigation_expanded": True,
+    "breadcrumbs": True,
+
+    # -------------------------
+    # 🎨 Couleurs personnalisées
+    # -------------------------
+    "brand_color": "#0d6efd",  # bleu néon moderne
+    "accent": "#0d6efd",
+
+    # -------------------------
+    # 📁 Icônes (FontAwesome)
+    # -------------------------
+    "icons": {
+        "auth": "fas fa-users-cog",
+        "auth.user": "fas fa-user",
+        "auth.Group": "fas fa-users",
+
+        # Ici, on ajoute tes modèles RAP_APP
+        "rap_app.Candidat": "fas fa-user-graduate",
+        "rap_app.CVTheque": "fas fa-address-card",
+        "rap_app.Formation": "fas fa-chalkboard-teacher",
+        "rap_app.Prospection": "fas fa-briefcase",
+        "rap_app.Prepa": "fas fa-dumbbell",
+        "rap_app.Declic": "fas fa-bolt",
+        "rap_app.Commentaire": "fas fa-comment",
+        "rap_app.AteliersTRE": "fas fa-lightbulb",
+        "rap_app.Appairage": "fas fa-link",
+        "rap_app.Partenaires": "fas fa-handshake",
+        # tu peux en ajouter d'autres
+    },
+
+    # -------------------------
+    # 🧩 Layout
+    # -------------------------
+    "topmenu_links": [
+        {"name": "Dashboard", "url": "admin:index", "permissions": ["auth.view_user"]},
+        {"name": "Site public", "url": "/", "new_window": True},
+    ],
+
+    "usermenu_links": [
+        {"name": "Profil", "url": "admin:auth_user_change", "new_window": False},
+    ],
+
+    "show_sidebar": True,
+    "navigation": [
+        "rap_app",
+    ],
+
+    # -------------------------
+    # 🏠 Accent sur le dashboard
+    # -------------------------
+    "welcome_sign": "Bienvenue dans RAP_APP — Mode Admin",
+    "search_model": "auth.User",
+}
+
+JAZZMIN_UI_TWEAKS = {
+    "theme": "darkly",
+    "dark_mode_theme": "slate",  # encore plus sombre
+    "navbar": "navbar-dark bg-dark",
+    "sidebar": "sidebar-dark-info",
+    "accent": "accent-primary",
+    "footer_fixed": False,
+    "sidebar_fixed": True,
+    "navbar_fixed": True,
+}
 
 # ==========
 # MIDDLEWARE
