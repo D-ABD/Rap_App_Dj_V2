@@ -49,6 +49,7 @@ ALLOWED_HOSTS = csv("ALLOWED_HOSTS", default="localhost,rap.adserv.fr")
 # APPS
 # ==========
 INSTALLED_APPS = [
+       "jazzmin",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",

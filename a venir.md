@@ -15,6 +15,17 @@ git push origin main
 
 
 
+
+git add .
+git commit -m "Réparation de Candidat
+Ajout de CVThèque
+Dernière version stable avant prod
+Tests à faire en prod"
+Ajout de Jazzmin pour interface admin
+git push origin main
+
+
+
 faire un readmepour chaque model 
 
 
