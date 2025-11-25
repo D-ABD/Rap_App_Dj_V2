@@ -25,3 +25,4 @@ from .prospection_comments_admin import *
 from .appairage_commentaires_admin import * 
 from .declic_admin import *
 from .prepa_admin import *
+from .cvtheque_admin import *

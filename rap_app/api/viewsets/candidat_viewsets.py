@@ -1,14 +1,13 @@
 from rest_framework import viewsets, filters
-from io import BytesIO
-from openpyxl import Workbook
-from openpyxl.utils import get_column_letter
 from openpyxl.drawing.image import Image as XLImage
 from openpyxl.styles import PatternFill, Font, Alignment
 from pathlib import Path
 from django.conf import settings
 from django.utils import timezone as dj_timezone
 from openpyxl.styles import PatternFill, Font, Alignment, Border, Side
-
+from uuid import uuid4
+from django.db import transaction
+from rest_framework.exceptions import ValidationError
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
@@ -315,30 +314,24 @@ class CandidatViewSet(viewsets.ModelViewSet):
     # ---------- create/update : contrôle périmètre formation ----------
 
 
+
     def perform_create(self, serializer):
         data = serializer.validated_data
-        user = data.get("compte_utilisateur")
 
-        if not user:
-            # 🔧 Auto-création d’un utilisateur minimal
-            email = data.get("email") or f"temp_{dj_timezone.now().timestamp()}@example.com"
-            user = CustomUser.objects.create_user(
-                email=email,
-                first_name=data.get("prenom", "") or "",
-                last_name=data.get("nom", "") or "",
-                role="candidat",
-                password=CustomUser.objects.make_random_password(),
-            )
-            serializer.validated_data["compte_utilisateur"] = user
+        formation = data.get("formation")
+        if not formation:
+            raise ValidationError({"formation": ["La formation est obligatoire."]})
 
-        # Vérif périmètre formation
-        instance = serializer.save()
-        self._assert_staff_can_use_formation(getattr(instance, "formation", None))
+        self._assert_staff_can_use_formation(formation)
 
-        try:
-            instance.save(user=self.request.user)
-        except TypeError:
-            pass
+        with transaction.atomic():
+            # ❌ ne pas gérer création user ici !
+            instance = serializer.save()
+
+            try:
+                instance.save(user=self.request.user)
+            except TypeError:
+                pass
 
     def _cascade_update_prospections_on_formation_change(self, candidat, old_form, new_form):
         """
@@ -388,39 +381,20 @@ class CandidatViewSet(viewsets.ModelViewSet):
         old_formation = serializer.instance.formation
 
         with transaction.atomic():
+
+            # --- 3) mise à jour via le serializer (gère compte_utilisateur proprement) ---
             instance = serializer.save()
 
-            # --- 2bis) si le candidat n’a pas de compte lié, on le crée automatiquement ---
-            if not instance.compte_utilisateur:
-                email = instance.email or f"temp_{dj_timezone.now().timestamp()}@example.com"
-
-                # Vérifie si un user avec cet email existe déjà
-                existing_user = CustomUser.objects.filter(email=email).first()
-                if existing_user:
-                    user = existing_user
-                    logger.info(f"🔗 Utilisateur existant réutilisé pour le candidat #{instance.id} ({email})")
-                else:
-                    user = CustomUser.objects.create_user(
-                        email=email,
-                        first_name=instance.prenom or "",
-                        last_name=instance.nom or "",
-                        role="candidat",
-                        password=CustomUser.objects.make_random_password(),
-                    )
-                    logger.warning(f"👤 Compte utilisateur créé automatiquement pour le candidat #{instance.id} ({email})")
-
-                instance.compte_utilisateur = user
-                instance.save(update_fields=["compte_utilisateur"])
-
-            # --- 3) sauvegarde avec utilisateur (journalisation si supportée) ---
+            # --- 4) sauvegarde avec utilisateur pour journalisation (si supportée) ---
             try:
                 instance.save(user=self.request.user)
             except TypeError:
                 pass
 
-            # --- 4) cascade sur Prospection si la formation a changé ---
+            # --- 5) cascade sur Prospection si la formation a changé ---
             old_id = getattr(old_formation, "id", None)
             new_id = getattr(instance.formation, "id", None)
+
             if old_id != new_id:
                 self._cascade_update_prospections_on_formation_change(
                     candidat=instance,

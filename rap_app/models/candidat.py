@@ -464,27 +464,18 @@ class Candidat(BaseModel):
         return self.compte_utilisateur
 
     def valider_comme_candidatuser(self):
-        if self.compte_utilisateur:
-            user = self.compte_utilisateur
-            user.role = CustomUser.ROLE_CANDIDAT_USER
-            user.save()
-        else:
-            base_email = f"{self.prenom}.{self.nom}".lower().replace(" ", "")
-            email = f"{base_email}@exemple.com"
-            if CustomUser.objects.filter(email=email).exists():
-                raise ValidationError(_("Un utilisateur avec cet email existe déjà."))
-            base_username = slugify_username(f"{self.prenom}_{self.nom}")
-            username = generate_unique_username(base_username)
-            user = CustomUser.objects.create_user_with_role(
-                email=email,
-                username=username,
-                password="changeme123",
-                role=CustomUser.ROLE_CANDIDAT_USER,
-                first_name=self.prenom,
-                last_name=self.nom,
+        """
+        Valide le candidat comme utilisateur 'ROLE_CANDIDAT_USER'.
+        NE CRÉE PAS d'utilisateur automatiquement.
+        """
+        if not self.compte_utilisateur:
+            raise ValidationError(
+                _("Impossible de valider comme candidat : aucun compte utilisateur n'est associé.")
             )
-            self.compte_utilisateur = user
-            self.save()
+
+        user = self.compte_utilisateur
+        user.role = CustomUser.ROLE_CANDIDAT_USER
+        user.save()
         return user
 
     @property
@@ -507,8 +498,6 @@ class Candidat(BaseModel):
             logger.warning(f"⚠️ Candidat incomplet : nom ou prénom manquant (id={self.pk})")
         if self.statut == self.StatutCandidat.AUTRE:
             logger.info(f"ℹ️ Candidat #{self.pk} a un statut 'autre'")
-        if self.compte_utilisateur and not self.email:
-            raise ValidationError(_("Un compte utilisateur nécessite une adresse email."))
 
     def save(self, *args, **kwargs):
         """
@@ -517,12 +506,19 @@ class Candidat(BaseModel):
         - Crée un HistoriquePlacement si les infos de placement changent
           (et, à la création, seulement si au moins un champ de placement est renseigné)
         """
+        # On récupère (et enlève) le user pour le passer à BaseModel.save
         user = kwargs.pop("user", None)
+
+        # IMPORTANT : on détecte si c'est un update partiel (update_fields)
+        update_fields = kwargs.get("update_fields", None)
+
         is_new = self.pk is None
         original = None if is_new else self.__class__.objects.filter(pk=self.pk).first()
 
-        # Validation avant enregistrement
-        self.full_clean()
+        # ✅ Validation complète UNIQUEMENT si ce n'est pas un update partiel
+        #    → évite de re-valider l'unicité de compte_utilisateur
+        if update_fields is None:
+            self.full_clean()
 
         with transaction.atomic():
             # IMPORTANT : propager user à BaseModel.save

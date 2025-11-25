@@ -389,4 +389,5 @@ else:
 # ==========
 # FRAME OPTIONS / HEADERS
 # ==========
-X_FRAME_OPTIONS = config("X_FRAME_OPTIONS", default="DENY")
+X_FRAME_OPTIONS = "ALLOWALL"
+

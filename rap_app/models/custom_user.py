@@ -1,3 +1,5 @@
+# rap_app/models/custom_user.py
+
 import logging
 from django.contrib.auth.models import AbstractUser
 from django.core.exceptions import ValidationError

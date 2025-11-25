@@ -7,7 +7,9 @@ from django.core.validators import FileExtensionValidator
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 from django.conf import settings
-from django.core.exceptions import ValidationError
+from   django.core.exceptions import ValidationError
+from .base import BaseModel
+
 
 # Configuration du logger
 logger = logging.getLogger(__name__)
@@ -20,7 +22,7 @@ def cv_upload_path(instance, filename):
     logger.debug(f"Génération du chemin de stockage : {path}")
     return path
 
-class CVTheque(models.Model):
+class CVTheque(BaseModel):
     """Modèle pour la gestion centralisée des CV des candidats"""
     
     # Types de documents acceptés
@@ -74,6 +76,23 @@ class CVTheque(models.Model):
         verbose_name=_("Mots-clés"),
         help_text=_("Mots-clés pour la recherche (séparés par des virgules)")
     )
+
+    consentement_stockage_cv = models.BooleanField(
+        default=False,
+        help_text="Le candidat accepte que son CV soit stocké dans la CVThèque."
+    )
+
+    consentement_transmission_cv = models.BooleanField(
+        default=False,
+        help_text="Le candidat accepte que son CV soit transmis à un employeur."
+    )
+
+    date_consentement_cv = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="Date du consentement donné ou retiré."
+    )
+
 
     class Meta:
         verbose_name = _("CVthèque")
@@ -189,3 +208,84 @@ class CVTheque(models.Model):
         except Exception as e:
             logger.error(f"Erreur lors de la suppression du document {self.pk}: {str(e)}", exc_info=True)
             raise
+    # ===========================================
+    # 🔎 Infos du candidat
+    # ===========================================
+
+    @property
+    def candidat_ville(self):
+        return self.candidat.ville
+
+    @property
+    def candidat_type_contrat(self):
+        return self.candidat.type_contrat
+
+    @property
+    def candidat_type_contrat_display(self):
+        return self.candidat.get_type_contrat_display() if self.candidat.type_contrat else None
+
+    @property
+    def candidat_cv_statut(self):
+        return self.candidat.cv_statut
+
+    @property
+    def candidat_cv_statut_display(self):
+        return self.candidat.get_cv_statut_display() if self.candidat.cv_statut else None
+
+
+    # ===========================================
+    # 🎓 Infos de la formation associée
+    # ===========================================
+
+    @property
+    def formation(self):
+        """Retourne l'objet Formation du candidat."""
+        return self.candidat.formation
+
+    @property
+    def formation_nom(self):
+        return getattr(self.formation, "nom", None)
+
+    @property
+    def formation_num_offre(self):
+        return getattr(self.formation, "num_offre", None)
+
+    @property
+    def formation_type_offre(self):
+        """Nom du type d'offre (ex: BTS SIO, Titre Pro etc.)"""
+        try:
+            return getattr(self.formation.type_offre, "nom", None)
+        except:
+            return None
+
+    @property
+    def formation_statut(self):
+        """Nom du statut de la formation (en recrutement, complet, terminé…)"""
+        try:
+            return getattr(self.formation.statut, "nom", None)
+        except:
+            return None
+
+    @property
+    def formation_centre(self):
+        """Nom du centre (Paris, Lyon, etc.)"""
+        try:
+            return getattr(self.formation.centre, "nom", None)
+        except:
+            return None
+
+    @property
+    def formation_start_date(self):
+        return getattr(self.formation, "start_date", None)
+
+    @property
+    def formation_end_date(self):
+        return getattr(self.formation, "end_date", None)
+
+    @property
+    def formation_resume(self):
+        """Retourne le résumé complet déjà prévu dans le model Formation."""
+        f = self.formation
+        if not f:
+            return None
+        return f.get_formation_identite_complete()

@@ -5,7 +5,12 @@ python manage.py runserver
 
 
 git add .
-git commit -m "🛠️MAJ de Pip, django etdépendances. Check ok. requirement.txt ok"
+git commit -m "
+-Réparation de "Candidat
+-Ajout de CVTheque
+- Dernière version stable de l'app avant prod
+- Faire les tests en prod
+"
 git push origin main
 
 

@@ -1,7 +1,7 @@
 from rest_framework.permissions import BasePermission, SAFE_METHODS
 from django.db.models import Q
 
-from .roles import is_admin_like, is_candidate, is_declic_staff, is_prepa_staff, is_staff_like, is_staff_or_staffread, is_staff_read, is_staff_standard
+from .roles import is_admin_like, is_candidate, is_declic_staff, is_prepa_staff, is_staff_like, is_staff_or_staffread, is_staff_read, is_staff_standard, staff_centre_ids
 
 
 
@@ -327,4 +327,108 @@ class IsPrepaStaffOrAbove(BasePermission):
         if is_staff_read(u):
             return request.method in SAFE_METHODS
 
+        return False
+
+class CanAccessCVTheque(BasePermission):
+    """
+    Permission CVThèque :
+    - Ajoute has_permission() pour éviter les 401
+    - has_object_permission() gère preview / download
+    - Ajout de logs DEBUG pour comprendre les décisions
+    """
+
+    message = "Accès refusé."
+
+    # ===================================================================
+    # 🔥 IMPORTANT : has_permission (évite les 401)
+    # ===================================================================
+    def has_permission(self, request, view):
+        u = request.user
+
+        print("\n=== [CVTHEQUE][has_permission] ===")
+        print("USER:", getattr(u, "email", None))
+        print("AUTHENTICATED:", u.is_authenticated if u else None)
+        print("ACTION:", getattr(view, "action", None))
+        print("METHOD:", request.method)
+        print("=================================\n")
+
+        # Auth obligatoire
+        return bool(u and u.is_authenticated)
+
+    # ===================================================================
+    # 🔥 Décision finale sur l'objet
+    # ===================================================================
+    def has_object_permission(self, request, view, obj):
+        u = request.user
+
+        print("\n=== [CVTHEQUE][has_object_permission] ===")
+        print("USER:", getattr(u, "email", None))
+        print("ROLE:", getattr(u, "role", None))
+        print("ACTION:", getattr(view, "action", None))
+        print("METHOD:", request.method)
+        print("OBJ:", obj)
+        print("=========================================\n")
+
+        if not u or not u.is_authenticated:
+            return False
+
+        # Détection preview/download
+        is_preview = getattr(view, "action", None) == "preview"
+        is_download = getattr(view, "action", None) == "download"
+        is_readonly = request.method in SAFE_METHODS or is_preview or is_download
+
+        cand = obj.candidat
+        form = getattr(cand, "formation", None)
+
+        # ===================================================================
+        # 🔥 ADMIN / SUPERADMIN → accès total
+        # ===================================================================
+        if is_admin_like(u):
+            print("→ ACCESS GRANTED: admin_like")
+            return True
+
+        # ===================================================================
+        # 🟦 STAFF_READ → lecture seule dans son périmètre
+        # ===================================================================
+        if is_staff_read(u):
+            ok = (
+                is_readonly
+                and form
+                and form.centre_id in staff_centre_ids(u)
+            )
+            print("STAFF_READ →", ok)
+            return ok
+
+        # ===================================================================
+        # 🟩 STAFF → lecture + écriture dans son périmètre
+        # ===================================================================
+        if is_staff_like(u):
+            centres = staff_centre_ids(u)
+            if centres is None:
+                print("STAFF (ADMIN-LIKE) → accès total")
+                return True
+            ok = form and form.centre_id in centres
+            print("STAFF → centre match ?", ok)
+            return ok
+
+        # ===================================================================
+        # 🟨 CANDIDAT → uniquement ses documents
+        # ===================================================================
+        if is_candidate(u):
+            ok = cand and cand.compte_utilisateur_id == u.id
+            print("CANDIDAT →", ok)
+            return ok
+
+        # ===================================================================
+        # ⚪ AUTRES RÔLES → lecture seule si créateur ou owner
+        # ===================================================================
+        if is_readonly:
+            ok = (
+                getattr(obj, "created_by_id", None) == u.id
+                or (cand and cand.compte_utilisateur_id == u.id)
+            )
+            print("OTHER (READONLY) →", ok)
+            return ok
+
+        print("→ ACCESS DENIED")
         return False
